@@ -42,6 +42,10 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
       const { data } = await authApi.login(credentials);
+      if (data.requiresSecretKey) {
+        dispatch({ type: 'SET_LOADING', payload: false });
+        return data;
+      }
       dispatch({ type: 'LOGIN_SUCCESS', payload: data });
       return data;
     } catch (err) {

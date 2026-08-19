@@ -10,8 +10,8 @@ const path = require('path');
 const RentalBooking = require('./models/RentalBooking');
 
 const connectDB = require('./config/db');
+const { bootstrapCatalogue } = require('./seeds/bootstrap');
 const errorHandler = require('./middleware/errorHandler');
-const { healthCheck } = require('./middleware/errorHandler');
 
 const authRoutes = require('./routes/authRoutes');
 const bikeRoutes = require('./routes/bikeRoutes');
@@ -24,8 +24,11 @@ const serviceCarRoutes = require('./routes/serviceCarRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const serviceCategoryRoutes = require('./routes/serviceCategoryRoutes');
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB, then make sure the service catalogue exists. The site
+// has nothing to show without it, so this runs on every boot rather than
+// relying on someone remembering a seed command. It is additive and respects
+// anything the admin has since edited or deleted.
+connectDB().then(() => bootstrapCatalogue());
 
 const app = express();
 
@@ -56,9 +59,10 @@ if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 // Static Folders
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Health check — reports 503 when the database is unreachable so a load
-// balancer stops sending traffic to an instance that cannot serve it.
-app.get('/api/health', healthCheck);
+// Health Check
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, message: 'BikeService API is running', env: process.env.NODE_ENV });
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

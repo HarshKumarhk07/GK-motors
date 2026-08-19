@@ -62,6 +62,23 @@ const login = asyncHandler(async (req, res) => {
     throw new Error('Account is deactivated');
   }
 
+  // Admin secret key check (forces nodemon reload)
+  if (user.role === 'admin') {
+    const adminSecret = process.env.ADMIN_SECRET_KEY || 'adminsecret';
+    const { secretKey } = req.body;
+    if (!secretKey) {
+      return res.json({
+        success: true,
+        requiresSecretKey: true,
+        message: 'Admin verification required',
+      });
+    }
+    if (secretKey !== adminSecret) {
+      res.status(401);
+      throw new Error('Invalid secret key');
+    }
+  }
+
   const token = generateToken(user._id);
   res.json({
     success: true,

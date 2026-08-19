@@ -3258,7 +3258,7 @@ const LiveTrackingTab = ({ targetId, onClearTarget }) => {
    Three sections: the car catalogue customers pick from, the service
    packages (ServiceType docs) with their images and availability, and bulk
    base-price editing.
-   Category ids/names mirror server/src/seeds/seedServicePackages.js.
+   Category ids/names mirror server/src/seeds/catalogueData.js.
    ══════════════════════════════════════════════════════════════════════════ */
 const GK_CATEGORIES = [
   { id: 1, slug: 'car-service', name: 'Car Service' },
@@ -3542,10 +3542,7 @@ const CarsManagement = ({ serviceTypes }) => {
 
           {grouped.length === 0 ? (
             <p style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 600 }}>
-              No service packages found. Run the seeder:
-              <code style={{ background: '#F1F5F9', padding: '0.1rem 0.4rem', borderRadius: '4px', marginLeft: '0.4rem' }}>
-                node server/src/seeds/seedServicePackages.js
-              </code>
+              No service packages yet. Add them under Categories, then set per-car prices here.
             </p>
           ) : grouped.map((cat) => (
             <div key={cat.id} style={{ marginBottom: '1.1rem' }}>
@@ -3902,20 +3899,18 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
           </button>
         </div>
         {!catsLoading && dbCategories.length === 0 && (
-          <p style={{ color: '#92400E', fontSize: '0.78rem', fontWeight: 600, marginTop: '0.7rem', lineHeight: 1.5 }}>
-            Showing the built-in categories. Run
-            <code style={{ background: '#FEF3C7', padding: '0.05rem 0.35rem', borderRadius: '4px', margin: '0 0.25rem' }}>npm run seed:categories-svc</code>
-            to move them into the database before adding or deleting.
+          <p style={{ color: '#64748B', fontSize: '0.78rem', fontWeight: 600, marginTop: '0.7rem', lineHeight: 1.5 }}>
+            Setting up your categories — restart the server if this does not clear.
           </p>
         )}
       </form>
-      {orphans.length > 0 && (
+      {orphans.filter((o) => o.isActive).length > 0 && (
         <div style={{ display: 'flex', gap: '0.6rem', background: '#FFFBEB', border: '1.5px solid #FDE68A', borderRadius: '12px', padding: '0.9rem 1.1rem', marginBottom: '1.5rem' }}>
           <AlertCircle size={17} style={{ color: '#D97706', flexShrink: 0, marginTop: '0.1rem' }} />
           <span style={{ color: '#92400E', fontSize: '0.82rem', fontWeight: 600, lineHeight: 1.5 }}>
-            {orphans.length} legacy service type(s) have no category and will not appear in the booking
-            flow: <strong>{orphans.map((o) => o.label).join(', ')}</strong>. Deactivate them with
-            {' '}<code style={{ background: '#FEF3C7', padding: '0.05rem 0.35rem', borderRadius: '4px' }}>node server/src/seeds/seedServicePackages.js --retire-legacy</code>
+            These services belong to no category, so customers cannot see them:{' '}
+            <strong>{orphans.filter((o) => o.isActive).map((o) => o.label).join(', ')}</strong>.
+            Disable them, or move them into a category.
           </span>
         </div>
       )}

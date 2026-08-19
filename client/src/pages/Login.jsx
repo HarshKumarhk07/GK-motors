@@ -17,6 +17,7 @@ export default function Login() {
   const [mode, setMode] = useState('password'); // 'password' | 'otp'
   const [otpSent, setOtpSent] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [requiresSecretKey, setRequiresSecretKey] = useState(false);
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
 
   const contactValue = watch('email') || watch('phone');
@@ -24,7 +25,12 @@ export default function Login() {
   const onSubmit = async (data) => {
     try {
       if (mode === 'password') {
-        await login(data);
+        const res = await login(data);
+        if (res?.requiresSecretKey) {
+          setRequiresSecretKey(true);
+          toast.success('Admin secret key required');
+          return;
+        }
         toast.success('Welcome back!');
         navigate(redirectTo, { replace: true });
       } else if (mode === 'otp' && !otpSent) {
@@ -75,7 +81,7 @@ export default function Login() {
         {/* Mode toggle */}
         <div className="mode-toggle" style={{ display: 'flex', background: '#F5F5F5', borderRadius: '12px', padding: '4px', marginBottom: '1.5rem', border: '1px solid #EEE' }}>
           {['password', 'otp'].map((m) => (
-            <button key={m} onClick={() => { setMode(m); setOtpSent(false); }}
+            <button key={m} onClick={() => { setMode(m); setOtpSent(false); setRequiresSecretKey(false); }}
               style={{
                 flex: 1, padding: '0.7rem', borderRadius: '8px', border: 'none', cursor: 'pointer',
                 background: mode === m ? '#FFF' : 'transparent',
@@ -98,6 +104,7 @@ export default function Login() {
                 <Mail size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#AAA' }} />
                 <input type="email" className="input-light form-input" style={{ paddingLeft: '2.8rem', height: '48px', fontSize: '0.9rem' }}
                   placeholder="you@example.com"
+                  readOnly={requiresSecretKey}
                   {...register('email', { pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' } })} />
               </div>
               {errors.otp && <p style={{ color: '#1E3A8A', fontSize: '0.82rem', marginTop: '0.4rem', fontWeight: 600 }}>{errors.otp.message}</p>}
@@ -126,13 +133,30 @@ export default function Login() {
                   <Lock size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#AAA' }} />
                   <input type={showPass ? 'text' : 'password'} className="input-light form-input" style={{ paddingLeft: '2.8rem', paddingRight: '2.8rem', height: '48px', fontSize: '0.9rem' }}
                     placeholder="••••••••"
+                    readOnly={requiresSecretKey}
                     {...register('password', { required: 'Password is required' })} />
                   <button type="button" onClick={() => setShowPass(!showPass)}
-                    style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#AAA', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                    style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#AAA', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    disabled={requiresSecretKey}>
                     {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
                 {errors.password && <p style={{ color: '#E53935', fontSize: '0.82rem', marginTop: '0.4rem', fontWeight: 600 }}>{errors.password.message}</p>}
+              </div>
+            )}
+
+            {/* Admin Secret Key */}
+            {mode === 'password' && requiresSecretKey && (
+              <div className="form-input-wrapper" style={{ marginBottom: '1.2rem' }}>
+                <label className="form-label" style={{ color: '#333', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '0.4rem' }}>Admin Secret Key</label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#AAA' }} />
+                  <input type="password" className="input-light form-input" style={{ paddingLeft: '2.8rem', height: '48px', fontSize: '0.9rem' }}
+                    placeholder="Enter secret key"
+                    autoFocus
+                    {...register('secretKey', { required: 'Secret key is required' })} />
+                </div>
+                {errors.secretKey && <p style={{ color: '#E53935', fontSize: '0.82rem', marginTop: '0.4rem', fontWeight: 600 }}>{errors.secretKey.message}</p>}
               </div>
             )}
  
