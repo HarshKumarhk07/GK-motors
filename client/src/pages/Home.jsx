@@ -5,7 +5,7 @@ import {
   Disc, Settings, Shield, Award, Car, CheckCircle, Clock, Star, Phone,
   Calendar, Users, MapPin
 } from 'lucide-react';
-import { getServiceCategories, getServiceCars, getCategories } from '../api/serviceApi';
+import { getServiceCategories, getCategories } from '../api/serviceApi';
 import { getFeaturedParts } from '../api/storeApi';
 import PartCard from '../components/parts/PartCard';
 import CategoryIcon, { categoryImageFrom } from '../components/service/CategoryIcon';
@@ -67,7 +67,6 @@ export default function Home() {
   const [packages, setPackages] = useState([]);
   const [serviceCategories, setServiceCategories] = useState(FALLBACK_CATEGORIES);
   const [parts, setParts] = useState([]);
-  const [heroCars, setHeroCars] = useState([]);
 
   useEffect(() => {
     // Packages (for the "from" price) and the category list itself. The list is
@@ -104,12 +103,6 @@ export default function Home() {
       .then(({ data }) => setParts((data.parts || []).slice(0, 5)))
       .catch((err) => console.error('[Home.getFeaturedParts]', err));
 
-    // Cars we service, straight from the admin catalogue. Cars without a photo
-    // still show — they get a branded initial tile rather than being dropped,
-    // so a fresh catalogue does not leave the hero looking half-built.
-    getServiceCars()
-      .then(({ data }) => setHeroCars((data.cars || []).slice(0, 3)))
-      .catch((err) => console.error('[Home.getServiceCars]', err));
   }, []);
 
   // Show each category's cheapest live package as its "from" price. Falls back
@@ -211,60 +204,10 @@ export default function Home() {
         .gk-cta-primary:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.38); }
         .gk-cta-ghost:hover { border-color: #FFF; background: rgba(255,255,255,0.09); transform: translateY(-2px); }
 
-        /* ── Fleet strip ─────────────────────────────────────────────────── */
-        .gk-fleet { margin-top: 3.25rem; border-top: 1px solid rgba(148,163,184,0.14); padding-top: 1.5rem; }
-        .gk-fleet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-        .gk-fleet-label {
-          color: #64748B; font-size: 0.68rem; font-weight: 800;
-          text-transform: uppercase; letter-spacing: 0.22em;
-        }
-        .gk-fleet-all {
-          display: inline-flex; align-items: center; gap: 0.35rem;
-          color: #93C5FD; font-size: 0.72rem; font-weight: 800;
-          text-decoration: none; text-transform: uppercase; letter-spacing: 0.08em;
-          transition: gap .2s, color .2s;
-        }
-        .gk-fleet-all:hover { gap: 0.6rem; color: #DBEAFE; }
-        .gk-fleet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem; }
-        .gk-fleet-card {
-          opacity: 0; animation: gk-rise-in 0.6s cubic-bezier(0.22,0.8,0.28,1) forwards;
-          display: flex; align-items: center; gap: 0.85rem; text-decoration: none;
-          background: rgba(255,255,255,0.032);
-          border: 1px solid rgba(148,163,184,0.14);
-          border-radius: 14px; padding: 0.7rem 0.9rem;
-          transition: transform .28s, border-color .28s, background .28s;
-        }
-        .gk-fleet-card:hover {
-          transform: translateY(-5px);
-          border-color: rgba(147,197,253,0.42);
-          background: rgba(255,255,255,0.06);
-        }
-        .gk-fleet-img {
-          width: 74px; height: 50px; border-radius: 9px; flex-shrink: 0; overflow: hidden;
-          background: rgba(148,163,184,0.09);
-          display: flex; align-items: center; justify-content: center;
-        }
-        .gk-fleet-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        /* No photo yet: a branded tile rather than an empty frame. Upload an
-           image for the car in admin and it replaces this automatically. */
-        .gk-fleet-img--fallback {
-          display: flex; align-items: center; justify-content: center;
-          background: linear-gradient(135deg, rgba(59,130,246,0.20) 0%, rgba(30,58,138,0.32) 100%);
-          border: 1px solid rgba(148,163,184,0.20);
-        }
-        .gk-fleet-glyph { color: #BFDBFE; flex: none; }
-        .gk-fleet-meta { display: flex; flex-direction: column; min-width: 0; }
-        .gk-fleet-brand { color: #FFF; font-weight: 800; font-size: 0.84rem; line-height: 1.2; }
-        .gk-fleet-model { color: #CBD5E1; font-size: 0.76rem; font-weight: 600; line-height: 1.3; }
-        .gk-fleet-year {
-          color: #64748B; font-size: 0.63rem; font-weight: 700;
-          text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.12rem;
-        }
-
         /* Motion is decoration here — hold the final frame for anyone who
            has asked their system to reduce it. */
         @media (prefers-reduced-motion: reduce) {
-          .gk-rise, .gk-car, .gk-fleet-card { opacity: 1 !important; animation: none !important; transform: none !important; }
+          .gk-rise, .gk-car { opacity: 1 !important; animation: none !important; transform: none !important; }
           .gk-glow-a, .gk-glow-b, .gk-car-pad { animation: none !important; }
           .gk-shimmer {
             animation: none !important; -webkit-text-fill-color: #93C5FD !important; color: #93C5FD !important;
@@ -272,15 +215,10 @@ export default function Home() {
         }
 
         @media (max-width: 900px) {
-          .gk-fleet-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .gk-fleet-grid > :nth-child(3) { display: none; }
         }
 
         @media (max-width: 768px) {
           .gk-hero { padding: 2.25rem 0 2.5rem !important; min-height: auto !important; display: block !important; }
-          .gk-fleet { margin-top: 2rem !important; padding-top: 1.1rem !important; }
-          .gk-fleet-grid { grid-template-columns: 1fr !important; }
-          .gk-fleet-grid > :nth-child(3) { display: flex; }
           .gk-hero h1 { font-size: 1.75rem !important; }
           .gk-hero-sub { font-size: 0.85rem !important; }
           .gk-hero-img { display: none !important; }
@@ -382,51 +320,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ── Cars we service, from the admin catalogue ── */}
-          {heroCars.length > 0 && (
-            <div className="gk-fleet gk-rise gk-d5">
-              <div className="gk-fleet-head">
-                <span className="gk-fleet-label">Cars we service</span>
-                <Link to="/services" className="gk-fleet-all">
-                  See all <ArrowRight size={13} />
-                </Link>
-              </div>
-              <div className="gk-fleet-grid">
-                {heroCars.map((car, i) => (
-                  <Link
-                    key={car._id}
-                    to="/services"
-                    className="gk-fleet-card"
-                    style={{ animationDelay: `${0.75 + i * 0.12}s` }}
-                  >
-                    <div className={`gk-fleet-img${car.image ? '' : ' gk-fleet-img--fallback'}`}>
-                      {car.image ? (
-                        <img
-                          src={car.image}
-                          alt={`${car.brand} ${car.model}`}
-                          loading="lazy"
-                          // A dead URL would leave an empty frame. Fall back to
-                          // the same tile an imageless car gets.
-                          onError={(e) => {
-                            const frame = e.currentTarget.parentElement;
-                            if (frame) frame.classList.add('gk-fleet-img--fallback');
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <Car size={20} className="gk-fleet-glyph" />
-                      )}
-                    </div>
-                    <div className="gk-fleet-meta">
-                      <span className="gk-fleet-brand">{car.brand}</span>
-                      <span className="gk-fleet-model">{car.model}</span>
-                      <span className="gk-fleet-year">{car.year} · {car.fuelType}</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </section>
 

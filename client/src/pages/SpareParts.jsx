@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getParts, getPartCategories } from '../api/storeApi';
+import { getParts, getPartCategories, getFeaturedParts } from '../api/storeApi';
 import PartCard from '../components/parts/PartCard';
 import { SkeletonCard } from '../components/common/LoadingSpinner';
-import { ShoppingCart, Search, SlidersHorizontal } from 'lucide-react';
+import { ShoppingCart, Search, SlidersHorizontal, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 
@@ -18,7 +18,16 @@ export default function SpareParts() {
   const [pages, setPages] = useState(1);
   const [pincode, setPincode] = useState(() => localStorage.getItem('selectedPincode') || '');
   const [categories, setCategories] = useState([]);
+  const [featured, setFeatured] = useState([]);
   const { itemCount } = useCart();
+
+  // Featured parts are whatever the admin has ticked as featured. They are
+  // fetched once, not per page — the strip is a shelf, not a view of the grid.
+  useEffect(() => {
+    getFeaturedParts()
+      .then(({ data }) => setFeatured((data.parts || []).slice(0, 5)))
+      .catch((err) => console.error('[SpareParts.getFeaturedParts]', err));
+  }, []);
 
   useEffect(() => {
     getPartCategories()
@@ -199,6 +208,28 @@ export default function SpareParts() {
            </div>
          )}
  
+         {/* ── Featured shelf ── */}
+         {featured.length > 0 && !category && !search && page === 1 && (
+           <div style={{ marginBottom: '3.5rem' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
+               <Star size={17} style={{ color: '#F59E0B', fill: '#F59E0B' }} />
+               <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.5rem', fontWeight: 950, color: '#0F172A', margin: 0, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                 Featured
+               </h2>
+               <span style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 600 }}>
+                 Hand-picked by our workshop
+               </span>
+             </div>
+             <div className="parts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
+               {featured.map((part) => <PartCard key={`f-${part._id}`} part={part} />)}
+             </div>
+             <div style={{ height: 1, background: '#F1F5F9', marginTop: '3rem' }} />
+             <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.5rem', fontWeight: 950, color: '#0F172A', margin: '2rem 0 0', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+               All Spares
+             </h2>
+           </div>
+         )}
+
          {loading ? (
            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
              {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}

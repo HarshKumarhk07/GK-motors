@@ -5,6 +5,11 @@ import { useAuth } from '../../context/AuthContext';
 import { ShoppingCart, Star, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+// Shipped in client/public. The old fallback pointed at via.placeholder.com,
+// which is a third party we do not control and which fails closed as a broken
+// image icon. This one is ours and always resolves.
+const PART_PLACEHOLDER = '/part-images/_placeholder.svg';
+
 export default function PartCard({ part }) {
   const navigate = useNavigate();
   const { items, addToCart, updateQty } = useCart();
@@ -61,7 +66,8 @@ export default function PartCard({ part }) {
         {/* Top Image Section (Light background, rounded corners) */}
         <div style={{ position: 'relative', height: '180px', background: '#F5F5F5', overflow: 'hidden' }}>
           <img
-            src={part.images?.[0] || 'https://via.placeholder.com/400x300/F8FAFC/2563EB?text=No+Image'}
+            src={part.images?.[0] || PART_PLACEHOLDER}
+            onError={(e) => { if (e.currentTarget.src.indexOf(PART_PLACEHOLDER) === -1) e.currentTarget.src = PART_PLACEHOLDER; }}
             alt={part.name}
             style={{
               width: '100%', height: '100%', objectFit: 'contain', padding: '1.2rem',

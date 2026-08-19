@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="72%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </radialGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8EDF5"/><stop offset="50%" stop-color="#C3CEDE"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2B4A9B"/><stop offset="100%" stop-color="#16255A"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E04A45"/><stop offset="100%" stop-color="#A81E1E"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F6C445"/><stop offset="100%" stop-color="#D68A16"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#DFF1FB"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4A5568"/><stop offset="100%" stop-color="#232B3A"/>
+    </linearGradient>
+    
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <ellipse cx="300" cy="392" rx="152" ry="19" fill="#0F172A" opacity="0.10"/>
+  
+  <g transform="translate(300 236) rotate(-14)">
+    <!-- rear blade -->
+    <g transform="translate(24 46)" opacity="0.9">
+      <rect x="-190" y="-9" width="380" height="18" rx="9" fill="#3C4658"/>
+      <rect x="-190" y="6" width="380" height="10" rx="5" fill="#1F2937"/>
+      <rect x="-34" y="-22" width="76" height="34" rx="10" fill="url(#dark)" stroke="#161C28" stroke-width="3"/>
+    </g>
+    <!-- front blade -->
+    <g transform="translate(-24 -30)">
+      <rect x="-190" y="-9" width="380" height="18" rx="9" fill="#4A5568"/>
+      <rect x="-190" y="6" width="380" height="10" rx="5" fill="#232B3A"/>
+      <!-- spoiler ridge -->
+      <path d="M-180 -9 q180 -16 360 0" fill="none" stroke="#5A6679" stroke-width="8" stroke-linecap="round"/>
+      <!-- hook connector -->
+      <rect x="-36" y="-26" width="80" height="38" rx="10" fill="url(#dark)" stroke="#161C28" stroke-width="3"/>
+      <path d="M44 -8 q34 -4 40 -34" fill="none" stroke="#6B7280" stroke-width="12" stroke-linecap="round"/>
+      <!-- end caps -->
+      <circle cx="-186" cy="0" r="9" fill="#1F2937"/>
+      <circle cx="186" cy="0" r="9" fill="#1F2937"/>
+    </g>
+  </g>
+
+</svg>

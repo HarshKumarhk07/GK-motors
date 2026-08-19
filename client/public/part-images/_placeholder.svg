@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="72%">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#EEF2F8"/>
+    </radialGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <g transform="translate(300 218)" fill="none" stroke="#B4C0D2" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-92 -8 a92 92 0 0 1 184 0 a92 92 0 0 1 -184 0 z" opacity="0"/>
+    <circle cx="0" cy="0" r="42"/>
+    <path d="M0 -96 v26 M0 70 v26 M-96 0 h26 M70 0 h26
+             M-68 -68 l18 18 M50 50 l18 18 M-68 68 l18 -18 M50 -50 l18 -18"/>
+    <circle cx="0" cy="0" r="86" stroke-dasharray="26 20"/>
+  </g>
+  <ellipse cx="300" cy="374" rx="128" ry="16" fill="#0F172A" opacity="0.07"/>
+  <text x="300" y="412" text-anchor="middle" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#94A3B8">Image coming soon</text>
+</svg>

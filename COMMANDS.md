@@ -49,6 +49,10 @@ ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='YourPass123!' npm run seed:admin
 npm run seed:cars           # add Swift / Creta / City as a starter set
                             #   (then upload photos in Admin -> Services -> Cars)
 
+# Spare-parts storefront
+npm run seed:parts          # add 14 starter products across 9 categories,
+                            #   5 of them flagged Featured
+
 # Email  — the recipient is an ARGUMENT, not part of the script name
 npm run test:email you@example.com
 # NOT: npm run test:email:you@example.com
@@ -78,7 +82,7 @@ npm run install:all         # reinstall dependencies in both folders
 | I lost the admin password | `npm run seed:admin:reset` |
 | Emails aren't arriving | `npm run test:email you@example.com`, then check Brevo |
 | Booking flow has no cars to pick | `npm run seed:cars` |
-| Parts pages are empty | `npm run seed:categories`, then add parts in admin |
+| Spares page says NO SPARES FOUND | `npm run seed:parts` |
 
 ---
 

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="72%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </radialGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8EDF5"/><stop offset="50%" stop-color="#C3CEDE"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2B4A9B"/><stop offset="100%" stop-color="#16255A"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E04A45"/><stop offset="100%" stop-color="#A81E1E"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F6C445"/><stop offset="100%" stop-color="#D68A16"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#DFF1FB"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4A5568"/><stop offset="100%" stop-color="#232B3A"/>
+    </linearGradient>
+    
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <ellipse cx="300" cy="392" rx="152" ry="19" fill="#0F172A" opacity="0.10"/>
+  
+  <g transform="translate(300 224)">
+    <path d="M-78 -60 h156 a14 14 0 0 1 14 14 v178 a14 14 0 0 1 -14 14 h-156 a14 14 0 0 1 -14 -14 v-178 a14 14 0 0 1 14 -14 z"
+          fill="#2FA8A0" stroke="#1B6E69" stroke-width="4"/>
+    <path d="M-78 -60 h44 v206 h-44 a14 14 0 0 1 -14 -14 v-178 a14 14 0 0 1 14 -14 z" fill="#FFFFFF" opacity="0.15"/>
+    <path d="M-26 -60 v-26 h52 v26" fill="#2FA8A0" stroke="#1B6E69" stroke-width="4"/>
+    <rect x="-34" y="-118" width="68" height="34" rx="8" fill="#F2F5F9" stroke="#9FADC0" stroke-width="4"/>
+    <g stroke="#9FADC0" stroke-width="3" opacity="0.7">
+      <line x1="-20" y1="-114" x2="-20" y2="-88"/><line x1="-4" y1="-114" x2="-4" y2="-88"/>
+      <line x1="12" y1="-114" x2="12" y2="-88"/><line x1="26" y1="-114" x2="26" y2="-88"/>
+    </g>
+    <rect x="-62" y="-26" width="124" height="106" rx="8" fill="#FFFFFF" opacity="0.95"/>
+    <rect x="-62" y="-26" width="124" height="32" rx="8" fill="url(#navy)"/>
+    <rect x="-62" y="-6" width="124" height="10" fill="url(#navy)"/>
+    <rect x="-48" y="16" width="96" height="11" rx="5" fill="#CBD5E1"/>
+    <rect x="-48" y="36" width="70" height="11" rx="5" fill="#CBD5E1"/>
+    <rect x="-48" y="56" width="46" height="11" rx="5" fill="#E2E8F0"/>
+    <!-- level window -->
+    <rect x="66" y="0" width="14" height="120" rx="7" fill="#FFFFFF" opacity="0.35"/>
+  </g>
+
+</svg>

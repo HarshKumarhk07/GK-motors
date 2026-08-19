@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="72%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </radialGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8EDF5"/><stop offset="50%" stop-color="#C3CEDE"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2B4A9B"/><stop offset="100%" stop-color="#16255A"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E04A45"/><stop offset="100%" stop-color="#A81E1E"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F6C445"/><stop offset="100%" stop-color="#D68A16"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#DFF1FB"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4A5568"/><stop offset="100%" stop-color="#232B3A"/>
+    </linearGradient>
+    
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <ellipse cx="300" cy="392" rx="152" ry="19" fill="#0F172A" opacity="0.10"/>
+  
+  <g transform="translate(300 225)">
+    <!-- body -->
+    <path d="M-92 -70 h184 a16 16 0 0 1 16 16 v192 a16 16 0 0 1 -16 16 h-184 a16 16 0 0 1 -16 -16 v-192 a16 16 0 0 1 16 -16 z"
+          fill="#3F7D2F" stroke="#2A5A1E" stroke-width="4"/>
+    <path d="M-92 -70 h50 v224 h-50 a16 16 0 0 1 -16 -16 v-192 a16 16 0 0 1 16 -16 z" fill="#FFFFFF" opacity="0.13"/>
+    <!-- neck + cap -->
+    <path d="M-30 -70 v-30 h60 v30" fill="#3F7D2F" stroke="#2A5A1E" stroke-width="4"/>
+    <rect x="-38" y="-134" width="76" height="38" rx="8" fill="#D63C2E" stroke="#8F2318" stroke-width="4"/>
+    <g stroke="#8F2318" stroke-width="3" opacity="0.6">
+      <line x1="-24" y1="-130" x2="-24" y2="-100"/><line x1="-8" y1="-130" x2="-8" y2="-100"/>
+      <line x1="8" y1="-130" x2="8" y2="-100"/><line x1="24" y1="-130" x2="24" y2="-100"/>
+    </g>
+    <!-- handle -->
+    <path d="M92 -18 h30 a14 14 0 0 1 14 14 v52 a14 14 0 0 1 -14 14 h-30" fill="none" stroke="#2A5A1E" stroke-width="14" stroke-linecap="round"/>
+    <!-- label -->
+    <rect x="-74" y="-32" width="148" height="112" rx="8" fill="#FFFFFF" opacity="0.95"/>
+    <rect x="-74" y="-32" width="148" height="34" rx="8" fill="url(#navy)"/>
+    <rect x="-74" y="-8" width="148" height="10" fill="url(#navy)"/>
+    <rect x="-58" y="14" width="116" height="11" rx="5" fill="#CBD5E1"/>
+    <rect x="-58" y="34" width="88" height="11" rx="5" fill="#CBD5E1"/>
+    <rect x="-58" y="54" width="60" height="11" rx="5" fill="#E2E8F0"/>
+    <!-- oil drop mark -->
+    <path d="M44 40 c12 16 18 24 18 32 a18 18 0 0 1 -36 0 c0 -8 6 -16 18 -32 z" fill="#D68A16"/>
+  </g>
+
+</svg>
