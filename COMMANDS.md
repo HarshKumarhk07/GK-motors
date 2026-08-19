@@ -3,7 +3,11 @@
 Nothing in this list runs from the website. The admin panel no longer prints
 seed instructions; these are terminal commands only.
 
-Run everything from the `server/` folder unless stated otherwise.
+**Where to run them:** there is now a `package.json` in the repo root that
+forwards to `server/` and `client/`, so every command below works from
+`D:\Avani Projects\Car-service-website`. The scripts themselves still live in
+`server/package.json` — that is why `npm run test:email` from the root used to
+fail with `ENOENT ... package.json`.
 
 ---
 
@@ -22,11 +26,12 @@ So: `npm run dev` is normally all you need.
 ## 2. Commands worth knowing
 
 ```bash
-cd server
+# from the repo root
 
 # Normal run
-npm run dev                 # nodemon, auto-restarts on file change
-npm start                   # plain node, what you use in production
+npm run dev:server          # nodemon API on :5000, auto-restarts on change
+npm run dev:client          # Vite dev server on :5173
+npm start                   # plain node API, what you use in production
 
 # Catalogue
 npm run seed                # add any missing categories/packages, without restarting
@@ -40,20 +45,25 @@ npm run seed:admin:reset    # regenerate the password for the existing admin
 # Choose your own admin credentials instead of a generated password:
 ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='YourPass123!' npm run seed:admin
 
-# Email
-npm run test:email          # sends a test mail through Brevo using your .env keys
+# Cars in the service catalogue
+npm run seed:cars           # add Swift / Creta / City as a starter set
+                            #   (then upload photos in Admin -> Services -> Cars)
+
+# Email  — the recipient is an ARGUMENT, not part of the script name
+npm run test:email you@example.com
+# NOT: npm run test:email:you@example.com
+# NOT: npm run test:you@example.com
 
 # Spare-parts store categories (only if the parts catalogue is empty)
 npm run seed:categories
 ```
 
-Frontend:
+Build:
 
 ```bash
-cd client
-npm run dev                 # Vite dev server on :5173
 npm run build               # production bundle into client/dist
 npm run preview             # serve the built bundle locally to check it
+npm run install:all         # reinstall dependencies in both folders
 ```
 
 ---
@@ -62,11 +72,12 @@ npm run preview             # serve the built bundle locally to check it
 
 | Situation | Command |
 |---|---|
-| Fresh clone / new database | `npm run dev` — it seeds on boot |
+| Fresh clone / new database | `npm run dev:server` — it seeds on boot |
 | I deleted a category and want it back | `npm run seed:force` |
 | I added a category in admin and it isn't showing | Nothing — just reload the page. Fixed in commit `5b83c83`. |
 | I lost the admin password | `npm run seed:admin:reset` |
-| Emails aren't arriving | `npm run test:email`, then check the Brevo dashboard |
+| Emails aren't arriving | `npm run test:email you@example.com`, then check Brevo |
+| Booking flow has no cars to pick | `npm run seed:cars` |
 | Parts pages are empty | `npm run seed:categories`, then add parts in admin |
 
 ---

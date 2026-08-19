@@ -104,11 +104,11 @@ export default function Home() {
       .then(({ data }) => setParts((data.parts || []).slice(0, 5)))
       .catch((err) => console.error('[Home.getFeaturedParts]', err));
 
-    // Cars we service, straight from the admin catalogue. Only those with a
-    // real image are shown — a placeholder tile in the hero looks broken, so
-    // the strip simply renders fewer cards, or none at all.
+    // Cars we service, straight from the admin catalogue. Cars without a photo
+    // still show — they get a branded initial tile rather than being dropped,
+    // so a fresh catalogue does not leave the hero looking half-built.
     getServiceCars()
-      .then(({ data }) => setHeroCars((data.cars || []).filter((c) => c.image).slice(0, 3)))
+      .then(({ data }) => setHeroCars((data.cars || []).slice(0, 3)))
       .catch((err) => console.error('[Home.getServiceCars]', err));
   }, []);
 
@@ -245,6 +245,14 @@ export default function Home() {
           display: flex; align-items: center; justify-content: center;
         }
         .gk-fleet-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        /* No photo yet: a branded tile rather than an empty frame. Upload an
+           image for the car in admin and it replaces this automatically. */
+        .gk-fleet-img--fallback {
+          display: flex; align-items: center; justify-content: center;
+          background: linear-gradient(135deg, rgba(59,130,246,0.20) 0%, rgba(30,58,138,0.32) 100%);
+          border: 1px solid rgba(148,163,184,0.20);
+        }
+        .gk-fleet-glyph { color: #BFDBFE; flex: none; }
         .gk-fleet-meta { display: flex; flex-direction: column; min-width: 0; }
         .gk-fleet-brand { color: #FFF; font-weight: 800; font-size: 0.84rem; line-height: 1.2; }
         .gk-fleet-model { color: #CBD5E1; font-size: 0.76rem; font-weight: 600; line-height: 1.3; }
@@ -391,15 +399,23 @@ export default function Home() {
                     className="gk-fleet-card"
                     style={{ animationDelay: `${0.75 + i * 0.12}s` }}
                   >
-                    <div className="gk-fleet-img">
-                      <img
-                        src={car.image}
-                        alt={`${car.brand} ${car.model}`}
-                        loading="lazy"
-                        // A dead image URL would leave an empty tile, so drop
-                        // the whole card instead of showing a broken frame.
-                        onError={(e) => { e.currentTarget.closest('.gk-fleet-card').style.display = 'none'; }}
-                      />
+                    <div className={`gk-fleet-img${car.image ? '' : ' gk-fleet-img--fallback'}`}>
+                      {car.image ? (
+                        <img
+                          src={car.image}
+                          alt={`${car.brand} ${car.model}`}
+                          loading="lazy"
+                          // A dead URL would leave an empty frame. Fall back to
+                          // the same tile an imageless car gets.
+                          onError={(e) => {
+                            const frame = e.currentTarget.parentElement;
+                            if (frame) frame.classList.add('gk-fleet-img--fallback');
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <Car size={20} className="gk-fleet-glyph" />
+                      )}
                     </div>
                     <div className="gk-fleet-meta">
                       <span className="gk-fleet-brand">{car.brand}</span>

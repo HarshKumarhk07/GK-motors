@@ -10,6 +10,7 @@
     "seed": "node src/seeds/seedServicePackages.js",
     "seed:categories": "node src/seeds/seedCategories.js",
     "seed:admin": "node src/seeds/seedAdmin.js",
+    "seed:cars": "node src/seeds/seedServiceCars.js",
     "seed:admin:reset": "node src/seeds/seedAdmin.js --reset",
     "test:email": "node src/utils/testEmail.js",
     "seed:force": "node src/seeds/seedServicePackages.js --force"

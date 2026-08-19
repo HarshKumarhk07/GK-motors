@@ -1,0 +1,21 @@
+{
+  "name": "gk-motors",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GK Motors car service platform — workspace root. The real projects are in server/ and client/; these scripts just forward to them so you can run everything from here.",
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "start": "npm --prefix server start",
+    "build": "npm --prefix client run build",
+    "preview": "npm --prefix client run preview",
+    "install:all": "npm --prefix server install && npm --prefix client install",
+    "seed": "npm --prefix server run seed",
+    "seed:force": "npm --prefix server run seed:force",
+    "seed:cars": "npm --prefix server run seed:cars",
+    "seed:categories": "npm --prefix server run seed:categories",
+    "seed:admin": "npm --prefix server run seed:admin",
+    "seed:admin:reset": "npm --prefix server run seed:admin:reset",
+    "test:email": "npm --prefix server run test:email --"
+  }
+}
