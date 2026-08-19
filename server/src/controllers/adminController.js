@@ -52,12 +52,59 @@ const getUsers = asyncHandler(async (req, res) => {
   res.json({ success: true, total, users });
 });
 
+// Only these may be set from the admin panel. Passing req.body straight to
+// findByIdAndUpdate let a caller write ANY field — including `password`, which
+// would bypass the bcrypt pre('save') hook in models/User.js and land in the
+// database as plaintext.
+const USER_EDITABLE = ['name', 'phone', 'role', 'isActive'];
+const ROLES = ['user', 'admin', 'mechanic'];
+
 // @desc  Update user (role, status)
 // @route PUT /api/admin/users/:id
 const updateUser = asyncHandler(async (req, res) => {
-  const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true }).select('-password');
+  const user = await User.findById(req.params.id);
   if (!user) { res.status(404); throw new Error('User not found'); }
-  res.json({ success: true, user });
+
+  const updates = {};
+  for (const field of USER_EDITABLE) {
+    if (req.body[field] !== undefined) updates[field] = req.body[field];
+  }
+
+  if (updates.role !== undefined && !ROLES.includes(updates.role)) {
+    res.status(400);
+    throw new Error(`Role must be one of: ${ROLES.join(', ')}`);
+  }
+
+  const isSelf = String(user._id) === String(req.user._id);
+  const losingAdmin =
+    user.role === 'admin' &&
+    ((updates.role !== undefined && updates.role !== 'admin') || updates.isActive === false);
+
+  // Demoting or disabling yourself locks you out of the panel you are standing
+  // in, and the only way back is a terminal. Refuse it.
+  if (isSelf && losingAdmin) {
+    res.status(400);
+    throw new Error(
+      'You cannot change your own role or disable your own account. '
+      + 'Ask another admin, or use the seed:admin command on the server.'
+    );
+  }
+
+  // Same for the last admin standing — otherwise nobody can administer anything.
+  if (losingAdmin) {
+    const admins = await User.countDocuments({ role: 'admin', isActive: true });
+    if (admins <= 1) {
+      res.status(400);
+      throw new Error('This is the only active admin. Promote someone else first.');
+    }
+  }
+
+  Object.assign(user, updates);
+  await user.save();
+
+  const safe = user.toObject();
+  delete safe.password;
+  res.json({ success: true, user: safe });
 });
 
 // @desc  Approve bike listing
