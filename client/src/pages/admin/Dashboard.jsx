@@ -3339,6 +3339,7 @@ const CarsManagement = ({ serviceTypes }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [prices, setPrices] = useState({});          // serviceTypeId -> price string
   const [search, setSearch] = useState('');
+  const formRef = useRef(null);
 
   const load = () => {
     setLoading(true);
@@ -3369,7 +3370,10 @@ const CarsManagement = ({ serviceTypes }) => {
     });
     setPrices(map);
     setErrors({});
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // The window never scrolls here — .admin-main is the scroll container — so
+    // window.scrollTo did nothing and the form stayed off screen. Ask the form
+    // itself to come into view and the right scroller handles it.
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const onImage = async (e) => {
@@ -3486,7 +3490,7 @@ const CarsManagement = ({ serviceTypes }) => {
   return (
     <div>
       {/* form */}
-      <form onSubmit={submit} style={{ background: '#FFF', border: '1.5px solid #EEE', borderRadius: '18px', padding: '1.5rem', marginBottom: '2rem' }}>
+      <form ref={formRef} onSubmit={submit} style={{ background: '#FFF', border: '1.5px solid #EEE', borderRadius: '18px', padding: '1.5rem', marginBottom: '2rem', scrollMarginTop: '1rem' }}>
         <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1.3rem', color: '#0F172A', marginBottom: '1.25rem' }}>
           {editingId ? 'Edit Car' : 'Add Car'}
         </h3>
@@ -3569,7 +3573,23 @@ const CarsManagement = ({ serviceTypes }) => {
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '0.7rem', marginTop: '1.25rem' }}>
+        {/* Sticky action bar. The per-service price grid runs to a couple of
+            screens once every category has packages, and the save button used
+            to sit below all of it — easy to miss entirely. Pinning it to the
+            bottom of the viewport keeps it reachable from anywhere in the form.
+            Negative margins let it span the form's padding edge to edge. */}
+        <div
+          style={{
+            position: 'sticky', bottom: 0, zIndex: 5,
+            display: 'flex', gap: '0.7rem', alignItems: 'center', flexWrap: 'wrap',
+            marginTop: '1.25rem', marginLeft: '-1.5rem', marginRight: '-1.5rem', marginBottom: '-1.5rem',
+            padding: '0.9rem 1.5rem',
+            background: '#FFFFFF',
+            borderTop: '1px solid #EEE',
+            borderRadius: '0 0 18px 18px',
+            boxShadow: '0 -6px 18px rgba(15, 23, 42, 0.06)',
+          }}
+        >
           <button type="submit" disabled={saving} style={{ ...gkBtn('primary'), cursor: saving ? 'wait' : 'pointer' }}>
             {saving ? <Loader size={14} /> : <Plus size={14} />} {editingId ? 'Save Changes' : 'Add Car'}
           </button>
@@ -3577,6 +3597,11 @@ const CarsManagement = ({ serviceTypes }) => {
             <button type="button" onClick={resetForm} style={gkBtn('ghost')}>
               <X size={14} /> Cancel
             </button>
+          )}
+          {editingId && (
+            <span style={{ color: '#64748B', fontSize: '0.76rem', fontWeight: 600 }}>
+              Editing {form.brand} {form.model} — nothing is saved until you press Save Changes.
+            </span>
           )}
         </div>
       </form>
