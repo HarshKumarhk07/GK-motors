@@ -2,13 +2,16 @@ import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Wrench } from 'lucide-react';
 import { FaFacebook, FaInstagram, FaYoutube, FaTwitter } from 'react-icons/fa';
 
+// [label, categoryId] — the id deep-links straight to that category on the
+// services page. Ids match ServiceCategory.categoryId (see
+// server/src/seeds/seedServiceCategories.js).
 const SERVICE_LINKS = [
-  'Periodic Service',
-  'AC Service & Repair',
-  'Denting & Painting',
-  'Battery Replacement',
-  'Wheel Alignment',
-  'Car Wash & Detailing',
+  ['Car Service', 1],
+  ['AC Service & Repair', 2],
+  ['Batteries', 3],
+  ['Tyre & Wheel Care', 4],
+  ['Denting & Painting', 5],
+  ['Car Spa & Cleaning', 7],
 ];
 
 const QUICK_LINKS = [
@@ -35,14 +38,11 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div style={{
-                width: 48, height: 48, borderRadius: '12px',
-                background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-              }}>
-                <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, color: 'white', fontSize: '1.35rem' }}>GK</span>
+              {/* The logo is dark-on-white artwork, so on the dark footer it
+                  sits in a white chip rather than disappearing into it. */}
+              <div style={{ background: '#FFFFFF', borderRadius: '12px', padding: '0.5rem 0.7rem', display: 'inline-flex', alignItems: 'center' }}>
+                <img src="/gkmotorslogo.png" alt="GK Motors" style={{ height: 40, width: 'auto', objectFit: 'contain', display: 'block' }} />
               </div>
-              <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, color: 'white', fontSize: '1.4rem', letterSpacing: '0.05em' }}>GK Motors</span>
             </div>
             <p style={{ fontSize: '0.95rem', lineHeight: 1.8, color: '#94A3B8', fontWeight: 500 }}>
               Professional car service and repair you can trust. Certified technicians, genuine parts and
@@ -62,8 +62,8 @@ export default function Footer() {
           {/* Services */}
           <div>
             <h4 style={{ color: 'white', fontWeight: 600, marginBottom: '1rem', fontSize: '1rem', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Our Services</h4>
-            {SERVICE_LINKS.map(s => (
-              <Link key={s} to="/services" style={{ display: 'block', color: '#94A3B8', textDecoration: 'none', fontSize: '0.9rem', marginBottom: '0.5rem', transition: 'all 0.3s', fontWeight: 500 }}
+            {SERVICE_LINKS.map(([s, id]) => (
+              <Link key={s} to={`/services?category=${id}`} style={{ display: 'block', color: '#94A3B8', textDecoration: 'none', fontSize: '0.9rem', marginBottom: '0.5rem', transition: 'all 0.3s', fontWeight: 500 }}
                 onMouseEnter={(e) => (e.target.style.color = '#93C5FD')}
                 onMouseLeave={(e) => (e.target.style.color = '#94A3B8')}>
                 {s}

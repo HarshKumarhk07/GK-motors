@@ -3711,11 +3711,30 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
     }
   };
 
+  // Disable hides a category from the site but keeps it and its packages.
+  const toggleCategory = async (cat) => {
+    setBusyId(`cat-${cat._id}`);
+    try {
+      const fd = new FormData();
+      fd.append('isActive', String(!cat.isActive));
+      await svcApi.updateCategory(cat._id, fd);
+      toast.success(cat.isActive ? `"${cat.name}" hidden from the site` : `"${cat.name}" is live again`);
+      refreshAll();
+    } catch (err) {
+      console.error('[CategoriesManagement.toggleCategory]', err);
+      toast.error(err.response?.data?.message || 'Could not change availability');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  // Delete removes the category outright. Its packages cannot be deleted with
+  // it — bookings reference them — so they are disabled and the admin is told.
   const removeCategory = async (cat) => {
     const count = (cat.packages || []).length;
     const msg = count
-      ? `Delete "${cat.name}"? Its ${count} package(s) will be disabled so existing bookings still resolve.`
-      : `Delete "${cat.name}"?`;
+      ? `Permanently delete "${cat.name}"?\n\nIts ${count} package(s) cannot be deleted because bookings may reference them — they will be disabled instead.\n\nTo hide the category without deleting it, use Disable.`
+      : `Permanently delete "${cat.name}"? This cannot be undone.`;
     if (!window.confirm(msg)) return;
     setBusyId(`cat-${cat._id}`);
     try {
@@ -3755,7 +3774,9 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
   };
 
   const removePackage = async (pkg) => {
-    if (!window.confirm(`Delete "${pkg.label}"? If any booking uses it, it will be disabled instead.`)) return;
+    if (!window.confirm(
+      `Permanently delete "${pkg.label}"?\n\nIf any booking already uses it, it will be disabled instead of deleted so that history still renders.\n\nTo hide it without deleting, use Disable.`
+    )) return;
     setBusyId(pkg._id);
     try {
       const { data } = await svcApi.deleteCategoryPackage(pkg._id);
@@ -3847,6 +3868,7 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
         name: c.name,
         description: c.description,
         image: c.image,
+        isActive: c.isActive,
         fromDb: true,
         packages: serviceTypes.filter((t) => t.categoryId === c.categoryId),
       }))
@@ -3899,7 +3921,7 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
       )}
 
       {grouped.map((cat) => (
-        <div key={cat.id} style={{ background: '#FFF', border: '1.5px solid #EEE', borderRadius: '16px', padding: '1.25rem', marginBottom: '1rem' }}>
+        <div key={cat.id} style={{ background: '#FFF', border: `1.5px solid ${cat.fromDb && cat.isActive === false ? '#FCA5A5' : '#EEE'}`, borderRadius: '16px', padding: '1.25rem', marginBottom: '1rem', opacity: cat.fromDb && cat.isActive === false ? 0.6 : 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap', marginBottom: '0.9rem' }}>
             <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#EBF0FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
               <img
@@ -3936,7 +3958,13 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
                     style={gkBtn('ghost')}>
                     <Plus size={13} /> Package
                   </button>
+                  <button onClick={() => toggleCategory(cat)} disabled={busyId === `cat-${cat._id}`}
+                    title={cat.isActive ? 'Hide from the site, keep everything' : 'Show on the site again'}
+                    style={{ ...gkBtn(cat.isActive ? 'ghost' : 'primary'), cursor: busyId === `cat-${cat._id}` ? 'wait' : 'pointer' }}>
+                    {cat.isActive ? <><X size={13} /> Disable</> : <><Check size={13} /> Enable</>}
+                  </button>
                   <button onClick={() => removeCategory(cat)} disabled={busyId === `cat-${cat._id}`}
+                    title="Remove permanently"
                     style={{ ...gkBtn('danger'), cursor: busyId === `cat-${cat._id}` ? 'wait' : 'pointer' }}>
                     <Trash2 size={13} /> Delete
                   </button>
@@ -3973,8 +4001,9 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
               </button>
               {cat.fromDb && (
                 <button onClick={() => removePackage(pkg)} disabled={busyId === pkg._id}
+                  title="Remove permanently"
                   style={{ ...gkBtn('danger'), cursor: busyId === pkg._id ? 'wait' : 'pointer' }}>
-                  <Trash2 size={13} />
+                  <Trash2 size={13} /> Delete
                 </button>
               )}
             </div>
@@ -4194,8 +4223,20 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user || user.role !== 'admin') { navigate('/'); return; }
-    API.get('/admin/stats').then(({ data }) => setStats(data.stats));
-    API.get('/services?limit=5').then(({ data }) => setRecentServices(data.bookings || []));
+    // Both were unhandled promises: a 401 here produced an uncaught rejection
+    // and two racing redirects rather than anything the admin could read.
+    API.get('/admin/stats')
+      .then(({ data }) => setStats(data.stats))
+      .catch((err) => {
+        console.error('[Dashboard.stats]', err);
+        if (err.response?.status !== 401) toast.error('Could not load dashboard stats');
+      });
+    API.get('/services?limit=5')
+      .then(({ data }) => setRecentServices(data.bookings || []))
+      .catch((err) => {
+        console.error('[Dashboard.recentServices]', err);
+        if (err.response?.status !== 401) toast.error('Could not load recent bookings');
+      });
   }, []);
 
   const sidebarLinks = [
@@ -4260,7 +4301,7 @@ export default function AdminDashboard() {
       <div className="admin-mobile-topbar" style={{ display: 'none', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 60, background: '#111', borderBottom: '1px solid #2A2A2A', padding: '0.7rem 1rem', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
           <div style={{ width: 54, height: 54, background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '2px solid #2A2A2A' }}>
-            <div style={{ width: '100%', height: '100%', borderRadius: '12px', background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, color: 'white', fontSize: '1.1rem' }}>GK</span></div>
+            <div style={{ width: '100%', height: '100%', borderRadius: '12px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px', boxSizing: 'border-box' }}><img src="/gkmotorslogo.png" alt="GK Motors" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /></div>
           </div>
           <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, color: 'white', fontSize: '1.2rem', letterSpacing: '-0.02em' }}>
             GK Motors
@@ -4277,7 +4318,7 @@ export default function AdminDashboard() {
         <div style={{ padding: '2rem 1.5rem', borderBottom: '1px solid #2A2A2A' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
             <div style={{ width: 85, height: 85, background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '3px solid #2A2A2A' }}>
-              <div style={{ width: '100%', height: '100%', borderRadius: '12px', background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, color: 'white', fontSize: '1.1rem' }}>GK</span></div>
+              <div style={{ width: '100%', height: '100%', borderRadius: '12px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px', boxSizing: 'border-box' }}><img src="/gkmotorslogo.png" alt="GK Motors" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /></div>
             </div>
             <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, color: 'white', fontSize: '1.5rem', letterSpacing: '-0.02em' }}>
               GK Motors

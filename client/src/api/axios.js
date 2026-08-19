@@ -39,11 +39,16 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// A page that fires several requests at once (the admin dashboard does) would
+// otherwise trigger one redirect per 401. Latch so only the first wins.
+let redirecting = false;
+
 // Handle 401
 API.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !redirecting) {
+      redirecting = true;
       localStorage.removeItem('bikeservice_token');
       localStorage.removeItem('bikeservice_user');
       // Carry the page they were on so login can send them back. The service
@@ -52,7 +57,11 @@ API.interceptors.response.use(
       const target = here && here !== '/login'
         ? `/login?redirect=${encodeURIComponent(here)}`
         : '/login';
-      if (window.location.pathname !== '/login') window.location.href = target;
+      if (window.location.pathname !== '/login') {
+        window.location.href = target;
+      } else {
+        redirecting = false;
+      }
     }
     return Promise.reject(error);
   }

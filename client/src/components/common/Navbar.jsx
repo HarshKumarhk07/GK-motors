@@ -47,17 +47,12 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo — text based for now */}
           <Link to="/" className="flex items-center gap-2 mr-4 sm:mr-0" style={{ textDecoration: 'none' }}>
-            <div style={{
-              width: 38, height: 38, borderRadius: '10px',
-              background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, boxShadow: '0 4px 12px rgba(30, 58, 138, 0.25)'
-            }}>
-              <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, color: 'white', fontSize: '1.05rem', letterSpacing: '-0.02em' }}>GK</span>
-            </div>
-            <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, color: '#0F172A', letterSpacing: '0.03em' }} className="text-[1.05rem] sm:text-[1.35rem] whitespace-nowrap">
-              GK Motors
-            </span>
+            <img
+              src="/gkmotorslogo.png"
+              alt="GK Motors"
+              className="h-9 sm:h-11"
+              style={{ width: 'auto', objectFit: 'contain', display: 'block' }}
+            />
           </Link>
 
           {/* Desktop Nav */}
