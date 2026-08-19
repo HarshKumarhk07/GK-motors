@@ -56,6 +56,14 @@ export default function SpareParts() {
 
   const activeCatLabel = category ? formatCategoryLabel(category) : 'All Parts';
 
+  // The shelf only appears on the unfiltered first page — anywhere else it would
+  // compete with the search or filter the customer is actually running.
+  const showFeatured = featured.length > 0 && !category && !search && page === 1;
+  // A featured part is still an ordinary part, so it comes back in the paged
+  // list too. Show it once: on the shelf, not again directly underneath.
+  const featuredIds = new Set(showFeatured ? featured.map((f) => f._id) : []);
+  const gridParts = parts.filter((p) => !featuredIds.has(p._id));
+
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <style>{`
@@ -209,7 +217,7 @@ export default function SpareParts() {
          )}
  
          {/* ── Featured shelf ── */}
-         {featured.length > 0 && !category && !search && page === 1 && (
+         {showFeatured && (
            <div style={{ marginBottom: '3.5rem' }}>
              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
                <Star size={17} style={{ color: '#F59E0B', fill: '#F59E0B' }} />
@@ -223,10 +231,14 @@ export default function SpareParts() {
              <div className="parts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
                {featured.map((part) => <PartCard key={`f-${part._id}`} part={part} />)}
              </div>
-             <div style={{ height: 1, background: '#F1F5F9', marginTop: '3rem' }} />
-             <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.5rem', fontWeight: 950, color: '#0F172A', margin: '2rem 0 0', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-               All Spares
-             </h2>
+             {gridParts.length > 0 && (
+               <>
+                 <div style={{ height: 1, background: '#F1F5F9', marginTop: '3rem' }} />
+                 <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.5rem', fontWeight: 950, color: '#0F172A', margin: '2rem 0 0', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                   All Spares
+                 </h2>
+               </>
+             )}
            </div>
          )}
 
@@ -236,9 +248,11 @@ export default function SpareParts() {
            </div>
          ) : parts.length > 0 ? (
            <>
-             <div className="parts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
-               {parts.map((part) => <PartCard key={part._id} part={part} />)}
-             </div>
+             {gridParts.length > 0 && (
+               <div className="parts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                 {gridParts.map((part) => <PartCard key={part._id} part={part} />)}
+               </div>
+             )}
  
              {/* Pagination */}
              {pages > 1 && (
