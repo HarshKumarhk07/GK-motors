@@ -14,6 +14,7 @@
     "seed:force": "npm --prefix server run seed:force",
     "seed:cars": "npm --prefix server run seed:cars",
     "seed:parts": "npm --prefix server run seed:parts",
+    "parts:images": "npm --prefix server run parts:images --",
     "seed:categories": "npm --prefix server run seed:categories",
     "seed:admin": "npm --prefix server run seed:admin",
     "seed:admin:reset": "npm --prefix server run seed:admin:reset",

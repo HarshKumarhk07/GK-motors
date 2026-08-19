@@ -53,6 +53,12 @@ npm run seed:cars           # add Swift / Creta / City as a starter set
 npm run seed:parts          # add 14 starter products across 9 categories,
                             #   5 of them flagged Featured
 
+# Recover real product photos from the old database
+npm run parts:images                 # DRY RUN — shows what it would match
+npm run parts:images -- --apply      # actually copy the image URLs over
+npm run parts:images -- --from=test  # search one database only
+npm run parts:images -- --all        # include weaker matches (check them)
+
 # Email  — the recipient is an ARGUMENT, not part of the script name
 npm run test:email you@example.com
 # NOT: npm run test:email:you@example.com
@@ -83,6 +89,7 @@ npm run install:all         # reinstall dependencies in both folders
 | Emails aren't arriving | `npm run test:email you@example.com`, then check Brevo |
 | Booking flow has no cars to pick | `npm run seed:cars` |
 | Spares page says NO SPARES FOUND | `npm run seed:parts` |
+| Parts show illustrations, not photos | `npm run parts:images` (dry run first) |
 
 ---
 
