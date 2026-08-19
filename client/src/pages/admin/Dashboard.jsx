@@ -238,11 +238,9 @@ const ServicesTab = () => {
 
   const handleStSubmit = async (e) => {
     e.preventDefault();
-    console.log('UPDATING SERVICE TYPE:', { id: editSt, payload: stForm });
     try {
       if (editSt) {
         const { data } = await adminApi.updateServiceType(editSt, stForm);
-        console.log('UPDATE RESPONSE:', data);
         if (data.serviceType) {
           setServiceTypes(prev => prev.map(s => s._id === editSt ? data.serviceType : s));
           toast.success('Service type updated!');
@@ -252,7 +250,6 @@ const ServicesTab = () => {
         }
       } else {
         const { data } = await adminApi.createServiceType(stForm);
-        console.log('CREATE RESPONSE:', data);
         if (data.serviceType) {
           setServiceTypes(prev => [...prev, data.serviceType]);
           toast.success('Service type added!');
