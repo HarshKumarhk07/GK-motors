@@ -3996,17 +3996,22 @@ export default function AdminDashboard() {
 
   const sidebarLinks = [
     { id: 'dashboard', icon: BarChart3, label: 'Dashboard' },
-    { id: 'car-services', icon: Wrench, label: 'Car Services' },
-     { id: 'live-tracking', icon: MapPin, label: 'Live Tracking' },
+    { id: 'car-services', icon: Wrench, label: 'Services' },
+    { id: 'services', icon: Calendar, label: 'Bookings' },
+    { id: 'live-tracking', icon: MapPin, label: 'Live Tracking' },
     { id: 'users', icon: Users, label: 'Users' },
+    // Parts stays: the storefront is live on the site.
+    { id: 'parts', icon: Package, label: 'Parts' },
+    { id: 'orders', icon: ShoppingBag, label: 'Orders' },
+    /* [GK MOTORS] Marketplace tabs disabled with the buy / sell / rent
+       verticals. Their tab components are still defined above and go live
+       again the moment these are uncommented.
     { id: 'bikes', icon: Car, label: 'Cars' },
     { id: 'rentals', icon: Car, label: 'Rental Cars' },
     { id: 'rental-bookings', icon: Calendar, label: 'Rental Bookings' },
-    { id: 'services', icon: Wrench, label: 'Services' },
     { id: 'sells', icon: TrendingUp, label: 'Sell Requests' },
-    { id: 'orders', icon: ShoppingBag, label: 'Orders' },
-    { id: 'parts', icon: Package, label: 'Parts' },
     { id: 'leads', icon: List, label: 'Buy Requests' },
+    */
   ];
 
   const statusBadge = (status) => {

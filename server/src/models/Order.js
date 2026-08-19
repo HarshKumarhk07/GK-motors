@@ -43,6 +43,9 @@ const orderSchema = new mongoose.Schema(
       },
     ],
     invoiceUrl: String,
+  // Set once stock has been credited back, so a repeated cancel cannot
+  // return the same units twice.
+  stockRestored: { type: Boolean, default: false },
     deliveryDate: Date,
   },
   { timestamps: true }

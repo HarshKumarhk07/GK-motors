@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, ChevronDown, User, LogOut, Settings, Wrench, Phone } from 'lucide-react';
-// [GK MOTORS] cart / wishlist / pincode / catalog-search removed with the marketplace.
-// import { useCart } from '../../context/CartContext';
-// import { ShoppingCart, Heart, MapPin, Search } from 'lucide-react';
-// import API from '../../api/axios';
+import { Menu, X, ChevronDown, User, LogOut, Settings, Wrench, Phone, ShoppingCart, Heart } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
 
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Services', href: '/services' },
+  { label: 'Parts', href: '/parts' },
   { label: 'My Bookings', href: '/my-bookings' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
@@ -31,6 +29,7 @@ const isActive = (pathname, href) =>
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { itemCount } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
@@ -107,6 +106,19 @@ export default function Navbar() {
               <Wrench size={14} /> Book Service
             </Link>
 
+            {/* Cart */}
+            <Link to="/cart" style={{ position: 'relative', color: '#0F172A', display: 'flex', alignItems: 'center' }}>
+              <ShoppingCart size={19} />
+              {itemCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: '-7px', right: '-7px',
+                  background: '#1E3A8A', color: 'white', borderRadius: '50%',
+                  width: '17px', height: '17px', fontSize: '0.65rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
+                }}>{itemCount}</span>
+              )}
+            </Link>
+
             {/* Call us */}
             <a href="tel:+919253625099" className="hidden lg:flex items-center" style={{ gap: '0.35rem', color: '#0F172A', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 700 }}>
               <Phone size={15} style={{ color: '#1E3A8A' }} /> +91 92536 25099
@@ -159,7 +171,11 @@ export default function Navbar() {
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
                       <Wrench size={15} /> My Bookings
                     </Link>
-                    {/* [GK MOTORS] Wishlist link removed with the marketplace */}
+                    <Link to="/wishlist" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', color: '#ccc', textDecoration: 'none', fontSize: '0.9rem' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = '#1E293B'; e.currentTarget.style.color = 'white'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
+                      <Heart size={15} /> Wishlist
+                    </Link>
                     {user.role === 'admin' && (
                       <Link to="/admin" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', color: '#93C5FD', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}
                         onMouseEnter={(e) => { e.currentTarget.style.background = '#1E293B'; }}

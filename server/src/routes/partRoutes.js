@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getParts, getPart, getPartCategories, getFeaturedParts, getBestsellerParts, getUpcomingParts, getRecentParts, searchParts, createPart, updatePart, deletePart, placeOrder, getMyOrders, getOrder, createPartPayment, verifyPartPayment, updateOrderStatus, getAllOrders } = require('../controllers/partController');
+const { getParts, getPart, getPartCategories, getFeaturedParts, getBestsellerParts, getUpcomingParts, getRecentParts, searchParts, createPart, updatePart, deletePart, placeOrder, getMyOrders, getOrder, createPartPayment, verifyPartPayment, updateOrderStatus, getAllOrders, cancelMyOrder } = require('../controllers/partController');
 const { protect } = require('../middleware/auth');
 const { adminOnly } = require('../middleware/admin');
 const { uploadPartMedia } = require('../middleware/upload');
@@ -26,5 +26,6 @@ router.get('/orders/:id', protect, getOrder);
 router.post('/orders/:id/payment', protect, createPartPayment);
 router.post('/orders/:id/verify-payment', protect, verifyPartPayment);
 router.put('/orders/:id/status', protect, adminOnly, updateOrderStatus);
+router.put('/orders/:id/cancel', protect, cancelMyOrder);
 
 module.exports = router;

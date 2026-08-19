@@ -6,6 +6,8 @@ import {
   Calendar, Users, MapPin
 } from 'lucide-react';
 import { getServiceCategories } from '../api/serviceApi';
+import { getFeaturedParts } from '../api/storeApi';
+import PartCard from '../components/parts/PartCard';
 import CategoryIcon, { categoryImageFrom } from '../components/service/CategoryIcon';
 import heroCar from '../assets/hero-gt3-silver.png';
 
@@ -63,11 +65,18 @@ const TESTIMONIALS = [
 
 export default function Home() {
   const [packages, setPackages] = useState([]);
+  const [parts, setParts] = useState([]);
 
   useEffect(() => {
     getServiceCategories()
       .then(({ data }) => setPackages(data.categories || []))
       .catch((err) => console.error('[Home.getServiceCategories]', err));
+
+    // Spare parts strip. Falls back to nothing if the store is empty, so the
+    // section simply does not render rather than showing an empty shelf.
+    getFeaturedParts({ limit: 5 })
+      .then(({ data }) => setParts((data.parts || []).slice(0, 5)))
+      .catch((err) => console.error('[Home.getFeaturedParts]', err));
   }, []);
 
   // Show each category's cheapest live package as its "from" price. Falls back
@@ -85,7 +94,7 @@ export default function Home() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <style>{`
         @media (max-width: 768px) {
-          .gk-hero { padding: 2.25rem 0 2.75rem !important; min-height: auto !important; }
+          .gk-hero { padding: 2.25rem 0 2.75rem !important; min-height: auto !important; display: block !important; }
           .gk-hero h1 { font-size: 1.75rem !important; }
           .gk-hero-sub { font-size: 0.85rem !important; }
           .gk-hero-img { display: none !important; }
@@ -111,7 +120,10 @@ export default function Home() {
         style={{
           position: 'relative', overflow: 'hidden',
           background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
-          padding: '3.5rem 0 4.25rem',
+          padding: '4rem 0 4.5rem',
+          minHeight: '88vh',
+          display: 'flex',
+          alignItems: 'center',
         }}
       >
         {/* Ambient glow */}
@@ -119,7 +131,7 @@ export default function Home() {
         <div style={{ position: 'absolute', bottom: '-30%', left: '-10%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(147,197,253,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2 }}>
-          <div className="gk-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: '3rem', alignItems: 'center' }}>
+          <div className="gk-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', alignItems: 'center', width: '100%' }}>
             {/* LEFT */}
             <div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(147, 197, 253, 0.12)', border: '1px solid rgba(147, 197, 253, 0.28)', borderRadius: '999px', padding: '0.3rem 1rem', marginBottom: '1.25rem' }}>
@@ -188,7 +200,7 @@ export default function Home() {
               <img
                 src={heroCar}
                 alt="Car undergoing professional service at GK Motors"
-                style={{ width: '100%', maxWidth: '560px', objectFit: 'contain', filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.5))' }}
+                style={{ width: '100%', maxWidth: '680px', objectFit: 'contain', filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.55))' }}
               />
             </div>
           </div>
@@ -272,6 +284,28 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ════════════════════ GENUINE SPARES ════════════════════ */}
+      {parts.length > 0 && (
+        <section className="gk-section" style={{ background: '#F8FAFC', padding: '4rem 0' }}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem' }}>
+              <div>
+                <p style={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.7rem' }}>GK Motors Spares</p>
+                <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.05 }}>
+                  Genuine <span style={{ color: '#1E3A8A' }}>Spares</span>
+                </h2>
+              </div>
+              <Link to="/parts" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: '#1E3A8A', color: '#FFF', padding: '0.65rem 1.5rem', borderRadius: '8px', textDecoration: 'none', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                Shop All Parts <ArrowRight size={15} />
+              </Link>
+            </div>
+            <div className="gk-cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '0.85rem' }}>
+              {parts.map((part) => <PartCard key={part._id} part={part} />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ════════════════════ STATS ════════════════════ */}
       <section style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', padding: '2.75rem 0' }}>

@@ -189,26 +189,61 @@ const placeOrder = asyncHandler(async (req, res) => {
 
   let subtotal = 0;
   const orderItems = [];
-  for (const item of items) {
-    const part = await SparePart.findById(item.product);
-    if (!part || part.stock < item.quantity) { res.status(400); throw new Error(`${part?.name || 'Item'} out of stock`); }
-    subtotal += (part.discountedPrice || part.price) * item.quantity;
-    orderItems.push({ product: item.product, name: part.name, price: part.discountedPrice || part.price, quantity: item.quantity, image: part.images[0] });
-    part.stock -= item.quantity;
-    await part.save();
+  const reserved = [];   // rolled back if anything below fails
+
+  try {
+    for (const item of items) {
+      const qty = Number(item.quantity);
+      if (!Number.isInteger(qty) || qty < 1) {
+        res.status(400);
+        throw new Error('Invalid quantity');
+      }
+
+      // Decrement conditionally so two simultaneous orders cannot both pass a
+      // read-then-write check and oversell the last unit.
+      const part = await SparePart.findOneAndUpdate(
+        { _id: item.product, stock: { $gte: qty } },
+        { $inc: { stock: -qty } },
+        { new: true }
+      );
+
+      if (!part) {
+        const exists = await SparePart.findById(item.product).select('name stock');
+        res.status(400);
+        throw new Error(
+          exists
+            ? `${exists.name} — only ${exists.stock} left in stock`
+            : 'One of the items is no longer available'
+        );
+      }
+
+      reserved.push({ id: part._id, qty });
+      const unitPrice = part.discountedPrice || part.price;
+      subtotal += unitPrice * qty;
+      orderItems.push({ product: part._id, name: part.name, price: unitPrice, quantity: qty, image: part.images[0] });
+    }
+
+    const shippingCharge = subtotal > 500 ? 0 : 50;
+    const total = subtotal + shippingCharge;
+
+    const order = await Order.create({
+      user: req.user._id, items: orderItems, deliveryAddress,
+      subtotal, shippingCharge, total,
+      payment: { method: payment?.method || 'cod' },
+      statusHistory: [{ status: 'placed', note: 'Order placed' }],
+    });
+
+    res.status(201).json({ success: true, order });
+  } catch (err) {
+    // Give back everything reserved so a failure part-way through a multi-item
+    // order does not silently consume stock.
+    await Promise.all(reserved.map((r) =>
+      SparePart.findByIdAndUpdate(r.id, { $inc: { stock: r.qty } })
+    )).catch((rollbackErr) =>
+      console.error('Stock rollback failed ->', rollbackErr.message)
+    );
+    throw err;
   }
-
-  const shippingCharge = subtotal > 500 ? 0 : 50;
-  const total = subtotal + shippingCharge;
-
-  const order = await Order.create({
-    user: req.user._id, items: orderItems, deliveryAddress,
-    subtotal, shippingCharge, total,
-    payment: { method: payment?.method || 'cod' },
-    statusHistory: [{ status: 'placed', note: 'Order placed' }],
-  });
-
-  res.status(201).json({ success: true, order });
 });
 
 // @desc  Get user orders
@@ -251,13 +286,57 @@ const verifyPartPayment = asyncHandler(async (req, res) => {
 });
 
 // @desc  Update order status (admin)
+// Stock is taken at order time, so anything that ends an order without a
+// delivery has to give it back. Guarded by a flag so a double cancel cannot
+// credit the same units twice.
+const restoreOrderStock = async (order, reason) => {
+  if (order.stockRestored) return false;
+  await Promise.all((order.items || []).map((i) =>
+    SparePart.findByIdAndUpdate(i.product, { $inc: { stock: i.quantity } })
+  ));
+  order.stockRestored = true;
+  order.statusHistory.push({ status: order.status, note: `Stock returned (${reason})` });
+  return true;
+};
+
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status, note } = req.body;
   const order = await Order.findById(req.params.id);
   if (!order) { res.status(404); throw new Error('Order not found'); }
+
+  const wasCancelled = order.status === 'cancelled';
   order.status = status;
   order.statusHistory.push({ status, note });
+
+  if (status === 'cancelled' && !wasCancelled) {
+    await restoreOrderStock(order, 'order cancelled');
+  }
+
   await order.save();
+  res.json({ success: true, order });
+});
+
+// @desc  Cancel my own order
+// @route PUT /api/store/orders/:id/cancel
+// @access Private
+const cancelMyOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) { res.status(404); throw new Error('Order not found'); }
+  if (String(order.user) !== String(req.user._id)) {
+    res.status(403); throw new Error('Not authorized');
+  }
+  if (!['placed', 'confirmed'].includes(order.status)) {
+    res.status(400); throw new Error('This order can no longer be cancelled');
+  }
+  if (order.payment?.status === 'paid') {
+    res.status(400); throw new Error('This order is paid — please contact support to cancel and refund');
+  }
+
+  order.status = 'cancelled';
+  order.statusHistory.push({ status: 'cancelled', note: 'Cancelled by customer' });
+  await restoreOrderStock(order, 'cancelled by customer');
+  await order.save();
+
   res.json({ success: true, order });
 });
 
@@ -270,4 +349,5 @@ const getAllOrders = asyncHandler(async (req, res) => {
   res.json({ success: true, total, orders });
 });
 
-module.exports = { getParts, getPart, getPartCategories, getFeaturedParts, getBestsellerParts, getUpcomingParts, getRecentParts, searchParts, createPart, updatePart, deletePart, placeOrder, getMyOrders, getOrder, createPartPayment, verifyPartPayment, updateOrderStatus, getAllOrders };
+module.exports = {
+  cancelMyOrder, getParts, getPart, getPartCategories, getFeaturedParts, getBestsellerParts, getUpcomingParts, getRecentParts, searchParts, createPart, updatePart, deletePart, placeOrder, getMyOrders, getOrder, createPartPayment, verifyPartPayment, updateOrderStatus, getAllOrders };

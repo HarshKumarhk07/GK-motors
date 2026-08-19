@@ -86,33 +86,39 @@ const sendOTP = asyncHandler(async (req, res) => {
     throw new Error('Email or phone required');
   }
 
-  const otp = generateOTP();
-  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+  const user = await User.findOne(email ? { email: String(email).toLowerCase().trim() } : { phone });
 
-  let user = await User.findOne(email ? { email } : { phone });
-
-  if (!user) {
-    // Create partial user for OTP login
-    user = await User.create({
-      name: 'User',
-      email: email || undefined,
-      phone: phone || undefined,
-      otp,
-      otpExpiry,
+  // An unknown address is answered exactly like a known one. Previously this
+  // endpoint created an account for whatever was submitted, which let anyone
+  // fill the users collection unauthenticated; it also let a caller probe
+  // which addresses are registered by watching the response differ.
+  if (!user || !user.isActive) {
+    return res.json({
+      success: true,
+      message: 'If that account exists, a verification code has been sent.',
     });
-  } else {
-    user.otp = otp;
-    user.otpExpiry = otpExpiry;
-    await user.save();
   }
+
+  const otp = generateOTP();
+  user.otp = otp;
+  user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+  await user.save();
 
   if (email) {
-    await sendOTPEmail(email, otp);
+    await sendOTPEmail(user.email, otp);
+  } else {
+    // No SMS provider is wired up yet, so a phone-only OTP cannot be delivered.
+    // Say so rather than returning success for a code the user will never get.
+    // The code is never logged: server logs are not a delivery channel.
+    console.warn(`OTP requested for phone ${phone} but no SMS provider is configured.`);
+    res.status(503);
+    throw new Error('SMS login is not available yet. Please use your email address.');
   }
-  // For phone: integrate Twilio here
-  console.log(`OTP for ${email || phone}: ${otp}`); // dev only
 
-  res.json({ success: true, message: 'OTP sent successfully' });
+  res.json({
+    success: true,
+    message: 'If that account exists, a verification code has been sent.',
+  });
 });
 
 // @desc  Verify OTP and login

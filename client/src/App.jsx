@@ -5,7 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
-// import PincodeModal from './components/common/PincodeModal'; // [GK MOTORS] parts-store only — disabled
+import PincodeModal from './components/common/PincodeModal';
 
 // Pages
 import Home from './pages/Home';
@@ -18,22 +18,23 @@ import Profile from './pages/Profile';
 import Contact from './pages/Contact';
 import About from './pages/About';
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   [GK MOTORS TRANSFORM] Marketplace pages disabled.
-   GK Motors is a service-only platform. The buy / sell / rent / parts
-   verticals below are kept in the codebase (files, API layer, models and
-   admin tabs are all untouched) so they can be restored by simply
-   uncommenting these imports and their <Route> entries further down.
-   ═══════════════════════════════════════════════════════════════════════════
-import BuyBikes from './pages/BuyBikes';
-import BikeDetail from './pages/BikeDetail';
-import SellBike from './pages/SellBike';
+// Spare parts storefront — live.
 import SpareParts from './pages/SpareParts';
 import PartDetail from './pages/PartDetail';
 import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
 import FeaturedParts from './pages/FeaturedParts';
 import BestsellerParts from './pages/BestsellerParts';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   [GK MOTORS TRANSFORM] Buy / sell / rent disabled — GK Motors sells service
+   and parts only. These files, their API layer, models and admin tabs are all
+   untouched, so restoring them means uncommenting these imports and the
+   matching <Route> entries further down.
+   ═══════════════════════════════════════════════════════════════════════════
+import BuyBikes from './pages/BuyBikes';
+import BikeDetail from './pages/BikeDetail';
+import SellBike from './pages/SellBike';
 import FeaturedBikes from './pages/FeaturedBikes';
 import BestsellerBikes from './pages/BestsellerBikes';
 import Rentals from './pages/Rentals';
@@ -62,7 +63,7 @@ function App() {
       <ScrollToTop />
       <AuthProvider>
         <CartProvider>
-          {/* [GK MOTORS] <PincodeModal /> — parts-store delivery check, disabled */}
+          <PincodeModal />
           <Toaster
             position="top-right"
             toastOptions={{
@@ -87,8 +88,16 @@ function App() {
             <Route path="/contact" element={<Layout><Contact /></Layout>} />
             <Route path="/about" element={<Layout><About /></Layout>} />
 
+            {/* Spare parts storefront */}
+            <Route path="/parts" element={<Layout><SpareParts /></Layout>} />
+            <Route path="/parts/:id" element={<Layout><PartDetail /></Layout>} />
+            <Route path="/featured" element={<Layout><FeaturedParts /></Layout>} />
+            <Route path="/bestseller" element={<Layout><BestsellerParts /></Layout>} />
+            <Route path="/cart" element={<Layout><Cart /></Layout>} />
+            <Route path="/wishlist" element={<Layout><Wishlist /></Layout>} />
+
             {/* ═══════════════════════════════════════════════════════════════
-                [GK MOTORS TRANSFORM] Marketplace routes disabled.
+                [GK MOTORS TRANSFORM] Buy / sell / rent routes disabled.
                 Re-enable by uncommenting these together with the imports above.
                 ═══════════════════════════════════════════════════════════════
             <Route path="/bikes" element={<Layout><BuyBikes /></Layout>} />
@@ -96,12 +105,6 @@ function App() {
             <Route path="/bikes/bestseller" element={<Layout><BestsellerBikes /></Layout>} />
             <Route path="/bikes/:id" element={<Layout><BikeDetail /></Layout>} />
             <Route path="/sell" element={<Layout><SellBike /></Layout>} />
-            <Route path="/parts" element={<Layout><SpareParts /></Layout>} />
-            <Route path="/parts/:id" element={<Layout><PartDetail /></Layout>} />
-            <Route path="/featured" element={<Layout><FeaturedParts /></Layout>} />
-            <Route path="/bestseller" element={<Layout><BestsellerParts /></Layout>} />
-            <Route path="/cart" element={<Layout><Cart /></Layout>} />
-            <Route path="/wishlist" element={<Layout><Wishlist /></Layout>} />
             <Route path="/rentals" element={<Layout><Rentals /></Layout>} />
             <Route path="/rentals/:id" element={<Layout><RentalDetail /></Layout>} />
                 ═══════════════════════════════════════════════════════════ */}
