@@ -5,7 +5,7 @@ import {
   Disc, Settings, Shield, Award, Car, CheckCircle, Clock, Star, Phone,
   Calendar, Users, MapPin
 } from 'lucide-react';
-import { getServiceCategories } from '../api/serviceApi';
+import { getServiceCategories, getServiceCars } from '../api/serviceApi';
 import { getFeaturedParts } from '../api/storeApi';
 import PartCard from '../components/parts/PartCard';
 import CategoryIcon, { categoryImageFrom } from '../components/service/CategoryIcon';
@@ -66,6 +66,7 @@ const TESTIMONIALS = [
 export default function Home() {
   const [packages, setPackages] = useState([]);
   const [parts, setParts] = useState([]);
+  const [heroCars, setHeroCars] = useState([]);
 
   useEffect(() => {
     getServiceCategories()
@@ -77,6 +78,13 @@ export default function Home() {
     getFeaturedParts({ limit: 5 })
       .then(({ data }) => setParts((data.parts || []).slice(0, 5)))
       .catch((err) => console.error('[Home.getFeaturedParts]', err));
+
+    // Cars we service, straight from the admin catalogue. Only those with a
+    // real image are shown — a placeholder tile in the hero looks broken, so
+    // the strip simply renders fewer cards, or none at all.
+    getServiceCars()
+      .then(({ data }) => setHeroCars((data.cars || []).filter((c) => c.image).slice(0, 3)))
+      .catch((err) => console.error('[Home.getServiceCars]', err));
   }, []);
 
   // Show each category's cheapest live package as its "from" price. Falls back
@@ -93,8 +101,153 @@ export default function Home() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <style>{`
+        /* ── Hero: ambient depth ─────────────────────────────────────────── */
+        .gk-glow { position: absolute; pointer-events: none; border-radius: 50%; }
+        .gk-glow-a {
+          top: -25%; right: -12%; width: 720px; height: 720px;
+          background: radial-gradient(circle, rgba(59,130,246,0.20) 0%, transparent 68%);
+          animation: gk-drift 18s ease-in-out infinite;
+        }
+        .gk-glow-b {
+          bottom: -30%; left: -12%; width: 560px; height: 560px;
+          background: radial-gradient(circle, rgba(147,197,253,0.10) 0%, transparent 70%);
+          animation: gk-drift 22s ease-in-out infinite reverse;
+        }
+        @keyframes gk-drift {
+          0%,100% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+          50%     { transform: translate3d(-26px,22px,0) scale(1.07); opacity: 0.78; }
+        }
+        /* Faint engineering grid — masked so it fades out before the edges. */
+        .gk-grid-overlay {
+          position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+          background-image:
+            linear-gradient(rgba(148,163,184,0.055) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(148,163,184,0.055) 1px, transparent 1px);
+          background-size: 62px 62px;
+          -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 42%, #000 35%, transparent 100%);
+                  mask-image: radial-gradient(ellipse 75% 65% at 50% 42%, #000 35%, transparent 100%);
+        }
+
+        /* ── Entrance: one keyframe, staggered by class ──────────────────── */
+        .gk-rise { opacity: 0; animation: gk-rise-in 0.72s cubic-bezier(0.22,0.8,0.28,1) forwards; }
+        .gk-d1 { animation-delay: 0.05s; }
+        .gk-d2 { animation-delay: 0.16s; }
+        .gk-d3 { animation-delay: 0.27s; }
+        .gk-d4 { animation-delay: 0.38s; }
+        .gk-d5 { animation-delay: 0.52s; }
+        @keyframes gk-rise-in {
+          from { opacity: 0; transform: translate3d(0,20px,0); }
+          to   { opacity: 1; transform: none; }
+        }
+
+        /* Sweep across the accent word, then rest. */
+        .gk-shimmer {
+          background: linear-gradient(100deg, #93C5FD 0%, #E0EDFF 42%, #93C5FD 76%);
+          background-size: 220% 100%;
+          -webkit-background-clip: text; background-clip: text;
+          -webkit-text-fill-color: transparent; color: transparent;
+          animation: gk-sweep 6.5s ease-in-out 1.1s infinite;
+        }
+        @keyframes gk-sweep {
+          0%,72%,100% { background-position: 130% 0; }
+          22%         { background-position: -30% 0; }
+        }
+
+        /* ── Hero car: slides in, then breathes ──────────────────────────── */
+        .gk-car {
+          opacity: 0;
+          filter: drop-shadow(0 34px 58px rgba(0,0,0,0.6));
+          animation:
+            gk-car-in 1s cubic-bezier(0.2,0.75,0.3,1) 0.3s forwards,
+            gk-float 7s ease-in-out 1.4s infinite;
+        }
+        @keyframes gk-car-in {
+          from { opacity: 0; transform: translate3d(46px,0,0) scale(0.965); }
+          to   { opacity: 1; transform: none; }
+        }
+        @keyframes gk-float {
+          0%,100% { transform: translate3d(0,0,0); }
+          50%     { transform: translate3d(0,-11px,0); }
+        }
+        /* Soft pool of light the car sits on. */
+        .gk-car-pad {
+          position: absolute; width: 74%; height: 58%; border-radius: 50%;
+          background: radial-gradient(ellipse, rgba(59,130,246,0.19) 0%, transparent 68%);
+          filter: blur(26px);
+          animation: gk-pulse 7s ease-in-out infinite;
+        }
+        @keyframes gk-pulse {
+          0%,100% { opacity: 0.75; transform: scale(1); }
+          50%     { opacity: 1;    transform: scale(1.06); }
+        }
+
+        .gk-cta-primary, .gk-cta-ghost { transition: transform .25s, box-shadow .25s, background .25s, border-color .25s; }
+        .gk-cta-primary { box-shadow: 0 4px 20px rgba(0,0,0,0.28); }
+        .gk-cta-primary:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.38); }
+        .gk-cta-ghost:hover { border-color: #FFF; background: rgba(255,255,255,0.09); transform: translateY(-2px); }
+
+        /* ── Fleet strip ─────────────────────────────────────────────────── */
+        .gk-fleet { margin-top: 3.25rem; border-top: 1px solid rgba(148,163,184,0.14); padding-top: 1.5rem; }
+        .gk-fleet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+        .gk-fleet-label {
+          color: #64748B; font-size: 0.68rem; font-weight: 800;
+          text-transform: uppercase; letter-spacing: 0.22em;
+        }
+        .gk-fleet-all {
+          display: inline-flex; align-items: center; gap: 0.35rem;
+          color: #93C5FD; font-size: 0.72rem; font-weight: 800;
+          text-decoration: none; text-transform: uppercase; letter-spacing: 0.08em;
+          transition: gap .2s, color .2s;
+        }
+        .gk-fleet-all:hover { gap: 0.6rem; color: #DBEAFE; }
+        .gk-fleet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem; }
+        .gk-fleet-card {
+          opacity: 0; animation: gk-rise-in 0.6s cubic-bezier(0.22,0.8,0.28,1) forwards;
+          display: flex; align-items: center; gap: 0.85rem; text-decoration: none;
+          background: rgba(255,255,255,0.032);
+          border: 1px solid rgba(148,163,184,0.14);
+          border-radius: 14px; padding: 0.7rem 0.9rem;
+          transition: transform .28s, border-color .28s, background .28s;
+        }
+        .gk-fleet-card:hover {
+          transform: translateY(-5px);
+          border-color: rgba(147,197,253,0.42);
+          background: rgba(255,255,255,0.06);
+        }
+        .gk-fleet-img {
+          width: 74px; height: 50px; border-radius: 9px; flex-shrink: 0; overflow: hidden;
+          background: rgba(148,163,184,0.09);
+          display: flex; align-items: center; justify-content: center;
+        }
+        .gk-fleet-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .gk-fleet-meta { display: flex; flex-direction: column; min-width: 0; }
+        .gk-fleet-brand { color: #FFF; font-weight: 800; font-size: 0.84rem; line-height: 1.2; }
+        .gk-fleet-model { color: #CBD5E1; font-size: 0.76rem; font-weight: 600; line-height: 1.3; }
+        .gk-fleet-year {
+          color: #64748B; font-size: 0.63rem; font-weight: 700;
+          text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.12rem;
+        }
+
+        /* Motion is decoration here — hold the final frame for anyone who
+           has asked their system to reduce it. */
+        @media (prefers-reduced-motion: reduce) {
+          .gk-rise, .gk-car, .gk-fleet-card { opacity: 1 !important; animation: none !important; transform: none !important; }
+          .gk-glow-a, .gk-glow-b, .gk-car-pad { animation: none !important; }
+          .gk-shimmer {
+            animation: none !important; -webkit-text-fill-color: #93C5FD !important; color: #93C5FD !important;
+          }
+        }
+
+        @media (max-width: 900px) {
+          .gk-fleet-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .gk-fleet-grid > :nth-child(3) { display: none; }
+        }
+
         @media (max-width: 768px) {
-          .gk-hero { padding: 2.25rem 0 2.75rem !important; min-height: auto !important; display: block !important; }
+          .gk-hero { padding: 2.25rem 0 2.5rem !important; min-height: auto !important; display: block !important; }
+          .gk-fleet { margin-top: 2rem !important; padding-top: 1.1rem !important; }
+          .gk-fleet-grid { grid-template-columns: 1fr !important; }
+          .gk-fleet-grid > :nth-child(3) { display: flex; }
           .gk-hero h1 { font-size: 1.75rem !important; }
           .gk-hero-sub { font-size: 0.85rem !important; }
           .gk-hero-img { display: none !important; }
@@ -119,71 +272,60 @@ export default function Home() {
         className="gk-hero"
         style={{
           position: 'relative', overflow: 'hidden',
-          background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
-          padding: '4rem 0 4.5rem',
-          minHeight: '88vh',
+          background: '#131B31',
+          padding: '4.5rem 0 3rem',
+          minHeight: '94vh',
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: 'column',
+          justifyContent: 'center',
         }}
       >
-        {/* Ambient glow */}
-        <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(59,130,246,0.22) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-30%', left: '-10%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(147,197,253,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        {/* Depth: a broad cool wash top-right, a cooler one bottom-left, and a
+            fine grid — all behind the content and non-interactive. */}
+        <div className="gk-glow gk-glow-a" />
+        <div className="gk-glow gk-glow-b" />
+        <div className="gk-grid-overlay" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2 }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2, width: '100%' }}>
           <div className="gk-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', alignItems: 'center', width: '100%' }}>
             {/* LEFT */}
             <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(147, 197, 253, 0.12)', border: '1px solid rgba(147, 197, 253, 0.28)', borderRadius: '999px', padding: '0.3rem 1rem', marginBottom: '1.25rem' }}>
-                <Sparkles size={13} style={{ color: '#93C5FD' }} />
-                <span style={{ color: '#93C5FD', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'Rajdhani, sans-serif' }}>GK Motors</span>
-              </div>
-
-              <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.08, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
-                Professional Car<br />Service &amp; <span style={{ color: '#93C5FD' }}>Repair</span>
+              <h1 className="gk-rise gk-d1" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(2.1rem, 4.8vw, 3.7rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.06, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
+                Professional Car<br />Service &amp; <span className="gk-shimmer">Repair</span>
               </h1>
 
-              <p className="gk-hero-sub" style={{ color: '#94A3B8', fontSize: '0.92rem', fontWeight: 500, lineHeight: 1.7, maxWidth: '440px', marginBottom: '1.8rem' }}>
+              <p className="gk-hero-sub gk-rise gk-d2" style={{ color: '#94A3B8', fontSize: '0.95rem', fontWeight: 500, lineHeight: 1.7, maxWidth: '450px', marginBottom: '1.8rem' }}>
                 Expert technicians, genuine parts, doorstep service. Book online in under two
                 minutes and track your car every step of the way.
               </p>
 
-              <div className="gk-cta-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '2rem' }}>
-                <Link
-                  to="/services"
+              <div className="gk-cta-row gk-rise gk-d3" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '2rem' }}>
+                <Link to="/services" className="gk-cta-primary"
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
                     background: '#FFFFFF', color: '#0F172A',
-                    padding: '0.7rem 1.8rem', borderRadius: '8px', textDecoration: 'none',
+                    padding: '0.75rem 1.9rem', borderRadius: '8px', textDecoration: 'none',
                     fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.85rem',
                     letterSpacing: '0.06em', textTransform: 'uppercase',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.25)', transition: 'all 0.25s',
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
-                >
+                  }}>
                   <Wrench size={16} /> Book Service Now
                 </Link>
 
-                <a
-                  href="#services"
+                <a href="#services" className="gk-cta-ghost"
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
                     background: 'transparent', color: '#FFFFFF',
-                    padding: '0.7rem 1.8rem', borderRadius: '8px', textDecoration: 'none',
+                    padding: '0.75rem 1.9rem', borderRadius: '8px', textDecoration: 'none',
                     border: '1.5px solid rgba(255,255,255,0.2)',
                     fontFamily: 'Rajdhani, sans-serif', fontWeight: 700, fontSize: '0.85rem',
-                    letterSpacing: '0.06em', textTransform: 'uppercase', transition: 'all 0.25s',
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#FFFFFF'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.background = 'transparent'; }}
-                >
+                    letterSpacing: '0.06em', textTransform: 'uppercase',
+                  }}>
                   View Services <ArrowRight size={16} />
                 </a>
               </div>
 
               {/* Trust indicators */}
-              <div className="gk-trust-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+              <div className="gk-trust-grid gk-rise gk-d4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
                 {TRUST_INDICATORS.map(({ icon: Icon, title }) => (
                   <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                     <div style={{ width: 28, height: 28, borderRadius: '8px', background: 'rgba(147, 197, 253, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -196,14 +338,54 @@ export default function Home() {
             </div>
 
             {/* RIGHT — hero car */}
-            <div className="gk-hero-img" style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+            <div className="gk-hero-img" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div className="gk-car-pad" />
               <img
+                className="gk-car"
                 src={heroCar}
                 alt="Car undergoing professional service at GK Motors"
-                style={{ width: '100%', maxWidth: '680px', objectFit: 'contain', filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.55))' }}
+                style={{ width: '100%', maxWidth: '700px', objectFit: 'contain', position: 'relative', zIndex: 1 }}
               />
             </div>
           </div>
+
+          {/* ── Cars we service, from the admin catalogue ── */}
+          {heroCars.length > 0 && (
+            <div className="gk-fleet gk-rise gk-d5">
+              <div className="gk-fleet-head">
+                <span className="gk-fleet-label">Cars we service</span>
+                <Link to="/services" className="gk-fleet-all">
+                  See all <ArrowRight size={13} />
+                </Link>
+              </div>
+              <div className="gk-fleet-grid">
+                {heroCars.map((car, i) => (
+                  <Link
+                    key={car._id}
+                    to="/services"
+                    className="gk-fleet-card"
+                    style={{ animationDelay: `${0.75 + i * 0.12}s` }}
+                  >
+                    <div className="gk-fleet-img">
+                      <img
+                        src={car.image}
+                        alt={`${car.brand} ${car.model}`}
+                        loading="lazy"
+                        // A dead image URL would leave an empty tile, so drop
+                        // the whole card instead of showing a broken frame.
+                        onError={(e) => { e.currentTarget.closest('.gk-fleet-card').style.display = 'none'; }}
+                      />
+                    </div>
+                    <div className="gk-fleet-meta">
+                      <span className="gk-fleet-brand">{car.brand}</span>
+                      <span className="gk-fleet-model">{car.model}</span>
+                      <span className="gk-fleet-year">{car.year} · {car.fuelType}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -308,7 +490,7 @@ export default function Home() {
       )}
 
       {/* ════════════════════ STATS ════════════════════ */}
-      <section style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', padding: '2.75rem 0' }}>
+      <section style={{ background: '#131B31', borderTop: '1px solid rgba(148,163,184,0.10)', borderBottom: '1px solid rgba(148,163,184,0.10)', padding: '2.75rem 0' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="gk-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.2rem' }}>
             {STATS.map(({ value, label, icon: Icon }) => (
@@ -407,7 +589,7 @@ export default function Home() {
       </section>
 
       {/* ════════════════════ CTA BANNER ════════════════════ */}
-      <section style={{ position: 'relative', background: 'linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%)', padding: '3.5rem 0', overflow: 'hidden' }}>
+      <section style={{ position: 'relative', background: '#131B31', padding: '3.5rem 0', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-40%', right: '5%', width: '480px', height: '480px', background: 'radial-gradient(circle, rgba(147,197,253,0.16) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2, textAlign: 'center' }}>
           <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(1.6rem, 4vw, 2.4rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.1, marginBottom: '0.8rem' }}>
