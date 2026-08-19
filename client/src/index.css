@@ -1,0 +1,1006 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #FFFFFF;
+  color: #111111;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F5F5F5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E3A8A;
+  border-radius: 3px;
+}
+
+/* Custom Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-blue {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(30, 58, 138, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 12px rgba(30, 58, 138, 0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.5s ease-out forwards;
+}
+
+.animate-pulse-blue {
+  animation: pulse-blue 2s infinite;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-dark {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(156, 163, 175, 0.1);
+}
+
+.glass-light {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #1E3A8A, #93C5FD);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Red gradient button */
+.btn-primary {
+  background: linear-gradient(135deg, #1E3A8A 0%, #172554 100%);
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.4);
+  background: linear-gradient(135deg, #93C5FD 0%, #1E3A8A 100%);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Dark outlined button */
+.btn-outline {
+  background: transparent;
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn-outline:hover {
+  border-color: #1E3A8A;
+  color: #1E3A8A;
+  background: rgba(30, 58, 138, 0.08);
+}
+
+/* Light outlined button for light backgrounds */
+.btn-outline-dark {
+  background: transparent;
+  color: #111;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn-outline-dark:hover {
+  border-color: #1E3A8A;
+  color: #1E3A8A;
+  background: rgba(30, 58, 138, 0.05);
+}
+
+/* Card Styles */
+.card-dark {
+  background: #0F172A;
+  border: 1px solid rgba(156, 163, 175, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.card-dark:hover {
+  border-color: #1E3A8A;
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+}
+
+.card-light {
+  background: #FFFFFF;
+  border: 1px solid #F0F0F0;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.35s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.card-light:hover {
+  border-color: #1E3A8A;
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg, #F0F0F0 25%, #FAFAFA 50%, #F0F0F0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.skeleton-dark {
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* Status badges */
+.badge {
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-green {
+  background: rgba(46, 125, 50, 0.1);
+  color: #2E7D32;
+  border: 1px solid rgba(46, 125, 50, 0.2);
+}
+
+.badge-red {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-orange {
+  background: rgba(251, 140, 0, 0.1);
+  color: #EF6C00;
+  border: 1px solid rgba(251, 140, 0, 0.2);
+}
+
+.badge-blue {
+  background: rgba(30, 58, 138, 1);
+  color: white;
+  border: none;
+}
+
+.badge-gray {
+  background: rgba(136, 136, 136, 0.1);
+  color: #666;
+  border: 1px solid rgba(136, 136, 136, 0.2);
+}
+
+/* Form inputs */
+.input-dark {
+  background: #1A1A1A;
+  border: 1px solid #2A2A2A;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.input-dark:focus {
+  border-color: #1E3A8A;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.input-dark::placeholder {
+  color: #555;
+}
+
+.input-light {
+  background: #FFFFFF;
+  border: 1px solid #EAEAEA;
+  color: #111;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.input-light:focus {
+  border-color: #1E3A8A;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
+}
+
+.input-light::placeholder {
+  color: #AAA;
+}
+
+/* Section backgrounds */
+.section-dark {
+  background: #0F172A;
+}
+
+.section-card {
+  background: #1E293B;
+}
+
+.section-light {
+  background: #FFFFFF;
+}
+
+.section-gray {
+  background: #F9F9F9;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE STYLES — MOBILE FIRST
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Admin Dashboard Mobile ── */
+@media (max-width: 768px) {
+  .admin-mobile-topbar {
+    display: flex !important;
+  }
+
+  .admin-sidebar-overlay {
+    display: block !important;
+  }
+
+  .admin-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 70;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    width: 260px !important;
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .admin-main {
+    padding-top: 56px !important;
+  }
+
+  .admin-main>div {
+    padding: 1rem !important;
+  }
+
+  .admin-page-title {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* ── Global Mobile Typography ── */
+@media (max-width: 640px) {
+  body {
+    font-size: 13px;
+  }
+
+  h1 {
+    font-size: 1.35rem !important;
+  }
+
+  h2 {
+    font-size: 1.15rem !important;
+  }
+
+  h3 {
+    font-size: 0.95rem !important;
+  }
+
+  h4 {
+    font-size: 0.85rem !important;
+  }
+
+  p {
+    font-size: 0.82rem;
+  }
+
+  /* Buttons */
+  .btn-primary,
+  .btn-outline,
+  .btn-outline-dark {
+    padding: 0.45rem 1rem;
+    font-size: 0.78rem;
+    border-radius: 6px;
+    gap: 0.3rem;
+  }
+
+  /* Badges */
+  .badge {
+    font-size: 0.6rem;
+    padding: 0.12rem 0.4rem;
+  }
+
+  /* Form inputs smaller */
+  .input-light,
+  .input-dark {
+    font-size: 0.82rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: 6px;
+  }
+
+  /* Cards less padding */
+  .card-light,
+  .card-dark {
+    border-radius: 10px;
+  }
+
+  .card-light:hover,
+  .card-dark:hover {
+    transform: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+  }
+}
+
+/* ── Responsive grids for admin forms ── */
+@media (max-width: 768px) {
+  .admin-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-grid-4 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Home page responsive ── */
+@media (max-width: 768px) {
+  .home-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  .home-featured-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .home-how-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .home-why-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* ── SellBike responsive ── */
+@media (max-width: 640px) {
+  .sell-usp-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  .sell-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sell-header h1 {
+    font-size: 1.8rem !important;
+  }
+}
+
+/* ── Services responsive ── */
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .service-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── BuyBikes / SpareParts responsive ── */
+@media (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  .filter-sidebar {
+    display: none;
+  }
+
+  .filter-sidebar.open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: white;
+    overflow: auto;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── BikeDetail / PartDetail responsive ── */
+@media (max-width: 768px) {
+  .detail-layout {
+    flex-direction: column !important;
+  }
+
+  .detail-images {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .detail-info {
+    width: 100% !important;
+    padding: 1rem !important;
+  }
+
+  .detail-specs-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── Cart responsive ── */
+@media (max-width: 768px) {
+  .cart-layout {
+    flex-direction: column !important;
+  }
+
+  .cart-items {
+    width: 100% !important;
+  }
+
+  .cart-summary {
+    width: 100% !important;
+    position: static !important;
+  }
+
+  .cart-item-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* ── MyBookings responsive ── */
+@media (max-width: 768px) {
+  .bookings-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .booking-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Profile responsive ── */
+@media (max-width: 768px) {
+  .profile-layout {
+    flex-direction: column !important;
+  }
+
+  .profile-sidebar {
+    width: 100% !important;
+  }
+
+  .profile-content {
+    width: 100% !important;
+  }
+
+  .profile-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Wishlist responsive ── */
+@media (max-width: 768px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.6rem !important;
+  }
+}
+
+/* ── Contact responsive ── */
+@media (max-width: 768px) {
+  .contact-layout {
+    flex-direction: column !important;
+  }
+
+  .contact-form,
+  .contact-info {
+    width: 100% !important;
+  }
+}
+
+/* ── Card components responsive ── */
+@media (max-width: 480px) {
+
+  .card-light,
+  .card-dark {
+    border-radius: 10px;
+  }
+
+  .card-light:hover,
+  .card-dark:hover {
+    transform: none;
+  }
+}
+
+/* ── SellBike success page responsive ── */
+@media (max-width: 640px) {
+  .sell-success {
+    padding: 3rem 1.5rem !important;
+  }
+
+  .sell-success h2 {
+    font-size: 1.8rem !important;
+  }
+
+  .sell-success p {
+    font-size: 0.9rem !important;
+  }
+}
+
+/* ── Footer responsive ── */
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Tables responsive ── */
+@media (max-width: 768px) {
+  .responsive-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .responsive-table table {
+    min-width: 600px;
+  }
+
+  .responsive-table th,
+  .responsive-table td {
+    padding: 0.6rem 0.5rem !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* ── Admin stat card mobile ── */
+@media (max-width: 480px) {
+  .admin-stat-grid>div {
+    padding: 0.8rem 1rem !important;
+    border-radius: 16px !important;
+  }
+
+  .admin-stat-grid>div>div:last-child {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* ── PincodeModal responsive ── */
+@media (max-width: 640px) {
+  .pincode-modal {
+    width: 92vw !important;
+    max-width: 92vw !important;
+    padding: 1.5rem !important;
+  }
+}
+
+/* ── Featured/Bestseller listing pages ── */
+@media (max-width: 768px) {
+  .listing-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .listing-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── Navbar mobile compact ── */
+@media (max-width: 640px) {
+  nav .max-w-7xl {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+/* ── Admin form sections mobile ── */
+@media (max-width: 640px) {
+  .admin-form-wrap>form>div {
+    padding: 1rem !important;
+    border-radius: 14px !important;
+  }
+
+  .admin-form-wrap>form>div input[style*="height: 54px"],
+  .admin-form-wrap>form>div select[style*="height: 54px"],
+  .admin-form-wrap>form>div input[style*="height: 50px"] {
+    height: 44px !important;
+    font-size: 0.82rem !important;
+  }
+}
+
+/* ── All page sections compact on mobile ── */
+@media (max-width: 640px) {
+
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-4xl,
+  .max-w-3xl,
+  [class*="max-w-"] {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  section {
+    position: static !important;
+  }
+
+  .cart-item-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* ── MyBookings responsive ── */
+@media (max-width: 768px) {
+  .bookings-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .booking-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Profile responsive ── */
+@media (max-width: 768px) {
+  .profile-layout {
+    flex-direction: column !important;
+  }
+
+  .profile-sidebar {
+    width: 100% !important;
+  }
+
+  .profile-content {
+    width: 100% !important;
+  }
+
+  .profile-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Wishlist responsive ── */
+@media (max-width: 768px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.6rem !important;
+  }
+}
+
+/* ── Contact responsive ── */
+@media (max-width: 768px) {
+  .contact-layout {
+    flex-direction: column !important;
+  }
+
+  .contact-form,
+  .contact-info {
+    width: 100% !important;
+  }
+}
+
+/* ── Card components responsive ── */
+@media (max-width: 480px) {
+
+  .card-light,
+  .card-dark {
+    border-radius: 10px;
+  }
+
+  .card-light:hover,
+  .card-dark:hover {
+    transform: none;
+  }
+}
+
+/* ── SellBike success page responsive ── */
+@media (max-width: 640px) {
+  .sell-success {
+    padding: 3rem 1.5rem !important;
+  }
+
+  .sell-success h2 {
+    font-size: 1.8rem !important;
+  }
+
+  .sell-success p {
+    font-size: 0.9rem !important;
+  }
+}
+
+/* ── Footer responsive ── */
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Tables responsive ── */
+@media (max-width: 768px) {
+  .responsive-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .responsive-table table {
+    min-width: 600px;
+  }
+
+  .responsive-table th,
+  .responsive-table td {
+    padding: 0.6rem 0.5rem !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* ── Admin stat card mobile ── */
+@media (max-width: 480px) {
+  .admin-stat-grid>div {
+    padding: 0.8rem 1rem !important;
+    border-radius: 16px !important;
+  }
+
+  .admin-stat-grid>div>div:last-child {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* ── PincodeModal responsive ── */
+@media (max-width: 640px) {
+  .pincode-modal {
+    width: 92vw !important;
+    max-width: 92vw !important;
+    padding: 1.5rem !important;
+  }
+}
+
+/* ── Featured/Bestseller listing pages ── */
+@media (max-width: 768px) {
+  .listing-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .listing-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── Navbar mobile compact ── */
+@media (max-width: 640px) {
+  nav .max-w-7xl {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+/* ── Admin form sections mobile ── */
+@media (max-width: 640px) {
+  .admin-form-wrap>form>div {
+    padding: 1rem !important;
+    border-radius: 14px !important;
+  }
+
+  .admin-form-wrap>form>div input[style*="height: 54px"],
+  .admin-form-wrap>form>div select[style*="height: 54px"],
+  .admin-form-wrap>form>div input[style*="height: 50px"] {
+    height: 44px !important;
+    font-size: 0.82rem !important;
+  }
+}
+
+/* ── All page sections compact on mobile ── */
+@media (max-width: 640px) {
+
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-4xl,
+  .max-w-3xl,
+  [class*="max-w-"] {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  section {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+  }
+}
+
+/* Product Card Mobile Overrides */
+@media (max-width: 640px) {
+  .product-card-title {
+    font-size: 0.72rem !important;
+  }
+
+  .product-card-badge {
+    font-size: 0.45rem !important;
+    padding: 2px 8px !important;
+  }
+
+  .product-card-price {
+    font-size: 0.9rem !important;
+  }
+
+  .product-card-btn {
+    height: 22px !important;
+    padding: 0 0.5rem !important;
+    font-size: 0.5rem !important;
+    border-radius: 4px !important;
+  }
+
+  .product-card-btn svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+}
