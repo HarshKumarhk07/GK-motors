@@ -3,6 +3,7 @@ const RentalCar = require('../models/RentalCar');
 const RentalBooking = require('../models/RentalBooking');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const { encrypt, maskEncrypted } = require('../utils/crypto');
 
 let razorpayInstance = null;
 const getRazorpay = () => {
@@ -311,8 +312,10 @@ const createRentalBooking = asyncHandler(async (req, res) => {
     subtotal, totalAmount,
     pickupAddress, driverLicense, contactPhone, fullName, notes,
     kyc: {
-      aadharNumber: String(aadharNumber).replace(/\s/g, ''),
-      panNumber: String(panNumber).toUpperCase(),
+      // Identity numbers are encrypted at rest; only the last 4 digits are
+      // ever returned to an admin. See utils/crypto.js.
+      aadharNumber: encrypt(String(aadharNumber).replace(/\s/g, '')),
+      panNumber: encrypt(String(panNumber).toUpperCase()),
       aadharImage: req.files?.aadharImage?.[0]?.path || null,
       panImage: req.files?.panImage?.[0]?.path || null,
       licenseImage: req.files?.licenseImage?.[0]?.path || null,
@@ -453,11 +456,25 @@ const getMyRentalBookings = asyncHandler(async (req, res) => {
   const bookings = await RentalBooking.find({ user: req.user._id })
      .populate('rentalCar')
     .sort({ createdAt: -1 });
-  res.json({ success: true, bookings });
+  res.json({ success: true, bookings: bookings.map(maskBookingKyc) });
 });
 
 // @desc  Get all rental bookings (admin)
 // @route GET /api/rentals/bookings
+// Replace stored KYC numbers with masked forms before a booking leaves the
+// server. The full values stay encrypted in the database.
+const maskBookingKyc = (booking) => {
+  const o = booking.toObject ? booking.toObject() : booking;
+  if (o.kyc) {
+    o.kyc = {
+      ...o.kyc,
+      aadharNumber: maskEncrypted(o.kyc.aadharNumber),
+      panNumber: maskEncrypted(o.kyc.panNumber),
+    };
+  }
+  return o;
+};
+
 const getAllRentalBookings = asyncHandler(async (req, res) => {
   const { status, page = 1, limit = 20 } = req.query;
   const query = status ? { status: { $in: status.split(',') } } : {};
@@ -468,7 +485,7 @@ const getAllRentalBookings = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(Number(limit));
-  res.json({ success: true, total, bookings });
+  res.json({ success: true, total, bookings: bookings.map(maskBookingKyc) });
 });
 
 // @desc  Update rental booking status (admin)

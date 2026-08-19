@@ -7,7 +7,7 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useServiceCart } from '../context/CartContext';
-import { getServiceCategories } from '../api/serviceApi';
+import { getServiceCategories, getCategories } from '../api/serviceApi';
 import { reportApiError } from '../api/apiError';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import CategoryIcon, { categoryImageFrom } from '../components/service/CategoryIcon';
@@ -22,7 +22,9 @@ import CheckoutModal from '../components/service/CheckoutModal';
  * server/src/seeds/seedServicePackages.js — that is the join key between the
  * icons/copy here and the bookable packages in the database.
  */
-const serviceCategories = [
+// Fallback used only until seedServiceCategories.js has run — keeps the page
+// working on a fresh database instead of rendering an empty grid.
+const FALLBACK_CATEGORIES = [
   { id: 1, slug: 'car-service', name: 'Car Service', icon: Wrench, description: 'Periodic maintenance & oil change' },
   { id: 2, slug: 'ac-service', name: 'AC Service & Repair', icon: Wind, description: 'AC gas refill, cooling check' },
   { id: 3, slug: 'batteries', name: 'Batteries', icon: Battery, description: 'Battery replacement & testing' },
@@ -49,15 +51,37 @@ export default function Services() {
   const [changingCar, setChangingCar] = useState(false);
 
   const [packages, setPackages] = useState([]);
+  const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
   const fetchCatalogue = () => {
     setLoading(true);
     setLoadError('');
-    getServiceCategories()
-      .then(({ data }) => setPackages(data.categories || []))
-      .catch((err) => setLoadError(reportApiError('Services.getServiceCategories', err, 'Could not load our services')))
+    Promise.all([
+      getServiceCategories(),
+      // Admin-managed taxonomy. If it 404s or comes back empty the hardcoded
+      // fallback above stays in place.
+      getCategories().catch(() => ({ data: { categories: [] } })),
+    ])
+      .then(([pkgRes, catRes]) => {
+        setPackages(pkgRes.data.categories || []);
+        const live = catRes.data.categories || [];
+        if (live.length) {
+          setCategories(live.map((c) => {
+            const known = FALLBACK_CATEGORIES.find((f) => f.id === c.categoryId);
+            return {
+              id: c.categoryId,
+              slug: c.slug || known?.slug,
+              name: c.name,
+              description: c.description || known?.description || '',
+              icon: known?.icon || Wrench,
+              image: c.image || null,
+            };
+          }));
+        }
+      })
+      .catch((err) => setLoadError(reportApiError('Services.loadCatalogue', err, 'Could not load our services')))
       .finally(() => setLoading(false));
   };
 
@@ -67,12 +91,12 @@ export default function Services() {
   useEffect(() => {
     const id = Number(searchParams.get('category'));
     if (!id) return;
-    const match = serviceCategories.find((c) => c.id === id);
+    const match = categories.find((c) => c.id === id);
     if (match) {
       setSelectedCategory(match);
       setStep(2);
     }
-  }, [searchParams]);
+  }, [searchParams, categories]);
 
   const packagesByCategory = useMemo(() => {
     const map = new Map();
@@ -174,7 +198,7 @@ export default function Services() {
                 </p>
 
                 <div className="gk-svc-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.8rem' }}>
-                  {serviceCategories.map((cat) => {
+                  {categories.map((cat) => {
                     const catPackages = packagesByCategory.get(cat.id) || [];
                     const count = catPackages.length;
                     return (
@@ -201,7 +225,7 @@ export default function Services() {
                       >
                         <CategoryIcon
                           slug={cat.slug}
-                          image={categoryImageFrom(catPackages)}
+                          image={cat.image || categoryImageFrom(catPackages)}
                           icon={cat.icon}
                           size={44}
                           iconSize={19}
@@ -264,4 +288,4 @@ export default function Services() {
   );
 }
 
-export { serviceCategories };
+export { FALLBACK_CATEGORIES };

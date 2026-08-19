@@ -7,12 +7,13 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "seed": "npm run seed:packages && npm run seed:categories",
+    "seed": "npm run seed:categories-svc && npm run seed:packages && npm run seed:categories",
     "seed:packages": "node src/seeds/seedServicePackages.js --retire-legacy",
     "seed:categories": "node src/seeds/seedCategories.js",
     "seed:admin": "node src/seeds/seedAdmin.js",
     "seed:admin:reset": "node src/seeds/seedAdmin.js --reset",
-    "test:email": "node src/utils/testEmail.js"
+    "test:email": "node src/utils/testEmail.js",
+    "seed:categories-svc": "node src/seeds/seedServiceCategories.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

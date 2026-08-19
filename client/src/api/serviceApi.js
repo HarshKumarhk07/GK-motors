@@ -5,6 +5,25 @@ import API from './axios';
 // Flat list of active packages + a `grouped` view keyed by categoryId
 export const getServiceCategories = () => API.get('/services/categories');
 
+/* ── Service categories (admin-managed taxonomy) ───────────────────────── */
+
+// Public: active categories, each with its packages.
+export const getCategories = () => API.get('/service-categories');
+
+// Admin.
+export const getAdminCategories = () => API.get('/service-categories/admin');
+export const createCategory = (formData) =>
+  API.post('/service-categories', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const updateCategory = (id, formData) =>
+  API.put(`/service-categories/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+// force=true also disables the packages inside it
+export const deleteCategory = (id, force = false) =>
+  API.delete(`/service-categories/${id}${force ? '?force=true' : ''}`);
+export const createCategoryPackage = (categoryId, formData) =>
+  API.post(`/service-categories/${categoryId}/packages`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const deleteCategoryPackage = (packageId) =>
+  API.delete(`/service-categories/packages/${packageId}`);
+
 // Legacy: active service types for the old single-service screen
 export const getActiveServiceTypes = () => API.get('/admin/service-types/active');
 

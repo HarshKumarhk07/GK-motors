@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import API from '../../api/axios';
 import * as adminApi from '../../api/adminApi';
 import * as rentalApi from '../../api/rentalApi';
+import * as svcApi from '../../api/serviceApi';
 import toast from 'react-hot-toast';
 import { Users, Car, Wrench, TrendingUp, Package, Clock, Check, CheckCircle, AlertCircle, BarChart3, Settings, LogOut, Home, ShoppingBag, List, Loader, Plus, Edit2, Trash2, Menu, X, Calendar, MapPin, Search, ChevronUp, ChevronDown } from 'lucide-react';
 import { io } from 'socket.io-client';
@@ -3667,6 +3668,106 @@ const CarsManagement = ({ serviceTypes }) => {
 // ── Packages / categories ────────────────────────────────────────────────
 const CategoriesManagement = ({ serviceTypes, reload }) => {
   const [busyId, setBusyId] = useState(null);
+  const [dbCategories, setDbCategories] = useState([]);
+  const [catsLoading, setCatsLoading] = useState(true);
+  const [newCat, setNewCat] = useState({ name: '', description: '' });
+  const [addingCat, setAddingCat] = useState(false);
+  // categoryId currently showing its "add package" form
+  const [pkgFormFor, setPkgFormFor] = useState(null);
+  const [newPkg, setNewPkg] = useState({ label: '', desc: '', basePrice: '', tier: 'single' });
+
+  const loadCategories = () => {
+    setCatsLoading(true);
+    svcApi.getAdminCategories()
+      .then(({ data }) => setDbCategories(data.categories || []))
+      .catch((err) => {
+        console.error('[CategoriesManagement.loadCategories]', err);
+        setDbCategories([]);
+      })
+      .finally(() => setCatsLoading(false));
+  };
+  useEffect(loadCategories, []);
+
+  const refreshAll = () => { loadCategories(); reload(); };
+
+  const addCategory = async (e) => {
+    e.preventDefault();
+    if (addingCat) return;
+    if (!newCat.name.trim()) { toast.error('Give the category a name'); return; }
+    setAddingCat(true);
+    try {
+      const fd = new FormData();
+      fd.append('name', newCat.name.trim());
+      fd.append('description', newCat.description.trim());
+      await svcApi.createCategory(fd);
+      toast.success(`"${newCat.name.trim()}" added`);
+      setNewCat({ name: '', description: '' });
+      refreshAll();
+    } catch (err) {
+      console.error('[CategoriesManagement.addCategory]', err);
+      toast.error(err.response?.data?.message || 'Could not add the category');
+    } finally {
+      setAddingCat(false);
+    }
+  };
+
+  const removeCategory = async (cat) => {
+    const count = (cat.packages || []).length;
+    const msg = count
+      ? `Delete "${cat.name}"? Its ${count} package(s) will be disabled so existing bookings still resolve.`
+      : `Delete "${cat.name}"?`;
+    if (!window.confirm(msg)) return;
+    setBusyId(`cat-${cat._id}`);
+    try {
+      const { data } = await svcApi.deleteCategory(cat._id, count > 0);
+      toast.success(data.message || 'Category deleted');
+      refreshAll();
+    } catch (err) {
+      console.error('[CategoriesManagement.removeCategory]', err);
+      toast.error(err.response?.data?.message || 'Could not delete the category');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const addPackage = async (e, cat) => {
+    e.preventDefault();
+    if (!newPkg.label.trim()) { toast.error('Give the package a name'); return; }
+    if (newPkg.basePrice === '' || Number(newPkg.basePrice) < 0) { toast.error('Enter a valid base price'); return; }
+    setBusyId(`pkg-${cat._id}`);
+    try {
+      const fd = new FormData();
+      fd.append('label', newPkg.label.trim());
+      fd.append('desc', newPkg.desc.trim());
+      fd.append('basePrice', newPkg.basePrice);
+      fd.append('tier', newPkg.tier);
+      await svcApi.createCategoryPackage(cat._id, fd);
+      toast.success(`"${newPkg.label.trim()}" added to ${cat.name}`);
+      setNewPkg({ label: '', desc: '', basePrice: '', tier: 'single' });
+      setPkgFormFor(null);
+      refreshAll();
+    } catch (err) {
+      console.error('[CategoriesManagement.addPackage]', err);
+      toast.error(err.response?.data?.message || 'Could not add the package');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const removePackage = async (pkg) => {
+    if (!window.confirm(`Delete "${pkg.label}"? If any booking uses it, it will be disabled instead.`)) return;
+    setBusyId(pkg._id);
+    try {
+      const { data } = await svcApi.deleteCategoryPackage(pkg._id);
+      toast.success(data.message || 'Package deleted');
+      refreshAll();
+    } catch (err) {
+      console.error('[CategoriesManagement.removePackage]', err);
+      toast.error(err.response?.data?.message || 'Could not delete the package');
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const patch = async (pkg, fields, file) => {
     setBusyId(pkg._id);
@@ -3736,13 +3837,56 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
     patch(pkg, {}, processed);
   };
 
-  const grouped = GK_CATEGORIES.map((c) => ({
-    ...c, packages: serviceTypes.filter((t) => t.categoryId === c.id),
-  }));
-  const orphans = serviceTypes.filter((t) => t.categoryId == null);
+  // Prefer the database taxonomy; fall back to the built-in list until
+  // seedServiceCategories.js has been run.
+  const grouped = dbCategories.length
+    ? dbCategories.map((c) => ({
+        _id: c._id,
+        id: c.categoryId,
+        slug: c.slug,
+        name: c.name,
+        description: c.description,
+        image: c.image,
+        fromDb: true,
+        packages: serviceTypes.filter((t) => t.categoryId === c.categoryId),
+      }))
+    : GK_CATEGORIES.map((c) => ({
+        ...c, fromDb: false, packages: serviceTypes.filter((t) => t.categoryId === c.id),
+      }));
+
+  const knownIds = grouped.map((c) => c.id);
+  const orphans = serviceTypes.filter((t) => t.categoryId == null || !knownIds.includes(t.categoryId));
 
   return (
     <div>
+      {/* Add a category */}
+      <form onSubmit={addCategory} style={{ background: '#FFF', border: '1.5px solid #EEE', borderRadius: '16px', padding: '1.15rem', marginBottom: '1.25rem' }}>
+        <p style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1rem', color: '#0F172A', marginBottom: '0.75rem' }}>
+          Add a Category
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'flex-end' }}>
+          <div style={{ flex: '1 1 190px' }}>
+            <label style={gkLabel}>Name *</label>
+            <input value={newCat.name} maxLength={60} placeholder="e.g. Windshield Repair"
+              onChange={(e) => setNewCat({ ...newCat, name: e.target.value })} style={gkInput(false)} />
+          </div>
+          <div style={{ flex: '2 1 260px' }}>
+            <label style={gkLabel}>Short description</label>
+            <input value={newCat.description} maxLength={200} placeholder="Shown under the name on the site"
+              onChange={(e) => setNewCat({ ...newCat, description: e.target.value })} style={gkInput(false)} />
+          </div>
+          <button type="submit" disabled={addingCat} style={{ ...gkBtn('primary'), cursor: addingCat ? 'wait' : 'pointer' }}>
+            <Plus size={14} /> {addingCat ? 'Adding…' : 'Add Category'}
+          </button>
+        </div>
+        {!catsLoading && dbCategories.length === 0 && (
+          <p style={{ color: '#92400E', fontSize: '0.78rem', fontWeight: 600, marginTop: '0.7rem', lineHeight: 1.5 }}>
+            Showing the built-in categories. Run
+            <code style={{ background: '#FEF3C7', padding: '0.05rem 0.35rem', borderRadius: '4px', margin: '0 0.25rem' }}>npm run seed:categories-svc</code>
+            to move them into the database before adding or deleting.
+          </p>
+        )}
+      </form>
       {orphans.length > 0 && (
         <div style={{ display: 'flex', gap: '0.6rem', background: '#FFFBEB', border: '1.5px solid #FDE68A', borderRadius: '12px', padding: '0.9rem 1.1rem', marginBottom: '1.5rem' }}>
           <AlertCircle size={17} style={{ color: '#D97706', flexShrink: 0, marginTop: '0.1rem' }} />
@@ -3786,6 +3930,18 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
                   <X size={13} /> Reset
                 </button>
               )}
+              {cat.fromDb && (
+                <>
+                  <button onClick={() => { setPkgFormFor(pkgFormFor === cat.id ? null : cat.id); setNewPkg({ label: '', desc: '', basePrice: '', tier: 'single' }); }}
+                    style={gkBtn('ghost')}>
+                    <Plus size={13} /> Package
+                  </button>
+                  <button onClick={() => removeCategory(cat)} disabled={busyId === `cat-${cat._id}`}
+                    style={{ ...gkBtn('danger'), cursor: busyId === `cat-${cat._id}` ? 'wait' : 'pointer' }}>
+                    <Trash2 size={13} /> Delete
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -3815,8 +3971,56 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
               >
                 {pkg.isActive ? <><X size={13} /> Disable</> : <><Check size={13} /> Enable</>}
               </button>
+              {cat.fromDb && (
+                <button onClick={() => removePackage(pkg)} disabled={busyId === pkg._id}
+                  style={{ ...gkBtn('danger'), cursor: busyId === pkg._id ? 'wait' : 'pointer' }}>
+                  <Trash2 size={13} />
+                </button>
+              )}
             </div>
           ))}
+
+          {pkgFormFor === cat.id && (
+            <form onSubmit={(e) => addPackage(e, cat)} style={{ borderTop: '1.5px dashed #CBD5E1', marginTop: '0.7rem', paddingTop: '0.9rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.55rem', alignItems: 'flex-end' }}>
+                <div style={{ flex: '1 1 150px' }}>
+                  <label style={gkLabel}>Package name *</label>
+                  <input value={newPkg.label} maxLength={60} placeholder="e.g. Premium Wash"
+                    onChange={(e) => setNewPkg({ ...newPkg, label: e.target.value })} style={gkInput(false)} />
+                </div>
+                <div style={{ flex: '2 1 200px' }}>
+                  <label style={gkLabel}>Description</label>
+                  <input value={newPkg.desc} maxLength={200}
+                    onChange={(e) => setNewPkg({ ...newPkg, desc: e.target.value })} style={gkInput(false)} />
+                </div>
+                <div style={{ flex: '0 1 110px' }}>
+                  <label style={gkLabel}>Base price *</label>
+                  <input type="number" min="0" value={newPkg.basePrice}
+                    onChange={(e) => setNewPkg({ ...newPkg, basePrice: e.target.value })} style={gkInput(false)} />
+                </div>
+                <div style={{ flex: '0 1 140px' }}>
+                  <label style={gkLabel}>Tier</label>
+                  <select value={newPkg.tier} onChange={(e) => setNewPkg({ ...newPkg, tier: e.target.value })} style={gkInput(false)}>
+                    <option value="single">Single (stacks)</option>
+                    <option value="basic">Basic</option>
+                    <option value="standard">Standard</option>
+                    <option value="comprehensive">Comprehensive</option>
+                  </select>
+                </div>
+                <button type="submit" disabled={busyId === `pkg-${cat._id}`}
+                  style={{ ...gkBtn('primary'), cursor: busyId === `pkg-${cat._id}` ? 'wait' : 'pointer' }}>
+                  <Plus size={13} /> Add
+                </button>
+                <button type="button" onClick={() => setPkgFormFor(null)} style={gkBtn('ghost')}>
+                  <X size={13} />
+                </button>
+              </div>
+              <p style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 500, marginTop: '0.55rem', lineHeight: 1.5 }}>
+                Basic, Standard and Comprehensive replace one another in a customer's cart.
+                Single packages stack alongside anything, and a category may hold only one of each graded tier.
+              </p>
+            </form>
+          )}
         </div>
       ))}
     </div>

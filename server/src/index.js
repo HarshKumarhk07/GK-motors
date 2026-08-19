@@ -21,6 +21,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const rentalRoutes = require('./routes/rentalRoutes');
 const serviceCarRoutes = require('./routes/serviceCarRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const serviceCategoryRoutes = require('./routes/serviceCategoryRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -69,6 +70,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/rentals', rentalRoutes);
 app.use('/api/service-cars', serviceCarRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/service-categories', serviceCategoryRoutes);
 
 // 404 Handler
 app.use((req, res) => {
