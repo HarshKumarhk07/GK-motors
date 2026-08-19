@@ -5,21 +5,21 @@ import {
   Disc, Settings, Shield, Award, Car, CheckCircle, Clock, Star, Phone,
   Calendar, Users, MapPin
 } from 'lucide-react';
-import { getServiceCategories, getServiceCars } from '../api/serviceApi';
+import { getServiceCategories, getServiceCars, getCategories } from '../api/serviceApi';
 import { getFeaturedParts } from '../api/storeApi';
 import PartCard from '../components/parts/PartCard';
 import CategoryIcon, { categoryImageFrom } from '../components/service/CategoryIcon';
 import heroCar from '../assets/hero-gt3-silver.png';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SERVICE CATEGORIES
-   The first nine `value`s match the seeded ServiceType documents
-   (server/src/seeds/seedServiceTypes.js). The last three are new for GK Motors
-   and still need to be seeded before booking will resolve them server-side.
-   Live prices/labels from GET /api/admin/service-types/active override the
-   fallbacks below when a matching `value` exists.
+   SERVICE CATEGORIES — fallback only
+   The live list comes from GET /api/service-categories, so categories the admin
+   adds show up here without a code change. This array is what renders before
+   that request resolves (and if it fails), and it also supplies the lucide icon
+   for the twelve built-in categories, which the API does not carry.
+   Keyed by categoryId — the same join key the packages use.
    ═══════════════════════════════════════════════════════════════════════════ */
-const SERVICE_CATEGORIES = [
+const FALLBACK_CATEGORIES = [
   { id: 1,  slug: 'car-service',          label: 'Car Service',           icon: Wrench,     desc: 'Periodic maintenance & oil change' },
   { id: 2,  slug: 'ac-service',           label: 'AC Service & Repair',   icon: Zap,        desc: 'AC gas refill, cooling check' },
   { id: 3,  slug: 'batteries',            label: 'Batteries',             icon: Battery,    desc: 'Battery replacement & testing' },
@@ -49,7 +49,7 @@ const STATS = [
 ];
 
 const HOW_IT_WORKS = [
-  { step: '01', icon: Wrench,   title: 'Pick a Service',    desc: 'Choose from 12 service categories with upfront pricing.' },
+  { step: '01', icon: Wrench,   title: 'Pick a Service',    desc: 'Browse every service category with upfront, transparent pricing.' },
   { step: '02', icon: Calendar, title: 'Book Your Slot',    desc: 'Select a date, time and address that suits you.' },
   { step: '03', icon: MapPin,   title: 'Free Pickup',       desc: 'We collect your car from your doorstep at no cost.' },
   { step: '04', icon: CheckCircle, title: 'Service & Return',   desc: 'Track progress live and get your car back, ready to drive.' },
@@ -65,12 +65,37 @@ const TESTIMONIALS = [
 
 export default function Home() {
   const [packages, setPackages] = useState([]);
+  const [serviceCategories, setServiceCategories] = useState(FALLBACK_CATEGORIES);
   const [parts, setParts] = useState([]);
   const [heroCars, setHeroCars] = useState([]);
 
   useEffect(() => {
-    getServiceCategories()
-      .then(({ data }) => setPackages(data.categories || []))
+    // Packages (for the "from" price) and the category list itself. The list is
+    // admin-managed, so a newly created category has to appear here too — the
+    // hardcoded array above is only the pre-load / offline fallback.
+    Promise.all([
+      getServiceCategories(),
+      getCategories().catch(() => ({ data: { categories: [] } })),
+    ])
+      .then(([pkgRes, catRes]) => {
+        setPackages(pkgRes.data.categories || []);
+        const live = catRes.data.categories || [];
+        if (live.length) {
+          setServiceCategories(
+            live.map((c) => {
+              const known = FALLBACK_CATEGORIES.find((f) => f.id === c.categoryId);
+              return {
+                id: c.categoryId,
+                slug: c.slug || known?.slug,
+                label: c.name || known?.label,
+                desc: c.description || known?.desc || '',
+                icon: known?.icon || Wrench,
+                apiImage: c.image || null,
+              };
+            })
+          );
+        }
+      })
       .catch((err) => console.error('[Home.getServiceCategories]', err));
 
     // Spare parts strip. Falls back to nothing if the store is empty, so the
@@ -89,9 +114,9 @@ export default function Home() {
 
   // Show each category's cheapest live package as its "from" price. Falls back
   // to no price until the catalogue is seeded.
-  const categories = SERVICE_CATEGORIES.map((cat) => {
+  const categories = serviceCategories.map((cat) => {
     const inCategory = packages.filter((p) => p.categoryId === cat.id);
-    const image = categoryImageFrom(inCategory);
+    const image = cat.apiImage || categoryImageFrom(inCategory);
     const priced = inCategory.filter((p) => p.basePrice > 0);
     if (!priced.length) return { ...cat, image, price: null };
     const cheapest = Math.min(...priced.map((p) => p.basePrice));
