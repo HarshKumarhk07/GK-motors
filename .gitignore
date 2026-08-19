@@ -57,3 +57,8 @@ server/.env.backup*
 client/.env.backup*
 .env.example
 .env.backup
+
+# Scratch folder for files staged for deletion. Nothing in here is part of the
+# project — it exists because the remote session can move files but not delete
+# them, so anything on its way out gets parked here first. Safe to empty.
+_to_delete/
