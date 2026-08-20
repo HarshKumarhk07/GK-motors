@@ -98,6 +98,18 @@ export default function Services() {
     }
   }, [searchParams, categories]);
 
+  // Deep link directly to checkout modal: /services?checkout=true
+  useEffect(() => {
+    if (searchParams.get('checkout') === 'true' && car && services.length) {
+      if (!user) {
+        toast.error('Please login to complete your booking');
+        navigate('/login?redirect=/services?checkout=true');
+        return;
+      }
+      setShowCheckout(true);
+    }
+  }, [searchParams, car, services, user, navigate]);
+
   const packagesByCategory = useMemo(() => {
     const map = new Map();
     packages.forEach((p) => {

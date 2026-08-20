@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, CreditCard, Truck, Shield, ChevronRight, User, Phone, MapPin, X, Check, Home as HomeIcon, Briefcase, Wrench, ArrowRight } from 'lucide-react';
 import { placeOrder, createPartPayment, verifyPartPayment } from '../api/storeApi';
 import { addAddress } from '../api/authApi';
+import CheckoutModal from '../components/service/CheckoutModal';
 import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -74,6 +75,7 @@ export default function Cart() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [placing, setPlacing] = useState(false);
+  const [showServiceCheckout, setShowServiceCheckout] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [showAddressMenu, setShowAddressMenu] = useState(false);
   const [markerPos, setMarkerPos] = useState({ lat: 12.8966, lng: 77.7061 });
@@ -229,10 +231,21 @@ export default function Cart() {
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                <Link to="/services"
-                  style={{ flex: 1, minWidth: '220px', background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', color: 'white', padding: '1rem 2rem', borderRadius: '14px', fontWeight: 900, textDecoration: 'none', textAlign: 'center', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em', fontSize: '1rem', boxShadow: '0 8px 25px rgba(30, 58, 138, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      toast.error('Please login to complete your booking');
+                      navigate('/login?redirect=/cart');
+                      return;
+                    }
+                    setShowServiceCheckout(true);
+                  }}
+                  style={{ flex: 1, minWidth: '220px', background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', color: 'white', border: 'none', padding: '1rem 2rem', borderRadius: '14px', fontWeight: 900, cursor: 'pointer', textAlign: 'center', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em', fontSize: '1rem', boxShadow: '0 8px 25px rgba(30, 58, 138, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.3s' }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
                   <Wrench size={18} /> PROCEED TO CHECKOUT & SCHEDULE SLOT
-                </Link>
+                </button>
                 <Link to="/parts"
                   style={{ background: '#FFF', color: '#0F172A', border: '1.5px solid #E2E8F0', padding: '1rem 1.8rem', borderRadius: '14px', fontWeight: 800, textDecoration: 'none', textAlign: 'center', fontFamily: 'Rajdhani, sans-serif', fontSize: '0.95rem' }}>
                   BROWSE SPARE PARTS
@@ -240,6 +253,7 @@ export default function Cart() {
               </div>
             </div>
           </div>
+          <CheckoutModal open={showServiceCheckout} onClose={() => setShowServiceCheckout(false)} />
         </div>
       );
     }
@@ -325,9 +339,19 @@ export default function Cart() {
                     </p>
                   </div>
                 </div>
-                <Link to="/services" style={{ background: '#1E3A8A', color: 'white', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 800, textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      toast.error('Please login to complete your booking');
+                      navigate('/login?redirect=/cart');
+                      return;
+                    }
+                    setShowServiceCheckout(true);
+                  }}
+                  style={{ background: '#1E3A8A', color: 'white', border: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 800, fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                >
                   CHECKOUT SERVICE <ArrowRight size={14} />
-                </Link>
+                </button>
               </div>
             )}
             {items.map((item) => {
@@ -767,6 +791,7 @@ export default function Cart() {
           </div>
         </div>
       )}
+      <CheckoutModal open={showServiceCheckout} onClose={() => setShowServiceCheckout(false)} />
     </div>
   );
 }
