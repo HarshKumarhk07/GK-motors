@@ -428,7 +428,7 @@ const ServicesTab = () => {
     ? allCategoriesList.filter(cat => (categorizedMap.get(cat.id) || []).length > 0 || (stSearch === '' && stStatusFilter === 'all' && cat.id > 0 && cat.id <= 6))
     : allCategoriesList.filter(cat => String(cat.id) === String(selectedCatFilter));
 
-  const filteredBookings = data.filter(item => {
+  const filtered = data.filter(item => {
     if (statusFilter !== 'all' && item.status !== statusFilter) return false;
     if (filterMode === 'all') return true;
     const created = new Date(item.createdAt);
