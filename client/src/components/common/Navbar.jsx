@@ -36,6 +36,10 @@ export default function Navbar() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
   // The panel overlays the page, so the page behind it must not scroll.
   useScrollLock(mobileOpen);
 
@@ -50,9 +54,6 @@ export default function Navbar() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [mobileOpen]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();

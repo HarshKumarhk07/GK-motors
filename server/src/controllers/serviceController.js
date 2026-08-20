@@ -4,6 +4,7 @@ const ServiceType = require('../models/ServiceType');
 const ServiceCar = require('../models/ServiceCar');
 const { createOrder, verifyPayment } = require('../services/paymentService');
 const { sendBookingConfirmationEmail } = require('../services/emailService');
+const { istNow, slotMinutes } = require('../utils/istTime');
 
 const TIME_SLOTS = [
   '09:00', '10:00', '11:00', '12:00', '13:00',
@@ -29,11 +30,25 @@ const SERVICE_CENTER_ADDRESS = {
 // car and get it back to the workshop the same day.
 const PICKUP_DROP_FIRST_HOUR = 9;
 const PICKUP_DROP_LAST_HOUR = 18;   // exclusive
-const isPickupDropAvailable = (time) => {
-  if (!time || typeof time !== 'string') return false;
-  const hour = parseInt(time.split(':')[0], 10);
-  if (Number.isNaN(hour)) return false;
-  return hour >= PICKUP_DROP_FIRST_HOUR && hour < PICKUP_DROP_LAST_HOUR;
+/**
+ * Can we run a doorstep pickup for this slot?
+ *
+ * Two conditions: the slot sits inside the 9-to-6 window, and — for a booking
+ * made today — the slot has not already gone past in Rohtak. Judged in IST,
+ * not in whatever timezone this process runs in.
+ */
+const isPickupDropAvailable = (time, date) => {
+  const mins = slotMinutes(time);
+  if (mins === null) return false;
+
+  const hour = Math.floor(mins / 60);
+  if (hour < PICKUP_DROP_FIRST_HOUR || hour >= PICKUP_DROP_LAST_HOUR) return false;
+
+  if (date) {
+    const now = istNow();
+    if (String(date).slice(0, 10) === now.date && mins <= now.minutes) return false;
+  }
+  return true;
 };
 
 // Copy only the address fields we store — never whatever else the client sent.
@@ -203,7 +218,7 @@ const createServiceBooking = asyncHandler(async (req, res) => {
   };
 
   if (pickupDrop && pickupDrop.enabled) {
-    if (!isPickupDropAvailable(scheduledTime)) {
+    if (!isPickupDropAvailable(scheduledTime, scheduledDate)) {
       res.status(400);
       throw new Error('Doorstep pickup and drop is only available between 9:00 AM and 6:00 PM');
     }
@@ -333,17 +348,18 @@ const getAvailability = asyncHandler(async (req, res) => {
   ]);
   const counts = new Map(booked.map((b) => [b._id, b.count]));
 
-  // Same-day slots close once we are past 18:00 local server time; individual
-  // slots close as they pass.
-  const now = new Date();
-  const isToday = start.toDateString() === now.toDateString();
+  // Individual slots close as they pass — in Rohtak, not wherever this process
+  // happens to be running. On a UTC host, server-local time is 5h30m behind
+  // IST, which kept already-finished evening slots on sale.
+  const now = istNow();
+  const isToday = String(date).slice(0, 10) === now.date;
 
   const slots = TIME_SLOTS.map((time) => {
     const used = counts.get(time) || 0;
     let available = used < SLOT_CAPACITY;
     if (available && isToday) {
-      const [h] = time.split(':').map(Number);
-      if (now.getHours() >= h) available = false;
+      const mins = slotMinutes(time);
+      if (mins !== null && mins <= now.minutes) available = false;
     }
     return { time, available, remaining: Math.max(0, SLOT_CAPACITY - used) };
   });

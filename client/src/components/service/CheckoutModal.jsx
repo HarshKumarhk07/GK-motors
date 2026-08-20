@@ -12,6 +12,7 @@ import {
 } from '../../api/serviceApi';
 import { getMe, addAddress } from '../../api/authApi';
 import { reportApiError } from '../../api/apiError';
+import { istNow, slotMinutes, addIstDays, formatIstDate } from '../../utils/istTime';
 
 const MAX_DAYS_AHEAD = 30;
 const LAST_BOOKABLE_HOUR = 18;   // same-day bookings close once 18:00 passes
@@ -31,11 +32,24 @@ const SERVICE_CENTER = {
 // Doorstep pickup runs 09:00-18:00, so the 18:00 slot — the last one bookable —
 // is out: there is no room after it for a driver to collect the car and get it
 // back the same day. The server re-checks this; this is just the UI half.
-const isPickupDropAvailable = (time) => {
-  if (!time) return false;
-  const hour = parseInt(String(time).split(':')[0], 10);
-  if (Number.isNaN(hour)) return false;
-  return hour >= 9 && hour < LAST_BOOKABLE_HOUR;
+/**
+ * Mirrors the same check on the server (controllers/serviceController.js).
+ * A slot qualifies when it sits inside the 9-to-6 window and, if the customer
+ * picked today, has not already passed in Rohtak. Judged in IST so a phone set
+ * to another timezone still sees the workshop's real availability.
+ */
+const isPickupDropAvailable = (time, date) => {
+  const mins = slotMinutes(time);
+  if (mins === null) return false;
+
+  const hour = Math.floor(mins / 60);
+  if (hour < 9 || hour >= LAST_BOOKABLE_HOUR) return false;
+
+  if (date) {
+    const now = istNow();
+    if (String(date).slice(0, 10) === now.date && mins <= now.minutes) return false;
+  }
+  return true;
 };
 
 const stripAddress = (a) => (a ? {
@@ -108,13 +122,12 @@ export default function CheckoutModal({ open, onClose }) {
 
   // ── date bounds ──
   const { minDate, maxDate } = useMemo(() => {
-    const now = new Date();
-    const first = new Date(now);
-    // Past 18:00 there is no slot left today, so start from tomorrow.
-    if (now.getHours() >= LAST_BOOKABLE_HOUR) first.setDate(first.getDate() + 1);
-    const last = new Date(now);
-    last.setDate(last.getDate() + MAX_DAYS_AHEAD);
-    return { minDate: toISODate(first), maxDate: toISODate(last) };
+    // Anchored to Rohtak, not to the device. A phone in another timezone would
+    // otherwise offer a day that has already ended at the workshop, or refuse
+    // one that has not started.
+    const now = istNow();
+    const firstDay = now.hour >= LAST_BOOKABLE_HOUR ? addIstDays(now.date, 1) : now.date;
+    return { minDate: firstDay, maxDate: addIstDays(now.date, MAX_DAYS_AHEAD) };
   }, []);
 
   // Reset to a clean state each time the modal opens.
@@ -131,12 +144,12 @@ export default function CheckoutModal({ open, onClose }) {
   // Changing to the 18:00 slot after opting in has to revoke the option, or a
   // request the server will reject sits quietly in state until payment.
   useEffect(() => {
-    if (scheduledTime && !isPickupDropAvailable(scheduledTime)) {
+    if (scheduledTime && !isPickupDropAvailable(scheduledTime, scheduledDate)) {
       setPickupDrop((prev) => (prev.enabled
         ? { enabled: false, pickupAddress: null, dropType: 'service_center', dropAddress: null }
         : prev));
     }
-  }, [scheduledTime]);
+  }, [scheduledTime, scheduledDate]);
 
   // ── slots for the chosen day ──
   useEffect(() => {
@@ -540,8 +553,13 @@ export default function CheckoutModal({ open, onClose }) {
               <input
                 type="date" value={scheduledDate} min={minDate} max={maxDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
-                style={{ ...inputStyle(false), marginBottom: '1.25rem' }}
+                style={{ ...inputStyle(false), marginBottom: '0.4rem' }}
               />
+              {/* The input shows the raw ISO value on some browsers, so spell
+                  the chosen day out underneath it. */}
+              <p style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 700, marginBottom: '1.25rem' }}>
+                {scheduledDate ? formatIstDate(scheduledDate, { long: true }) : 'Pick a date'}
+              </p>
 
               <label style={labelStyle}>Time Slot</label>
               {slotsLoading ? (
@@ -615,7 +633,7 @@ export default function CheckoutModal({ open, onClose }) {
               </button>
 
               {/* Doorstep pickup */}
-              {isPickupDropAvailable(scheduledTime) ? (
+              {isPickupDropAvailable(scheduledTime, scheduledDate) ? (
                 <div style={{
                   border: `1.5px solid ${pickupDrop.enabled ? '#1E3A8A' : '#E2E8F0'}`,
                   background: pickupDrop.enabled ? '#EFF6FF' : '#FFF',
@@ -936,7 +954,7 @@ export default function CheckoutModal({ open, onClose }) {
               <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.82rem', color: '#475569', fontWeight: 600, marginBottom: '1.1rem' }}>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <Calendar size={14} style={{ color: '#1E3A8A', flexShrink: 0, marginTop: '0.1rem' }} />
-                  <span>{scheduledDate} at {scheduledTime && prettyTime(scheduledTime)}</span>
+                  <span>{formatIstDate(scheduledDate, { long: true })}{scheduledTime ? ` at ${prettyTime(scheduledTime)}` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <MapPin size={14} style={{ color: '#1E3A8A', flexShrink: 0, marginTop: '0.1rem' }} />
