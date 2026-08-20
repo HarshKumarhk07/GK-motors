@@ -7,6 +7,7 @@ const {
   updateServiceCategory,
   deleteServiceCategory,
   createPackage,
+  updatePackage,
   deletePackage,
 } = require('../controllers/serviceCategoryController');
 const { protect } = require('../middleware/auth');
@@ -15,6 +16,7 @@ const { uploadCategoryMedia } = require('../middleware/upload');
 
 // Static segments before the `:id` param route.
 router.get('/admin', protect, adminOnly, getAllServiceCategories);
+router.put('/packages/:packageId', protect, adminOnly, uploadCategoryMedia.single('image'), updatePackage);
 router.delete('/packages/:packageId', protect, adminOnly, deletePackage);
 
 router.get('/', getServiceCategories);

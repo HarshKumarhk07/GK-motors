@@ -21,6 +21,8 @@ export const deleteCategory = (id, force = false) =>
   API.delete(`/service-categories/${id}${force ? '?force=true' : ''}`);
 export const createCategoryPackage = (categoryId, formData) =>
   API.post(`/service-categories/${categoryId}/packages`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const updateCategoryPackage = (packageId, formData) =>
+  API.put(`/service-categories/packages/${packageId}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const deleteCategoryPackage = (packageId) =>
   API.delete(`/service-categories/packages/${packageId}`);
 

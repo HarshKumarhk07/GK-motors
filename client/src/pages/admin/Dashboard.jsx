@@ -226,9 +226,11 @@ const ServicesTab = () => {
   const [stLoading, setStLoading] = useState(true);
   const [showStForm, setShowStForm] = useState(false);
   const [editSt, setEditSt] = useState(null);
+  const [stImage, setStImage] = useState(null);
+  const [stImagePreview, setStImagePreview] = useState('');
   const [stForm, setStForm] = useState({
     value: '', label: '', price: '', desc: '', order: 0, isActive: true,
-    categoryId: 1, categoryName: 'Periodic Car Service', tier: 'single', basePrice: 0
+    categoryId: 1, categoryName: 'Periodic Car Service', tier: 'single', basePrice: 0, image: ''
   });
   const [selectedCatFilter, setSelectedCatFilter] = useState('all');
   const [stSearch, setStSearch] = useState('');
@@ -287,9 +289,11 @@ const ServicesTab = () => {
   const resetStForm = () => {
     setShowStForm(false);
     setEditSt(null);
+    setStImage(null);
+    setStImagePreview('');
     setStForm({
       value: '', label: '', price: '', desc: '', order: 0, isActive: true,
-      categoryId: 1, categoryName: 'Periodic Car Service', tier: 'single', basePrice: 0
+      categoryId: 1, categoryName: 'Periodic Car Service', tier: 'single', basePrice: 0, image: ''
     });
   };
 
@@ -311,20 +315,37 @@ const ServicesTab = () => {
       return toast.error('Value, Label, and Price are required');
     }
     try {
+      const fd = new FormData();
+      fd.append('value', stForm.value.trim());
+      fd.append('label', stForm.label.trim());
+      fd.append('price', stForm.price.trim());
+      fd.append('desc', stForm.desc || '');
+      fd.append('order', String(stForm.order || 0));
+      fd.append('isActive', String(stForm.isActive));
+      fd.append('categoryId', String(stForm.categoryId));
+      fd.append('categoryName', stForm.categoryName || '');
+      fd.append('tier', stForm.tier || 'single');
+      fd.append('basePrice', String(stForm.basePrice || 0));
+      if (stImage) {
+        fd.append('image', stImage);
+      } else if (stForm.image) {
+        fd.append('image', stForm.image);
+      }
+
       if (editSt) {
-        const { data } = await adminApi.updateServiceType(editSt, stForm);
+        const { data } = await adminApi.updateServiceTypeMultipart(editSt, fd);
         if (data.serviceType) {
           setServiceTypes(prev => prev.map(s => s._id === editSt ? data.serviceType : s));
-          toast.success('Service type updated!');
+          toast.success('Service package updated!');
           resetStForm();
         } else {
           toast.error('Update failed: Server did not return updated data');
         }
       } else {
-        const { data } = await adminApi.createServiceType(stForm);
+        const { data } = await adminApi.createServiceType(fd);
         if (data.serviceType) {
           setServiceTypes(prev => [...prev, data.serviceType]);
-          toast.success('Service type added!');
+          toast.success('Service package added!');
           resetStForm();
         } else {
           toast.error('Add failed: Server did not return new data');
@@ -339,6 +360,8 @@ const ServicesTab = () => {
   const handleStEdit = (st) => {
     const cat = getCategoryForService(st);
     setEditSt(st._id);
+    setStImage(null);
+    setStImagePreview(st.image || '');
     setStForm({
       value: st.value,
       label: st.label,
@@ -349,7 +372,8 @@ const ServicesTab = () => {
       categoryId: st.categoryId || cat.id,
       categoryName: st.categoryName || cat.name,
       tier: st.tier || 'single',
-      basePrice: st.basePrice || 0
+      basePrice: st.basePrice || 0,
+      image: st.image || ''
     });
     setShowStForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -377,6 +401,8 @@ const ServicesTab = () => {
 
   const openAddForCategory = (cat) => {
     setEditSt(null);
+    setStImage(null);
+    setStImagePreview('');
     setStForm({
       value: cat.prefix ? `${cat.prefix}` : '',
       label: '',
@@ -387,7 +413,8 @@ const ServicesTab = () => {
       categoryId: cat.id,
       categoryName: cat.name,
       tier: 'single',
-      basePrice: 0
+      basePrice: 0,
+      image: ''
     });
     setShowStForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -590,6 +617,39 @@ const ServicesTab = () => {
                 onChange={e => setStForm({ ...stForm, desc: e.target.value })}
                 style={{ width: '100%', padding: '0.6rem 0.8rem', fontWeight: 600, background: '#FFF', border: '1.5px solid #CBD5E1', borderRadius: '10px', fontSize: '0.85rem', resize: 'vertical' }}
               />
+            </div>
+
+            {/* Package Image Upload */}
+            <div style={{ marginBottom: '1.2rem', background: '#FFFFFF', padding: '1.2rem', borderRadius: '14px', border: '1.5px solid #E2E8F0' }}>
+              <label style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+                PACKAGE IMAGE / BANNER (OPTIONAL)
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', flexWrap: 'wrap' }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setStImage(file);
+                      setStImagePreview(URL.createObjectURL(file));
+                    }
+                  }}
+                  style={{ fontSize: '0.82rem', color: '#64748B', fontWeight: 600 }}
+                />
+                {stImagePreview && (
+                  <div style={{ position: 'relative', width: 68, height: 68, borderRadius: '12px', overflow: 'hidden', border: '2px solid #1E3A8A', boxShadow: '0 4px 12px rgba(30,58,138,0.15)' }}>
+                    <img src={stImagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button
+                      type="button"
+                      onClick={() => { setStImage(null); setStImagePreview(''); setStForm(prev => ({ ...prev, image: '' })); }}
+                      style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(239,68,68,0.9)', color: 'white', border: 'none', borderRadius: '50%', width: 18, height: 18, fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Footer Form Actions */}
@@ -822,14 +882,24 @@ const ServicesTab = () => {
                           }}
                         >
                           {/* Card Header */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-                            <div style={{ flex: 1, marginRight: '0.5rem' }}>
-                              <h5 style={{ color: '#0F172A', fontWeight: 900, fontSize: '1rem', margin: 0, fontFamily: 'Rajdhani, sans-serif', lineHeight: 1.25 }}>
-                                {st.label}
-                              </h5>
-                              <span style={{ fontSize: '0.66rem', color: '#94A3B8', fontWeight: 700, fontFamily: 'monospace', display: 'block', marginTop: '0.15rem' }}>
-                                ID: {st.value}
-                              </span>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
+                            <div style={{ display: 'flex', gap: '0.7rem', alignItems: 'flex-start', flex: 1, marginRight: '0.5rem' }}>
+                              {st.image && (
+                                <img
+                                  src={st.image}
+                                  alt={st.label}
+                                  style={{ width: 42, height: 42, borderRadius: '8px', objectFit: 'cover', border: '1px solid #E2E8F0', flexShrink: 0 }}
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                              )}
+                              <div>
+                                <h5 style={{ color: '#0F172A', fontWeight: 900, fontSize: '1rem', margin: 0, fontFamily: 'Rajdhani, sans-serif', lineHeight: 1.25 }}>
+                                  {st.label}
+                                </h5>
+                                <span style={{ fontSize: '0.66rem', color: '#94A3B8', fontWeight: 700, fontFamily: 'monospace', display: 'block', marginTop: '0.15rem' }}>
+                                  ID: {st.value}
+                                </span>
+                              </div>
                             </div>
 
                             {/* Actions */}
@@ -4362,6 +4432,20 @@ const CarsManagement = ({ serviceTypes }) => {
 };
 
 // ── Packages / categories ────────────────────────────────────────────────
+/**
+ * Blank package form. Every detail field starts empty rather than at 0 — an
+ * empty string is sent as "not set", so the customer card hides that row
+ * instead of printing "0 months warranty".
+ */
+const EMPTY_PKG = {
+  label: '', desc: '', basePrice: '', tier: 'single',
+  originalPrice: '', durationHours: '',
+  warrantyMonths: '', warrantyDistanceKm: '',
+  recommendedIntervalKm: '', recommendedIntervalMonths: '',
+  pickupDrop: '', isRecommended: false,
+  features: [],
+};
+
 const CategoriesManagement = ({ serviceTypes, reload }) => {
   const [busyId, setBusyId] = useState(null);
   const [dbCategories, setDbCategories] = useState([]);
@@ -4370,7 +4454,10 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
   const [addingCat, setAddingCat] = useState(false);
   // categoryId currently showing its "add package" form
   const [pkgFormFor, setPkgFormFor] = useState(null);
-  const [newPkg, setNewPkg] = useState({ label: '', desc: '', basePrice: '', tier: 'single' });
+  // _id set = the form is editing that package rather than creating one.
+  const [editingPkgId, setEditingPkgId] = useState(null);
+  const [newPkg, setNewPkg] = useState(EMPTY_PKG);
+  const [pkgImage, setPkgImage] = useState(null);
 
   const loadCategories = () => {
     setCatsLoading(true);
@@ -4445,10 +4532,57 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
     }
   };
 
-  const addPackage = async (e, cat) => {
+  const closePkgForm = () => {
+    setPkgFormFor(null); setEditingPkgId(null);
+    setNewPkg(EMPTY_PKG); setPkgImage(null);
+  };
+
+  const startEditPackage = (cat, pkg) => {
+    setPkgFormFor(cat.id);
+    setEditingPkgId(pkg._id);
+    setPkgImage(null);
+    // Numbers become '' when unset, so the field renders blank and round-trips
+    // back as "leave unset" rather than as a zero.
+    const num = (v) => (v === null || v === undefined ? '' : String(v));
+    setNewPkg({
+      label: pkg.label || '',
+      desc: pkg.desc || '',
+      basePrice: num(pkg.basePrice),
+      tier: pkg.tier || 'single',
+      originalPrice: num(pkg.originalPrice),
+      durationHours: num(pkg.durationHours),
+      warrantyMonths: num(pkg.warranty?.months),
+      warrantyDistanceKm: num(pkg.warranty?.distanceKm),
+      recommendedIntervalKm: num(pkg.recommendedIntervalKm),
+      recommendedIntervalMonths: num(pkg.recommendedIntervalMonths),
+      pickupDrop: pkg.pickupDrop || '',
+      isRecommended: !!pkg.isRecommended,
+      features: Array.isArray(pkg.features) ? [...pkg.features] : [],
+    });
+  };
+
+  // ── feature list editing ──
+  const setFeature = (i, v) => setNewPkg((s) => {
+    const f = [...s.features]; f[i] = v; return { ...s, features: f };
+  });
+  const addFeature = () => setNewPkg((s) => ({ ...s, features: [...s.features, ''] }));
+  const removeFeature = (i) => setNewPkg((s) => ({ ...s, features: s.features.filter((_, n) => n !== i) }));
+  const moveFeature = (i, delta) => setNewPkg((s) => {
+    const to = i + delta;
+    if (to < 0 || to >= s.features.length) return s;
+    const f = [...s.features];
+    [f[i], f[to]] = [f[to], f[i]];
+    return { ...s, features: f };
+  });
+
+  const savePackage = async (e, cat) => {
     e.preventDefault();
     if (!newPkg.label.trim()) { toast.error('Give the package a name'); return; }
     if (newPkg.basePrice === '' || Number(newPkg.basePrice) < 0) { toast.error('Enter a valid base price'); return; }
+    if (newPkg.originalPrice !== '' && Number(newPkg.originalPrice) < Number(newPkg.basePrice)) {
+      toast.error('Original price should be above the base price, or left blank');
+      return;
+    }
     setBusyId(`pkg-${cat._id}`);
     try {
       const fd = new FormData();
@@ -4456,14 +4590,26 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
       fd.append('desc', newPkg.desc.trim());
       fd.append('basePrice', newPkg.basePrice);
       fd.append('tier', newPkg.tier);
-      await svcApi.createCategoryPackage(cat._id, fd);
-      toast.success(`"${newPkg.label.trim()}" added to ${cat.name}`);
-      setNewPkg({ label: '', desc: '', basePrice: '', tier: 'single' });
-      setPkgFormFor(null);
+      // Sent even when blank: the server reads '' as "clear this field", which
+      // is how you remove a warranty you added by mistake.
+      ['originalPrice', 'durationHours', 'warrantyMonths', 'warrantyDistanceKm',
+       'recommendedIntervalKm', 'recommendedIntervalMonths', 'pickupDrop'].forEach((k) => fd.append(k, newPkg[k]));
+      fd.append('isRecommended', newPkg.isRecommended ? 'true' : 'false');
+      fd.append('features', JSON.stringify(newPkg.features.map((f) => f.trim()).filter(Boolean)));
+      if (pkgImage) fd.append('image', pkgImage);
+
+      if (editingPkgId) {
+        await svcApi.updateCategoryPackage(editingPkgId, fd);
+        toast.success(`"${newPkg.label.trim()}" updated`);
+      } else {
+        await svcApi.createCategoryPackage(cat._id, fd);
+        toast.success(`"${newPkg.label.trim()}" added to ${cat.name}`);
+      }
+      closePkgForm();
       refreshAll();
     } catch (err) {
-      console.error('[CategoriesManagement.addPackage]', err);
-      toast.error(err.response?.data?.message || 'Could not add the package');
+      console.error('[CategoriesManagement.savePackage]', err);
+      toast.error(err.response?.data?.message || 'Could not save the package');
     } finally {
       setBusyId(null);
     }
@@ -4648,7 +4794,7 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
               )}
               {cat.fromDb && (
                 <>
-                  <button onClick={() => { setPkgFormFor(pkgFormFor === cat.id ? null : cat.id); setNewPkg({ label: '', desc: '', basePrice: '', tier: 'single' }); }}
+                  <button onClick={() => { const open = pkgFormFor === cat.id && !editingPkgId; closePkgForm(); if (!open) setPkgFormFor(cat.id); }}
                     style={gkBtn('ghost')}>
                     <Plus size={13} /> Package
                   </button>
@@ -4682,6 +4828,9 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
                   {pkg.tier} · ₹{Number(pkg.basePrice || 0).toLocaleString('en-IN')}
                 </div>
               </div>
+              <button onClick={() => startEditPackage(cat, pkg)} style={gkBtn('ghost')}>
+                <Edit2 size={13} /> Edit
+              </button>
               <label style={{ ...gkBtn('ghost'), cursor: 'pointer', margin: 0 }}>
                 <Plus size={13} /> Image
                 <input type="file" accept="image/*" onChange={(e) => onImage(pkg, e)} style={{ display: 'none' }} />
@@ -4704,7 +4853,12 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
           ))}
 
           {pkgFormFor === cat.id && (
-            <form onSubmit={(e) => addPackage(e, cat)} style={{ borderTop: '1.5px dashed #CBD5E1', marginTop: '0.7rem', paddingTop: '0.9rem' }}>
+            <form onSubmit={(e) => savePackage(e, cat)} style={{ borderTop: '1.5px dashed #CBD5E1', marginTop: '0.7rem', paddingTop: '0.9rem' }}>
+              <p style={{ fontWeight: 900, fontSize: '0.82rem', color: '#0F172A', marginBottom: '0.7rem' }}>
+                {editingPkgId ? `Editing "${newPkg.label || 'package'}"` : `New package in ${cat.name}`}
+              </p>
+
+              {/* ── Basics ── */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.55rem', alignItems: 'flex-end' }}>
                 <div style={{ flex: '1 1 150px' }}>
                   <label style={gkLabel}>Package name *</label>
@@ -4712,7 +4866,7 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
                     onChange={(e) => setNewPkg({ ...newPkg, label: e.target.value })} style={gkInput(false)} />
                 </div>
                 <div style={{ flex: '2 1 200px' }}>
-                  <label style={gkLabel}>Description</label>
+                  <label style={gkLabel}>Short description</label>
                   <input value={newPkg.desc} maxLength={200}
                     onChange={(e) => setNewPkg({ ...newPkg, desc: e.target.value })} style={gkInput(false)} />
                 </div>
@@ -4720,6 +4874,11 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
                   <label style={gkLabel}>Base price *</label>
                   <input type="number" min="0" value={newPkg.basePrice}
                     onChange={(e) => setNewPkg({ ...newPkg, basePrice: e.target.value })} style={gkInput(false)} />
+                </div>
+                <div style={{ flex: '0 1 120px' }}>
+                  <label style={gkLabel}>Was (optional)</label>
+                  <input type="number" min="0" value={newPkg.originalPrice} placeholder="—"
+                    onChange={(e) => setNewPkg({ ...newPkg, originalPrice: e.target.value })} style={gkInput(false)} />
                 </div>
                 <div style={{ flex: '0 1 140px' }}>
                   <label style={gkLabel}>Tier</label>
@@ -4730,17 +4889,106 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
                     <option value="comprehensive">Comprehensive</option>
                   </select>
                 </div>
-                <button type="submit" disabled={busyId === `pkg-${cat._id}`}
-                  style={{ ...gkBtn('primary'), cursor: busyId === `pkg-${cat._id}` ? 'wait' : 'pointer' }}>
-                  <Plus size={13} /> Add
-                </button>
-                <button type="button" onClick={() => setPkgFormFor(null)} style={gkBtn('ghost')}>
-                  <X size={13} />
+                <div style={{ flex: '0 1 170px' }}>
+                  <label style={gkLabel}>Image</label>
+                  <input type="file" accept="image/*"
+                    onChange={(e) => setPkgImage(e.target.files?.[0] || null)}
+                    style={{ ...gkInput(false), padding: '0.35rem' }} />
+                </div>
+              </div>
+
+              {/* ── Service info. Anything left blank is hidden on the card. ── */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.55rem', alignItems: 'flex-end', marginTop: '0.7rem' }}>
+                <div style={{ flex: '0 1 120px' }}>
+                  <label style={gkLabel}>Duration (hrs)</label>
+                  <input type="number" min="0" value={newPkg.durationHours} placeholder="—"
+                    onChange={(e) => setNewPkg({ ...newPkg, durationHours: e.target.value })} style={gkInput(false)} />
+                </div>
+                <div style={{ flex: '0 1 130px' }}>
+                  <label style={gkLabel}>Warranty (months)</label>
+                  <input type="number" min="0" value={newPkg.warrantyMonths} placeholder="—"
+                    onChange={(e) => setNewPkg({ ...newPkg, warrantyMonths: e.target.value })} style={gkInput(false)} />
+                </div>
+                <div style={{ flex: '0 1 130px' }}>
+                  <label style={gkLabel}>Warranty (km)</label>
+                  <input type="number" min="0" value={newPkg.warrantyDistanceKm} placeholder="—"
+                    onChange={(e) => setNewPkg({ ...newPkg, warrantyDistanceKm: e.target.value })} style={gkInput(false)} />
+                </div>
+                <div style={{ flex: '0 1 140px' }}>
+                  <label style={gkLabel}>Repeat every (km)</label>
+                  <input type="number" min="0" value={newPkg.recommendedIntervalKm} placeholder="—"
+                    onChange={(e) => setNewPkg({ ...newPkg, recommendedIntervalKm: e.target.value })} style={gkInput(false)} />
+                </div>
+                <div style={{ flex: '0 1 150px' }}>
+                  <label style={gkLabel}>Repeat every (months)</label>
+                  <input type="number" min="0" value={newPkg.recommendedIntervalMonths} placeholder="—"
+                    onChange={(e) => setNewPkg({ ...newPkg, recommendedIntervalMonths: e.target.value })} style={gkInput(false)} />
+                </div>
+                <div style={{ flex: '0 1 165px' }}>
+                  <label style={gkLabel}>Pickup &amp; drop</label>
+                  <select value={newPkg.pickupDrop} onChange={(e) => setNewPkg({ ...newPkg, pickupDrop: e.target.value })} style={gkInput(false)}>
+                    <option value="">Don't show</option>
+                    <option value="free">Free</option>
+                    <option value="paid">Available</option>
+                    <option value="unavailable">Drop at centre</option>
+                  </select>
+                </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', fontWeight: 700, color: '#0F172A', height: 42, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={newPkg.isRecommended}
+                    onChange={(e) => setNewPkg({ ...newPkg, isRecommended: e.target.checked })} />
+                  Recommended
+                </label>
+              </div>
+
+              {/* ── Features ── */}
+              <div style={{ marginTop: '0.9rem' }}>
+                <label style={gkLabel}>What's included</label>
+                {newPkg.features.length === 0 && (
+                  <p style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 600, margin: '0 0 0.5rem' }}>
+                    No features yet — the card shows only the short description.
+                  </p>
+                )}
+                {newPkg.features.map((f, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', marginBottom: '0.35rem' }}>
+                    <span style={{ color: '#94A3B8', fontSize: '0.72rem', fontWeight: 800, width: 18, flexShrink: 0 }}>{i + 1}.</span>
+                    <input value={f} maxLength={80} placeholder="e.g. Engine Oil Replacement"
+                      onChange={(e) => setFeature(i, e.target.value)} style={{ ...gkInput(false), flex: 1 }} />
+                    <button type="button" onClick={() => moveFeature(i, -1)} disabled={i === 0}
+                      title="Move up" aria-label={`Move feature ${i + 1} up`}
+                      style={{ ...gkBtn('ghost'), opacity: i === 0 ? 0.4 : 1, padding: '0.4rem 0.5rem' }}>
+                      <ChevronUp size={13} />
+                    </button>
+                    <button type="button" onClick={() => moveFeature(i, 1)} disabled={i === newPkg.features.length - 1}
+                      title="Move down" aria-label={`Move feature ${i + 1} down`}
+                      style={{ ...gkBtn('ghost'), opacity: i === newPkg.features.length - 1 ? 0.4 : 1, padding: '0.4rem 0.5rem' }}>
+                      <ChevronDown size={13} />
+                    </button>
+                    <button type="button" onClick={() => removeFeature(i)}
+                      title="Remove" aria-label={`Remove feature ${i + 1}`}
+                      style={{ ...gkBtn('danger'), padding: '0.4rem 0.5rem' }}>
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))}
+                <button type="button" onClick={addFeature} style={gkBtn('ghost')}>
+                  <Plus size={13} /> Add feature
                 </button>
               </div>
+
+              <div style={{ display: 'flex', gap: '0.55rem', marginTop: '1rem' }}>
+                <button type="submit" disabled={busyId === `pkg-${cat._id}`}
+                  style={{ ...gkBtn('primary'), cursor: busyId === `pkg-${cat._id}` ? 'wait' : 'pointer' }}>
+                  {editingPkgId ? <><Check size={13} /> Save changes</> : <><Plus size={13} /> Add package</>}
+                </button>
+                <button type="button" onClick={closePkgForm} style={gkBtn('ghost')}>
+                  <X size={13} /> Cancel
+                </button>
+              </div>
+
               <p style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 500, marginTop: '0.55rem', lineHeight: 1.5 }}>
                 Basic, Standard and Comprehensive replace one another in a customer's cart.
                 Single packages stack alongside anything, and a category may hold only one of each graded tier.
+                Any field left blank is hidden on the customer's card rather than shown as zero.
               </p>
             </form>
           )}
@@ -5069,9 +5317,9 @@ export default function AdminDashboard() {
                 <StatCard icon={Wrench} label="Services" value={stats.services?.toLocaleString()} color="#FB8C00" />
                 <StatCard icon={TrendingUp} label="Revenue" value={`₹${(stats.revenue / 1000).toFixed(1)}K`} color="#2E7D32" />
                 <StatCard icon={Clock} label="Pending Services" value={stats.pendingServices} color="#FB8C00" />
-                <StatCard icon={AlertCircle} label="Pending Sells" value={stats.pendingSells} color="#E53935" />
-                <StatCard icon={Car} label="Rental Cars" value={stats.rentalCars?.toLocaleString() || 0} color="#1E3A8A" />
-                <StatCard icon={Calendar} label="Rental Bookings" value={stats.rentalBookings?.toLocaleString() || 0} color="#0F172A" />
+                {/* [GK MOTORS] Pending Sells / Rental Cars / Rental Bookings removed —
+                    the sell and rental verticals are not part of the service business.
+                    The API still returns these counts; nothing reads them here. */}
               </div>
 
               {/* Recent Service Bookings */}

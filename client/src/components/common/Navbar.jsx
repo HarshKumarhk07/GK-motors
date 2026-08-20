@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Menu, X, ChevronDown, User, LogOut, Settings, Wrench, Phone, ShoppingCart, Heart } from 'lucide-react';
+import { useScrollLock } from '../../utils/responsive';
 import { useCart, useServiceCart } from '../../context/CartContext';
 
 const navLinks = [
@@ -34,6 +35,21 @@ export default function Navbar() {
   const totalCartCount = (itemCount || 0) + (serviceCount || 0);
 
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // The panel overlays the page, so the page behind it must not scroll.
+  useScrollLock(mobileOpen);
+
+  // Every link already closes the panel, but a browser back/forward gesture
+  // changes the route without one, which would leave it hanging open.
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  // Escape is the expected way out of anything overlaying the page.
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setMobileOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mobileOpen]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -203,7 +219,20 @@ export default function Navbar() {
             )}
 
             {/* Mobile hamburger */}
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden" style={{ color: '#0F172A', background: 'none', border: 'none', cursor: 'pointer', padding: '0.2rem' }}>
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden"
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileOpen}
+              aria-controls="gk-mobile-nav"
+              style={{
+                color: '#0F172A', background: 'none', border: 'none', cursor: 'pointer',
+                // 44px is the smallest reliably tappable target.
+                minWidth: 44, minHeight: 44,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                margin: '-0.2rem -0.4rem -0.2rem 0',   // grow the hit area, not the layout
+              }}
+            >
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
@@ -211,13 +240,13 @@ export default function Navbar() {
 
         {/* Mobile Nav */}
         {mobileOpen && (
-          <div style={{ background: '#0F172A', margin: '0 -1rem' }}>
+          <div id="gk-mobile-nav" style={{ background: '#0F172A', margin: '0 -1rem', maxHeight: 'calc(100vh - 64px)', overflowY: 'auto' }}>
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '1.25rem 1rem 1rem' }}>
               <Link to="/services" onClick={() => setMobileOpen(false)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                   background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', color: 'white',
-                  padding: '0.8rem', borderRadius: '12px', textDecoration: 'none',
+                  padding: '0.8rem', minHeight: 48, borderRadius: '12px', textDecoration: 'none',
                   fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, letterSpacing: '0.08em',
                   textTransform: 'uppercase', fontSize: '0.9rem', marginBottom: '1rem'
                 }}>
@@ -226,27 +255,27 @@ export default function Navbar() {
 
               {navLinks.map((link) => (
                 <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)}
-                  style={{ display: 'block', color: isActive(location.pathname, link.href) ? '#93C5FD' : '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
+                  style={{ display: 'flex', alignItems: 'center', minHeight: 44, color: isActive(location.pathname, link.href) ? '#93C5FD' : '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
                   {link.label}
                 </Link>
               ))}
 
-              <a href="tel:+919253625099" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
+              <a href="tel:+919253625099" style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
                 <Phone size={15} /> +91 92536 25099
               </a>
 
               {/* Mobile user actions */}
               {user && (
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '0.8rem', paddingTop: '0.8rem' }}>
-                  <Link to="/profile" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
+                  <Link to="/profile" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
                     <User size={15} /> My Profile
                   </Link>
                   {user.role === 'admin' && (
-                    <Link to="/admin" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#93C5FD', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 700 }}>
+                    <Link to="/admin" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#93C5FD', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 700 }}>
                       <Settings size={15} /> Admin Panel
                     </Link>
                   )}
-                  <button onClick={() => { handleLogout(); setMobileOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 700, width: '100%' }}>
+                  <button onClick={() => { handleLogout(); setMobileOpen(false); }} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 700, width: '100%' }}>
                     <LogOut size={15} /> Logout
                   </button>
                 </div>

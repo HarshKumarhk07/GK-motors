@@ -160,6 +160,81 @@ const deleteServiceCategory = asyncHandler(async (req, res) => {
 // @desc  Create a package inside a category
 // @route POST /api/service-categories/:id/packages
 // @access Admin
+/**
+ * Package detail fields, parsed out of a multipart body.
+ *
+ * Everything arrives as a string over FormData, and an empty string means "not
+ * set" rather than zero — a package with no warranty must stay unset so the
+ * card hides that row instead of printing "0 months".
+ */
+const optionalNumber = (raw) => {
+  if (raw === undefined || raw === null || String(raw).trim() === '') return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return undefined;   // undefined = invalid
+  return n;
+};
+
+const parseFeatures = (raw) => {
+  if (raw === undefined) return undefined;              // not submitted: leave alone
+  let list = raw;
+  if (typeof raw === 'string') {
+    try { list = JSON.parse(raw); }
+    catch { list = raw.split('\n'); }                   // tolerate a plain textarea
+  }
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((f) => String(f || '').trim())
+    .filter(Boolean)
+    .slice(0, 40);
+};
+
+const PICKUP_DROP = ['', 'free', 'paid', 'unavailable'];
+
+/**
+ * Read the optional detail fields off a request body onto a target object.
+ * Returns an error string, or null when everything parsed.
+ */
+const applyPackageDetail = (target, body) => {
+  const numeric = {
+    durationHours: 'Duration',
+    recommendedIntervalKm: 'Recommended interval (km)',
+    recommendedIntervalMonths: 'Recommended interval (months)',
+    originalPrice: 'Original price',
+  };
+  for (const [field, label] of Object.entries(numeric)) {
+    if (body[field] === undefined) continue;
+    const v = optionalNumber(body[field]);
+    if (v === undefined) return `${label} must be a number of 0 or more`;
+    target[field] = v;
+  }
+
+  if (body.warrantyMonths !== undefined) {
+    const v = optionalNumber(body.warrantyMonths);
+    if (v === undefined) return 'Warranty months must be a number of 0 or more';
+    target.warranty = { ...(target.warranty || {}), months: v };
+  }
+  if (body.warrantyDistanceKm !== undefined) {
+    const v = optionalNumber(body.warrantyDistanceKm);
+    if (v === undefined) return 'Warranty distance must be a number of 0 or more';
+    target.warranty = { ...(target.warranty || {}), distanceKm: v };
+  }
+
+  if (body.pickupDrop !== undefined) {
+    const v = String(body.pickupDrop || '');
+    if (!PICKUP_DROP.includes(v)) return 'Pickup/drop must be free, paid or unavailable';
+    target.pickupDrop = v;
+  }
+
+  if (body.isRecommended !== undefined) {
+    target.isRecommended = body.isRecommended === true || body.isRecommended === 'true';
+  }
+
+  const features = parseFeatures(body.features);
+  if (features !== undefined) target.features = features;
+
+  return null;
+};
+
 const createPackage = asyncHandler(async (req, res) => {
   const category = await ServiceCategory.findById(req.params.id);
   if (!category) { res.status(404); throw new Error('Category not found'); }
@@ -193,7 +268,7 @@ const createPackage = asyncHandler(async (req, res) => {
   if (await ServiceType.findOne({ value })) value = `${value}_${Date.now().toString(36)}`;
 
   const count = await ServiceType.countDocuments({ categoryId: category.categoryId });
-  const pkg = await ServiceType.create({
+  const doc = {
     value,
     label: String(label).trim(),
     desc: desc ? String(desc).trim() : '',
@@ -206,9 +281,65 @@ const createPackage = asyncHandler(async (req, res) => {
     isActive: true,
     order: count + 1,
     image: req.file ? toUrl(req.file) : null,
-  });
+  };
+
+  const detailError = applyPackageDetail(doc, req.body);
+  if (detailError) { res.status(400); throw new Error(detailError); }
+
+  const pkg = await ServiceType.create(doc);
 
   res.status(201).json({ success: true, package: pkg });
+});
+
+// @desc  Update a package
+// @route PUT /api/service-categories/packages/:packageId
+// @access Admin
+// Only the fields present in the body are touched, so a partial save from the
+// admin form cannot blank out something it did not render.
+const updatePackage = asyncHandler(async (req, res) => {
+  const pkg = await ServiceType.findById(req.params.packageId);
+  if (!pkg) { res.status(404); throw new Error('Package not found'); }
+
+  const { label, desc, basePrice, tier, isActive, order } = req.body;
+
+  if (label !== undefined) {
+    if (!String(label).trim()) { res.status(400); throw new Error('Package name is required'); }
+    pkg.label = String(label).trim();
+  }
+  if (desc !== undefined) pkg.desc = String(desc).trim();
+
+  if (basePrice !== undefined) {
+    const price = Number(basePrice);
+    if (!Number.isFinite(price) || price < 0) { res.status(400); throw new Error('Enter a valid base price'); }
+    pkg.basePrice = price;
+    // Keep the legacy display string in step with the number behind it.
+    pkg.price = `From ₹${price.toLocaleString('en-IN')}`;
+  }
+
+  if (tier !== undefined && ['basic', 'standard', 'comprehensive', 'single'].includes(tier)) {
+    // Same uniqueness rule as create: one graded tier per category, or the
+    // cart's swap has nothing deterministic to replace.
+    if (tier !== 'single' && tier !== pkg.tier) {
+      const clash = await ServiceType.findOne({
+        categoryId: pkg.categoryId, tier, _id: { $ne: pkg._id },
+      });
+      if (clash) {
+        res.status(400);
+        throw new Error(`"${clash.label}" is already the ${tier} package in this category`);
+      }
+    }
+    pkg.tier = tier;
+  }
+
+  if (isActive !== undefined) pkg.isActive = isActive === true || isActive === 'true';
+  if (order !== undefined && Number.isFinite(Number(order))) pkg.order = Number(order);
+  if (req.file) pkg.image = toUrl(req.file);
+
+  const detailError = applyPackageDetail(pkg, req.body);
+  if (detailError) { res.status(400); throw new Error(detailError); }
+
+  await pkg.save();
+  res.json({ success: true, package: pkg });
 });
 
 // @desc  Delete a package
@@ -243,5 +374,6 @@ module.exports = {
   updateServiceCategory,
   deleteServiceCategory,
   createPackage,
+  updatePackage,
   deletePackage,
 };

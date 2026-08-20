@@ -54,10 +54,44 @@ const serviceBookingSchema = new mongoose.Schema(
 
     problemDescription: { type: String },
 
-    // [GK MOTORS] Pickup & drop removed from the booking flow — the customer
-    // gives a single service address. Field kept (defaulted false) so historic
-    // bookings and the admin panel do not break.
+    // Legacy flag. Kept in sync with pickupDrop.enabled below so the older
+    // admin views keep working; read pickupDrop for anything new.
     isPickupDrop: { type: Boolean, default: false },
+
+    // ── GK Motors: doorstep pickup & drop ─────────────────────────────────
+    // Only offered for slots between 09:00 and 17:59 — the 18:00 slot is too
+    // late for the driver to complete a round trip, and the controller
+    // re-checks this rather than trusting the client.
+    pickupDrop: {
+      enabled: { type: Boolean, default: false },
+      pickupAddress: {
+        label: String,
+        street: String,
+        city: String,
+        state: String,
+        pincode: String,
+        lat: Number,
+        lng: Number,
+      },
+      // Where the car goes back afterwards:
+      //   same           — returned to the pickup address
+      //   different      — returned to another address the customer gave
+      //   service_center — customer collects it from the workshop
+      dropType: {
+        type: String,
+        enum: ['same', 'different', 'service_center'],
+        default: 'service_center',
+      },
+      dropAddress: {
+        label: String,
+        street: String,
+        city: String,
+        state: String,
+        pincode: String,
+        lat: Number,
+        lng: Number,
+      },
+    },
     isOneHourRepair: { type: Boolean, default: false },
 
     address: {

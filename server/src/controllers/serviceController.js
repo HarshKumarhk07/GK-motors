@@ -3,6 +3,7 @@ const ServiceBooking = require('../models/ServiceBooking');
 const ServiceType = require('../models/ServiceType');
 const ServiceCar = require('../models/ServiceCar');
 const { createOrder, verifyPayment } = require('../services/paymentService');
+const { sendBookingConfirmationEmail } = require('../services/emailService');
 
 const TIME_SLOTS = [
   '09:00', '10:00', '11:00', '12:00', '13:00',
@@ -10,6 +11,41 @@ const TIME_SLOTS = [
 ];
 // How many bookings can share one slot before it is shown as full.
 const SLOT_CAPACITY = Number(process.env.SERVICE_SLOT_CAPACITY || 3);
+
+// The workshop. Used as the drop point when the customer collects the car
+// themselves, and printed in the confirmation email.
+const SERVICE_CENTER_ADDRESS = {
+  label: 'GK Motors Service Centre',
+  street: 'Sheela By Pass, near New Railway Crossing, Jasbir Colony, Sector-5',
+  city: 'Rohtak',
+  state: 'Haryana',
+  pincode: '124001',
+  fullAddress:
+    'GK Motors, Sheela By Pass, near New Railway Crossing, Jasbir Colony, Sector-5, Rohtak, Haryana 124001',
+};
+
+// Doorstep pickup runs 09:00-18:00. The 18:00 slot is excluded: it is the last
+// bookable slot, and there is no room after it for the driver to collect the
+// car and get it back to the workshop the same day.
+const PICKUP_DROP_FIRST_HOUR = 9;
+const PICKUP_DROP_LAST_HOUR = 18;   // exclusive
+const isPickupDropAvailable = (time) => {
+  if (!time || typeof time !== 'string') return false;
+  const hour = parseInt(time.split(':')[0], 10);
+  if (Number.isNaN(hour)) return false;
+  return hour >= PICKUP_DROP_FIRST_HOUR && hour < PICKUP_DROP_LAST_HOUR;
+};
+
+// Copy only the address fields we store — never whatever else the client sent.
+const cleanAddress = (a) => ({
+  label: a.label || 'Address',
+  street: String(a.street || '').trim(),
+  city: String(a.city || '').trim(),
+  state: String(a.state || '').trim(),
+  pincode: String(a.pincode || '').trim(),
+  lat: typeof a.lat === 'number' ? a.lat : undefined,
+  lng: typeof a.lng === 'number' ? a.lng : undefined,
+});
 const MAX_BOOKING_DAYS_AHEAD = 30;
 
 // ── Legacy single-service booking (kept for backward compatibility) ────────
@@ -31,7 +67,7 @@ const createBooking = asyncHandler(async (req, res) => {
 const createServiceBooking = asyncHandler(async (req, res) => {
   const {
     selectedCar, services, scheduledDate, scheduledTime,
-    address, totalAmount, problemDescription,
+    address, totalAmount, problemDescription, pickupDrop,
   } = req.body;
 
   // ── Car ──
@@ -156,6 +192,49 @@ const createServiceBooking = asyncHandler(async (req, res) => {
     throw new Error('Pincode must be 6 digits and cannot start with 0');
   }
 
+  // ── Pickup & drop ──
+  // Re-validated here rather than trusted: the client disables the option
+  // outside 09:00-17:59, but nothing stops a crafted request.
+  const pd = {
+    enabled: false,
+    dropType: 'service_center',
+    pickupAddress: undefined,
+    dropAddress: undefined,
+  };
+
+  if (pickupDrop && pickupDrop.enabled) {
+    if (!isPickupDropAvailable(scheduledTime)) {
+      res.status(400);
+      throw new Error('Doorstep pickup and drop is only available between 9:00 AM and 6:00 PM');
+    }
+    if (!pickupDrop.pickupAddress || !pickupDrop.pickupAddress.street || !pickupDrop.pickupAddress.city) {
+      res.status(400);
+      throw new Error('A pickup address is required for doorstep pickup');
+    }
+
+    const dropType = ['same', 'different', 'service_center'].includes(pickupDrop.dropType)
+      ? pickupDrop.dropType
+      : 'service_center';
+
+    if (dropType === 'different'
+        && (!pickupDrop.dropAddress || !pickupDrop.dropAddress.street || !pickupDrop.dropAddress.city)) {
+      res.status(400);
+      throw new Error('A drop address is required when returning the car to a different address');
+    }
+
+    pd.enabled = true;
+    pd.pickupAddress = cleanAddress(pickupDrop.pickupAddress);
+    pd.dropType = dropType;
+
+    if (dropType === 'same') {
+      pd.dropAddress = pd.pickupAddress;
+    } else if (dropType === 'different') {
+      pd.dropAddress = cleanAddress(pickupDrop.dropAddress);
+    } else {
+      pd.dropAddress = cleanAddress(SERVICE_CENTER_ADDRESS);
+    }
+  }
+
   const booking = await ServiceBooking.create({
     user: req.user._id,
     selectedCar: {
@@ -175,7 +254,8 @@ const createServiceBooking = asyncHandler(async (req, res) => {
     bikeYear: year,
     serviceLabel: pricedServices.map((s) => s.name).join(', '),
     problemDescription,
-    isPickupDrop: false, // [GK MOTORS] pickup & drop removed from the flow
+    isPickupDrop: pd.enabled,   // legacy mirror of pickupDrop.enabled
+    pickupDrop: pd,
     address: {
       street: address.street, city: address.city, state: address.state,
       pincode: String(address.pincode).trim(), lat: address.lat, lng: address.lng,
@@ -187,6 +267,14 @@ const createServiceBooking = asyncHandler(async (req, res) => {
     payment: { method: 'online', status: 'pending' },
     statusHistory: [{ status: 'requested', note: 'Service booking created' }],
   });
+
+  // Confirmation email. Deliberately after the booking is committed and
+  // deliberately not awaited into the response path — a mail outage must not
+  // cost the customer a booking they have already been charged for.
+  if (req.user.email) {
+    sendBookingConfirmationEmail(req.user, booking, SERVICE_CENTER_ADDRESS)
+      .catch((err) => console.error('[serviceController.bookingEmail]', err.message));
+  }
 
   res.status(201).json({ success: true, booking });
 });

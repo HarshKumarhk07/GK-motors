@@ -229,6 +229,7 @@ export default function Home() {
           .gk-section { padding: 2.25rem 0 !important; }
           .gk-section h2 { font-size: 1.65rem !important; }
           .gk-cat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
+          .gk-parts-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
           .gk-cat-card { padding: 0.85rem 0.7rem !important; }
           .gk-steps-grid { grid-template-columns: 1fr !important; }
           .gk-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -236,6 +237,50 @@ export default function Home() {
           .testimonial-section h2 { font-size: 1.65rem !important; }
           .testimonial-track { gap: 2rem; padding: 1.5rem 0; }
         }
+        /* ── Services: six across, stepping down with the viewport ──────── */
+        .gk-cat-grid {
+          display: grid; grid-template-columns: repeat(6, 1fr);
+          gap: 0.85rem; align-items: stretch;
+        }
+        .gk-cat-card {
+          display: flex; flex-direction: column; height: 100%;
+          background: #FFFFFF;
+          border: 1px solid #E4EBF7; border-top: 2.5px solid #1D4ED8;
+          border-radius: 12px; padding: 1.05rem 0.95rem 1rem;
+          text-decoration: none;
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+          transition: transform .28s cubic-bezier(.2,.8,.2,1), box-shadow .28s;
+        }
+        .gk-cat-card:hover { transform: translateY(-6px); box-shadow: 0 20px 38px rgba(37,99,235,0.16); }
+        /* Pins the price row to the bottom so it lines up across a row whose
+           cards have different amounts of description text. */
+        .gk-cat-foot { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+
+        /* Decoration: diagonal light streaks behind the heading, fading left. */
+        .gk-svc-streaks {
+          position: absolute; top: -10%; right: -6%; width: 58%; height: 120%;
+          pointer-events: none; opacity: 0.9;
+          background: repeating-linear-gradient(115deg,
+            rgba(255,255,255,0) 0px, rgba(255,255,255,0) 26px,
+            rgba(255,255,255,0.85) 26px, rgba(255,255,255,0.85) 62px);
+          -webkit-mask-image: linear-gradient(to left, #000 20%, transparent 95%);
+          mask-image: linear-gradient(to left, #000 20%, transparent 95%);
+        }
+        .gk-svc-car {
+          position: absolute; top: -14%; right: 1%; width: 430px;
+          pointer-events: none; opacity: 0.20;
+          filter: grayscale(1) brightness(1.55) contrast(0.55);
+          -webkit-mask-image: linear-gradient(to bottom, #000 48%, transparent 86%);
+          mask-image: linear-gradient(to bottom, #000 48%, transparent 86%);
+        }
+
+        @media (max-width: 1200px) { .gk-cat-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 900px)  {
+          .gk-cat-grid { grid-template-columns: repeat(3, 1fr); }
+          .gk-svc-car { width: 300px; opacity: 0.13; }
+        }
+        @media (max-width: 640px)  { .gk-svc-car, .gk-svc-streaks { display: none; } }
+
       `}</style>
 
       {/* ════════════════════ HERO ════════════════════ */}
@@ -324,50 +369,49 @@ export default function Home() {
       </section>
 
       {/* ════════════════════ SERVICE CATEGORIES ════════════════════ */}
-      <section id="services" className="gk-section" style={{ background: '#F8FAFC', padding: '4rem 0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div style={{ textAlign: 'center', marginBottom: '2.25rem' }}>
-            <p style={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.7rem' }}>What We Do</p>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.05 }}>
-              Our <span style={{ color: '#1E3A8A' }}>Services</span>
+      <section
+        id="services"
+        className="gk-section"
+        style={{
+          position: 'relative', overflow: 'hidden', padding: '3.5rem 0 4rem',
+          background: 'linear-gradient(135deg, #EEF3FF 0%, #F5F8FF 42%, #FFFFFF 100%)',
+        }}
+      >
+        {/* Decoration only — aria-hidden so a screen reader skips straight to
+            the heading rather than announcing a stray image. */}
+        <div className="gk-svc-streaks" aria-hidden="true" />
+        <img className="gk-svc-car" src="/car.png" alt="" aria-hidden="true" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative' }}>
+          <div style={{ marginBottom: '2.4rem' }}>
+            <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>What We Do</p>
+            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.5rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.02, letterSpacing: '-0.01em', margin: 0 }}>
+              Our <span style={{ color: '#2563EB' }}>Services</span>
             </h2>
-            <p style={{ color: '#64748B', fontSize: '0.88rem', fontWeight: 500, maxWidth: '520px', margin: '0.75rem auto 0' }}>
+            <p style={{ color: '#64748B', fontSize: '0.87rem', fontWeight: 500, lineHeight: 1.6, maxWidth: '390px', margin: '0.7rem 0 0' }}>
               Twelve categories covering everything your car needs — each with upfront pricing and free pickup and drop.
             </p>
-            <div style={{ width: 50, height: 3, background: '#1E3A8A', margin: '1.1rem auto 0', borderRadius: '2px' }} />
+            <div style={{ width: 56, height: 4, background: '#2563EB', margin: '1.1rem 0 0', borderRadius: '3px' }} />
           </div>
 
-          <div className="gk-cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '0.85rem' }}>
+          <div className="gk-cat-grid">
             {categories.map(({ id, slug, label, icon: Icon, image, price, desc }) => (
-              <Link
-                key={id}
-                to={`/services?category=${id}`}
-                className="gk-cat-card"
-                style={{
-                  background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px',
-                  padding: '1.1rem 1rem', textDecoration: 'none', display: 'block',
-                  transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
-                  boxShadow: '0 4px 16px rgba(15, 23, 42, 0.03)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-8px)';
-                  e.currentTarget.style.borderColor = '#1E3A8A';
-                  e.currentTarget.style.boxShadow = '0 24px 48px rgba(30, 58, 138, 0.14)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = '#E2E8F0';
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(15, 23, 42, 0.03)';
-                }}
-              >
-                <div style={{ marginBottom: '0.65rem' }}>
-                  <CategoryIcon slug={slug} image={image} icon={Icon} size={42} iconSize={19} />
+              <Link key={id} to={`/services?category=${id}`} className="gk-cat-card">
+                <div style={{ marginBottom: '0.85rem' }}>
+                  <CategoryIcon slug={slug} image={image} icon={Icon} size={44} iconSize={21} />
                 </div>
-                <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '0.98rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.25rem', letterSpacing: '0.01em' }}>{label}</h3>
-                <p style={{ color: '#64748B', fontSize: '0.74rem', lineHeight: 1.5, fontWeight: 500, marginBottom: '0.65rem', minHeight: '2.2rem' }}>{desc}</p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ color: price ? '#1E3A8A' : '#94A3B8', fontWeight: 900, fontSize: '0.8rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.03em' }}>{price || 'View packages'}</span>
-                  <ArrowRight size={14} style={{ color: '#1E3A8A' }} />
+                <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0F172A', margin: '0 0 0.3rem', lineHeight: 1.25 }}>{label}</h3>
+                <p style={{ color: '#64748B', fontSize: '0.76rem', lineHeight: 1.5, fontWeight: 500, margin: '0 0 0.95rem' }}>{desc}</p>
+                <div className="gk-cat-foot">
+                  <span style={{ color: price ? '#1D4ED8' : '#94A3B8', fontWeight: 700, fontSize: '0.79rem' }}>
+                    {price || 'View packages'}
+                  </span>
+                  <span style={{
+                    width: 26, height: 26, borderRadius: '50%', border: '1.5px solid #BFD4F7',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    <ArrowRight size={12} strokeWidth={2.4} style={{ color: '#2563EB' }} />
+                  </span>
                 </div>
               </Link>
             ))}
@@ -416,7 +460,9 @@ export default function Home() {
                 Shop All Parts <ArrowRight size={15} />
               </Link>
             </div>
-            <div className="gk-cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '0.85rem' }}>
+            {/* Its own class: the services grid is pinned to six columns now,
+                and five part cards should not inherit that. */}
+            <div className="gk-parts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '0.85rem' }}>
               {parts.map((part) => <PartCard key={part._id} part={part} />)}
             </div>
           </div>

@@ -22,8 +22,78 @@ body {
   color: #111111;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   width: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE BASELINE
+   html and body already clip horizontal overflow above. #root is the third
+   place a stray wide child can escape from, so it is clipped too.
+   ═══════════════════════════════════════════════════════════════════════════ */
+#root {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+html {
+  /* Stops iOS inflating text when a phone is turned to landscape. */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* The grey flash iOS paints over a tapped control. We render our own :active
+   and :hover states, so the default just looks like a rendering glitch. */
+a, button, input[type="submit"], input[type="button"], [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  /* Removes the ~300ms click delay browsers keep for double-tap-to-zoom. */
+  touch-action: manipulation;
+}
+
+/* Touch has no hover, so without this a tap gives no acknowledgement at all. */
+@media (hover: none) {
+  a:active, button:active:not(:disabled) { opacity: 0.75; }
+}
+
+/* Anything absolutely positioned against a screen edge on a notched iPhone
+   needs these; apply with padding-bottom: max(1rem, env(safe-area-inset-bottom)). */
+@supports (padding: max(0px)) {
+  .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .safe-top    { padding-top: max(1rem, env(safe-area-inset-top)); }
+}
+
+/* A control smaller than this is hard to hit accurately with a thumb. */
+.tap-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Horizontal strips (date pickers, tab rails) that scroll by finger. */
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scroll-x::-webkit-scrollbar { display: none; }
+
+@media (max-width: 768px) {
+  /* iOS zooms the whole page when a focused input's text is under 16px.
+     Scoped to small screens so the admin panel's compact desktop inputs are
+     left alone — a blanket !important rule would blow those up. */
+  input, select, textarea { font-size: 16px; }
+
+  .hide-on-mobile { display: none !important; }
+  .show-on-mobile { display: block !important; }
+  .full-width-mobile { width: 100% !important; }
+  .text-center-mobile { text-align: center !important; }
+}
+
+@media (min-width: 769px) {
+  .hide-on-desktop { display: none !important; }
 }
 
 /* Scrollbar */

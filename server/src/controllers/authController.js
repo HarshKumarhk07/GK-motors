@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
-const { sendOTPEmail } = require('../services/emailService');
+const { sendOTPEmail, sendWelcomeEmail } = require('../services/emailService');
 const crypto = require('crypto');
 
 // Generate 6-digit OTP
@@ -17,7 +17,16 @@ const register = asyncHandler(async (req, res) => {
     throw new Error('Name and email or phone are required');
   }
 
-  const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
+  // Build the duplicate check from the identifiers actually supplied. Mongoose
+  // strips undefined values from a query, so { $or: [{ email: undefined }, ...] }
+  // collapses to { $or: [{}, ...] } — and an empty clause matches every
+  // document, which made phone-only signup fail as "already exists" the moment
+  // the collection had one user in it.
+  const identifiers = [];
+  if (email) identifiers.push({ email: String(email).toLowerCase().trim() });
+  if (phone) identifiers.push({ phone: String(phone).trim() });
+
+  const existingUser = await User.findOne({ $or: identifiers });
   if (existingUser) {
     res.status(400);
     throw new Error('User already exists with this email or phone');
@@ -25,6 +34,13 @@ const register = asyncHandler(async (req, res) => {
 
   const user = await User.create({ name, email, phone, password });
   const token = generateToken(user._id);
+
+  // Welcome mail. Fired and forgotten: a mail outage must never cost someone
+  // their signup, and the account already exists by this point.
+  if (user.email) {
+    sendWelcomeEmail(user)
+      .catch((err) => console.error('[authController.welcomeEmail]', err.message));
+  }
 
   res.status(201).json({
     success: true,

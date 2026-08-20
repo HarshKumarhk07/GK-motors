@@ -208,4 +208,190 @@ const sendOTPEmail = async (email, otp) => {
   });
 };
 
-module.exports = { sendEmail, sendOTPEmail, resolveProvider };
+/* ─────────────────────────────────────────────────────────────────────────
+   Shared chrome for the transactional templates.
+
+   Everything is inline-styled on purpose. Gmail and Outlook strip <style>
+   blocks from <head>, so a stylesheet-based template arrives as unstyled
+   text — inline attributes are the only thing that survives everywhere.
+   ───────────────────────────────────────────────────────────────────────── */
+
+const SERVICE_CENTER_LINE =
+  'GK Motors, Sheela By Pass, near New Railway Crossing, Jasbir Colony, Sector-5, Rohtak, Haryana 124001';
+
+const shell = (title, subtitle, body) => `
+  <div style="background:#F8FAFC;padding:32px 16px;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#1E3A8A 0%,#0F172A 100%);padding:28px;">
+        <div style="color:#FFFFFF;font-size:22px;font-weight:800;margin-bottom:6px;">${title}</div>
+        <div style="color:#BFDBFE;font-size:13.5px;">${subtitle}</div>
+      </div>
+      <div style="padding:28px;">
+        ${body}
+      </div>
+      <div style="border-top:1px solid #E2E8F0;padding:18px 28px;">
+        <div style="color:#0F172A;font-size:12.5px;font-weight:700;margin-bottom:4px;">GK Motors</div>
+        <div style="color:#94A3B8;font-size:11.5px;line-height:1.6;">${SERVICE_CENTER_LINE}</div>
+        <div style="color:#94A3B8;font-size:11.5px;margin-top:6px;">© ${new Date().getFullYear()} GK Motors · Avani Enterprises</div>
+      </div>
+    </div>
+  </div>
+`;
+
+const card = (heading, rows) => `
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:18px;margin-bottom:16px;">
+    <div style="color:#1E3A8A;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">${heading}</div>
+    ${rows}
+  </div>
+`;
+
+const row = (label, value) => `
+  <div style="padding:7px 0;border-bottom:1px solid #F1F5F9;">
+    <span style="color:#64748B;font-size:13px;">${label}</span>
+    <span style="color:#0F172A;font-size:13.5px;font-weight:700;float:right;text-align:right;">${value}</span>
+    <div style="clear:both;"></div>
+  </div>
+`;
+
+const highlight = (label, value) => `
+  <div style="background:#EFF6FF;border-left:4px solid #1E3A8A;border-radius:6px;padding:13px 15px;margin-bottom:10px;">
+    <div style="color:#1E3A8A;font-size:12px;font-weight:800;margin-bottom:4px;">${label}</div>
+    <div style="color:#0F172A;font-size:13.5px;line-height:1.6;">${value}</div>
+  </div>
+`;
+
+// Anything interpolated into a template can come from user input (a car model,
+// an address line). Escaping keeps a stray < or & from breaking the markup.
+const esc = (v) => String(v ?? '')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
+
+const inr = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+
+const addressLine = (a) => {
+  if (!a) return '—';
+  const parts = [a.street, a.city, a.state].filter(Boolean).map(esc);
+  const line = parts.join(', ');
+  return a.pincode ? `${line} - ${esc(a.pincode)}` : (line || '—');
+};
+
+/**
+ * Welcome mail, sent once when an account is created.
+ * Never throws into the caller's critical path — see authController.
+ */
+const sendWelcomeEmail = async (user) => {
+  const clientUrl = (process.env.CLIENT_URL || '').replace(/\/+$/, '');
+  const perks = [
+    ['🔧', 'Book professional car servicing online'],
+    ['🚗', 'Doorstep pickup &amp; drop, 9:00 AM to 6:00 PM'],
+    ['👨‍🔧', 'Factory-trained, background-verified technicians'],
+    ['✅', 'Genuine parts with a 12-month warranty'],
+  ].map(([icon, text]) => `
+    <div style="background:#F8FAFC;border-radius:8px;padding:11px 14px;margin-bottom:8px;">
+      <span style="font-size:15px;margin-right:8px;">${icon}</span>
+      <span style="color:#334155;font-size:13.5px;">${text}</span>
+    </div>
+  `).join('');
+
+  const cta = clientUrl
+    ? `<a href="${clientUrl}/services" style="display:inline-block;background:#1E3A8A;color:#FFFFFF;padding:13px 26px;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;margin-top:18px;">Book a Service</a>`
+    : '';
+
+  await sendEmail({
+    to: user.email,
+    subject: 'Welcome to GK Motors',
+    html: shell('Welcome to GK Motors', 'Your trusted car service partner', `
+      <p style="margin:0 0 14px;color:#0F172A;font-size:15px;">Hello <strong>${esc(user.name)}</strong>,</p>
+      <p style="margin:0 0 18px;color:#475569;font-size:14px;line-height:1.65;">
+        Your account is ready. Here is what you can do with it:
+      </p>
+      ${perks}
+      ${cta}
+    `),
+    text: `Hello ${user.name}, your GK Motors account is ready. `
+        + `Book a service at ${clientUrl || 'our website'}/services. ${SERVICE_CENTER_LINE}`,
+  });
+};
+
+/**
+ * Booking confirmation, sent after a service booking is created.
+ *
+ * Every field is defensive: bookings made before a field existed, or through
+ * the older single-service flow, still have to produce a sensible email
+ * rather than throwing inside the send.
+ */
+const sendBookingConfirmationEmail = async (user, booking, serviceCenter = {}) => {
+  const centerLine = serviceCenter.fullAddress || SERVICE_CENTER_LINE;
+  const car = booking.selectedCar || {};
+  const services = Array.isArray(booking.services) ? booking.services : [];
+  const pd = booking.pickupDrop || {};
+
+  const carName = [car.brand, car.model].filter(Boolean).join(' ')
+    || [booking.bikeBrand, booking.bikeModel].filter(Boolean).join(' ')
+    || 'Your car';
+
+  const carCard = card('Car', [
+    row('Vehicle', esc(carName)),
+    car.year || booking.bikeYear ? row('Year', esc(car.year || booking.bikeYear)) : '',
+    car.fuelType ? row('Fuel', esc(car.fuelType)) : '',
+  ].filter(Boolean).join(''));
+
+  const serviceRows = services.length
+    ? services.map((s) => row(esc(s.name || 'Service'), inr(s.price))).join('')
+    : row(esc(booking.serviceLabel || 'Service'), inr(booking.totalAmount));
+
+  const when = booking.scheduledDate
+    ? new Date(booking.scheduledDate).toLocaleDateString('en-IN', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      })
+    : '—';
+
+  const logistics = pd.enabled
+    ? card('Pickup &amp; drop', `
+        ${highlight('We collect from', addressLine(pd.pickupAddress))}
+        ${highlight(
+          pd.dropType === 'service_center' ? 'Collect your car from' : 'We return it to',
+          pd.dropType === 'service_center' ? esc(centerLine) : addressLine(pd.dropAddress)
+        )}
+        <div style="color:#64748B;font-size:12px;margin-top:8px;">
+          🕐 Our driver will call before arriving. Pickup and drop run 9:00 AM to 6:00 PM.
+        </div>
+      `)
+    : card('Drop off', `
+        ${highlight('Please bring your car to', esc(centerLine))}
+        <div style="color:#64748B;font-size:12px;margin-top:8px;">
+          Arriving at your booked slot keeps the wait short.
+        </div>
+      `);
+
+  await sendEmail({
+    to: user.email,
+    subject: `Booking confirmed — ${carName} on ${when}`,
+    html: shell('Booking confirmed', `Reference ${String(booking._id).slice(-8).toUpperCase()}`, `
+      <p style="margin:0 0 14px;color:#0F172A;font-size:15px;">Hello <strong>${esc(user.name)}</strong>,</p>
+      <p style="margin:0 0 18px;color:#475569;font-size:14px;line-height:1.65;">
+        Your service booking is confirmed. Here are the details:
+      </p>
+      ${carCard}
+      ${card('Services booked', serviceRows)}
+      ${card('Schedule', row('Date', esc(when)) + row('Time', esc(booking.scheduledTime || '—')))}
+      ${logistics}
+      <div style="background:#0F172A;border-radius:10px;padding:16px 20px;margin-top:4px;">
+        <span style="color:#CBD5E1;font-size:14px;">Total</span>
+        <span style="color:#FFFFFF;font-size:21px;font-weight:800;float:right;">${inr(booking.totalAmount)}</span>
+        <div style="clear:both;"></div>
+      </div>
+    `),
+    text: `Hello ${user.name}, your GK Motors booking is confirmed for ${when} at ${booking.scheduledTime || ''}. `
+        + `${carName}. Total ${inr(booking.totalAmount)}. `
+        + (pd.enabled ? 'Doorstep pickup is arranged.' : `Please bring your car to: ${centerLine}`),
+  });
+};
+
+module.exports = {
+  sendEmail,
+  sendOTPEmail,
+  sendWelcomeEmail,
+  sendBookingConfirmationEmail,
+  resolveProvider,
+};
