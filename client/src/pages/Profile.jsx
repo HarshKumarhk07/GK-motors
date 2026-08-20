@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { updateProfile, addAddress, updateAddress, deleteAddress } from '../api/authApi';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { User, Mail, Phone, MapPin, Plus, Save, Loader, Camera, Navigation, Map as MapIcon, X, Crosshair, Edit2, Trash2 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Plus, Save, Loader, Camera, Navigation, Map as MapIcon, X, Crosshair, Edit2, Trash2, Check } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';

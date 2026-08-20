@@ -243,13 +243,18 @@ export default function Wishlist() {
           </div>
           <div style={{ position: 'absolute', top: -10, right: -10, width: 44, height: 44, background: '#0F172A', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', color: 'white', fontWeight: 950, boxShadow: '0 8px 25px rgba(0,0,0,0.1)', border: '4px solid #FFFFFF', fontFamily: 'Rajdhani, sans-serif' }}>0</div>
         </div>
-        <div style={{ textAlign: 'center', maxWidth: '450px' }}>
+        <div style={{ textAlign: 'center', maxWidth: '480px' }}>
           <h2 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.8rem', fontWeight: 950, margin: 0, letterSpacing: '0.04em', lineHeight: 1.1 }}>YOUR WISHLIST <span style={{ color: '#1E3A8A' }}>IS EMPTY</span></h2>
-          <p style={{ color: '#64748B', marginTop: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Start exploring our elite showroom and premium spares to save what you love!</p>
+          <p style={{ color: '#64748B', marginTop: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Explore our catalog of certified spare parts and car services to save what you love!</p>
         </div>
-        <Link to="/bikes" style={{ background: '#1E3A8A', color: 'white', padding: '1.2rem 3.5rem', borderRadius: '20px', fontWeight: 950, textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.15em', fontSize: '1.1rem', boxShadow: '0 12px 35px rgba(30, 58, 138, 0.25)', transition: 'all 0.4s' }}>
-          EXPLORE SHOWROOM
-        </Link>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Link to="/parts" style={{ background: '#1E3A8A', color: 'white', padding: '1rem 2.5rem', borderRadius: '18px', fontWeight: 950, textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em', fontSize: '1rem', boxShadow: '0 12px 35px rgba(30, 58, 138, 0.25)', transition: 'all 0.4s' }}>
+            EXPLORE SPARE PARTS
+          </Link>
+          <Link to="/services" style={{ background: '#0F172A', color: 'white', padding: '1rem 2.5rem', borderRadius: '18px', fontWeight: 950, textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em', fontSize: '1rem', boxShadow: '0 12px 35px rgba(15, 23, 42, 0.25)', transition: 'all 0.4s' }}>
+            BOOK CAR SERVICE
+          </Link>
+        </div>
       </div>
     );
   }

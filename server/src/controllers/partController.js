@@ -86,7 +86,9 @@ const searchParts = asyncHandler(async (req, res) => {
 // @desc  Get distinct categories from active parts
 // @route GET /api/store/parts/categories
 const getPartCategories = asyncHandler(async (req, res) => {
-  const categories = await SparePart.distinct('category', { isActive: true, category: { $exists: true, $ne: '' } });
+  // $exists:true matches a field explicitly set to null, so that filter alone
+  // let nulls through into the category tab strip. Match the type instead.
+  const categories = await SparePart.distinct('category', { isActive: true, category: { $type: 'string', $ne: '' } });
   res.json({ success: true, categories: categories.sort() });
 });
 
@@ -285,7 +287,6 @@ const verifyPartPayment = asyncHandler(async (req, res) => {
   res.json({ success: true, order });
 });
 
-// @desc  Update order status (admin)
 // Stock is taken at order time, so anything that ends an order without a
 // delivery has to give it back. Guarded by a flag so a double cancel cannot
 // credit the same units twice.
@@ -299,6 +300,7 @@ const restoreOrderStock = async (order, reason) => {
   return true;
 };
 
+// @desc  Update order status (admin)
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status, note } = req.body;
   const order = await Order.findById(req.params.id);
@@ -350,4 +352,24 @@ const getAllOrders = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-  cancelMyOrder, getParts, getPart, getPartCategories, getFeaturedParts, getBestsellerParts, getUpcomingParts, getRecentParts, searchParts, createPart, updatePart, deletePart, placeOrder, getMyOrders, getOrder, createPartPayment, verifyPartPayment, updateOrderStatus, getAllOrders };
+  cancelMyOrder,
+  getParts,
+  getPart,
+  getPartCategories,
+  getFeaturedParts,
+  getBestsellerParts,
+  getUpcomingParts,
+  getRecentParts,
+  searchParts,
+  createPart,
+  updatePart,
+  deletePart,
+  placeOrder,
+  getMyOrders,
+  getOrder,
+  createPartPayment,
+  verifyPartPayment,
+  updateOrderStatus,
+  getAllOrders,
+};
+

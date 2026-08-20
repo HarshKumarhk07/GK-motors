@@ -238,9 +238,11 @@ const ServicesTab = () => {
 
   const handleStSubmit = async (e) => {
     e.preventDefault();
+    console.log('UPDATING SERVICE TYPE:', { id: editSt, payload: stForm });
     try {
       if (editSt) {
         const { data } = await adminApi.updateServiceType(editSt, stForm);
+        console.log('UPDATE RESPONSE:', data);
         if (data.serviceType) {
           setServiceTypes(prev => prev.map(s => s._id === editSt ? data.serviceType : s));
           toast.success('Service type updated!');
@@ -250,6 +252,7 @@ const ServicesTab = () => {
         }
       } else {
         const { data } = await adminApi.createServiceType(stForm);
+        console.log('CREATE RESPONSE:', data);
         if (data.serviceType) {
           setServiceTypes(prev => [...prev, data.serviceType]);
           toast.success('Service type added!');
@@ -495,7 +498,7 @@ const ServicesTab = () => {
               <tr key={item._id} style={{ borderBottom: '1px solid #F5F5F5' }}>
                 <td style={{ padding: '1.2rem', color: '#111', fontWeight: 700 }}>{item.user?.name}<br/><span style={{color:'#888',fontSize:'0.82rem',fontWeight:600}}>{item.user?.phone}</span></td>
                 <td style={{ padding: '1.2rem', color: '#111', fontWeight: 700 }}>{item.bikeBrand} {item.bikeModel}<br/><span style={{color:'#888',fontSize:'0.82rem',fontWeight:600}}>{item.serviceLabel}</span></td>
-                <td style={{ padding: '1.2rem', color: '#111', fontWeight: 700 }}>{new Date(item.scheduledDate).toLocaleDateString('en-IN')}<br/><span style={{color:'#888',fontSize:'0.82rem',fontWeight:600}}>{item.serviceType.replace('_',' ').toUpperCase()}</span></td>
+                <td style={{ padding: '1.2rem', color: '#111', fontWeight: 700 }}>{new Date(item.scheduledDate).toLocaleDateString('en-IN')}<br/><span style={{color:'#888',fontSize:'0.82rem',fontWeight:600}}>{serviceSummary(item)}</span></td>
                 <td style={{ padding: '1rem' }}>
                   <div style={{ display: 'flex', gap: '0.6rem', flexDirection: 'column', maxWidth: '220px' }}>
                     <select className="input-light" style={{ padding: '0.5rem', fontSize: '0.85rem', height: 'auto', background: '#F9F9F9', fontWeight: 700 }} value={item.status} onChange={(e) => handleStatus(item._id, e.target.value, item.mechanic?._id)}>
@@ -783,7 +786,7 @@ const PartsTab = () => {
                   }}>
                     <option value="">SELECT CATEGORY</option>
                     {categories.map(c => (
-                      <option key={c._id || c.name} value={c.name}>{c.name.replace(/_/g, ' ').toUpperCase()}</option>
+                      <option key={c._id || c.name} value={c.name}>{(c.name || '').replace(/_/g, ' ').toUpperCase()}</option>
                     ))}
                     <option value="CREATE_NEW" style={{ color: '#E53935', fontWeight: 'bold' }}>+ CREATE NEW CATEGORY</option>
                   </select>
@@ -988,7 +991,7 @@ const PartsTab = () => {
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
           className="input-light" style={{ height: 36, padding: '0 0.6rem', fontSize: '0.8rem', fontWeight: 700 }}>
           <option value="all">All Categories</option>
-          {categories.map(c => <option key={c._id || c.name} value={c.name}>{c.name.replace(/_/g, ' ').toUpperCase()}</option>)}
+          {categories.map(c => <option key={c._id || c.name} value={c.name}>{(c.name || '').replace(/_/g, ' ').toUpperCase()}</option>)}
         </select>
       </div>
 
@@ -3286,6 +3289,21 @@ const gkLabel = {
   display: 'block', fontSize: '0.68rem', fontWeight: 800, color: '#64748B',
   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem',
 };
+/**
+ * What kind of service a booking is, in one short line.
+ *
+ * `serviceType` is the legacy single-service field. The GK Motors cart flow
+ * writes `services[]` instead and leaves it undefined, so reading .replace()
+ * off it directly crashed the whole tab the moment a new booking appeared.
+ */
+const serviceSummary = (booking) => {
+  const list = Array.isArray(booking?.services) ? booking.services : [];
+  if (list.length === 1) return (list[0].name || 'SERVICE').toUpperCase();
+  if (list.length > 1) return `${list.length} SERVICES`;
+  if (booking?.serviceType) return booking.serviceType.replace(/_/g, ' ').toUpperCase();
+  return '—';
+};
+
 const gkBtn = (variant = 'primary') => ({
   display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: 'none',
   borderRadius: '10px', padding: '0.6rem 1.1rem', cursor: 'pointer',
@@ -3336,7 +3354,6 @@ const CarsManagement = ({ serviceTypes }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [prices, setPrices] = useState({});          // serviceTypeId -> price string
   const [search, setSearch] = useState('');
-  const formRef = useRef(null);
 
   const load = () => {
     setLoading(true);
@@ -3367,10 +3384,7 @@ const CarsManagement = ({ serviceTypes }) => {
     });
     setPrices(map);
     setErrors({});
-    // The window never scrolls here — .admin-main is the scroll container — so
-    // window.scrollTo did nothing and the form stayed off screen. Ask the form
-    // itself to come into view and the right scroller handles it.
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const onImage = async (e) => {
@@ -3487,7 +3501,7 @@ const CarsManagement = ({ serviceTypes }) => {
   return (
     <div>
       {/* form */}
-      <form ref={formRef} onSubmit={submit} style={{ background: '#FFF', border: '1.5px solid #EEE', borderRadius: '18px', padding: '1.5rem', marginBottom: '2rem', scrollMarginTop: '1rem' }}>
+      <form onSubmit={submit} style={{ background: '#FFF', border: '1.5px solid #EEE', borderRadius: '18px', padding: '1.5rem', marginBottom: '2rem' }}>
         <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1.3rem', color: '#0F172A', marginBottom: '1.25rem' }}>
           {editingId ? 'Edit Car' : 'Add Car'}
         </h3>
@@ -3570,23 +3584,7 @@ const CarsManagement = ({ serviceTypes }) => {
           ))}
         </div>
 
-        {/* Sticky action bar. The per-service price grid runs to a couple of
-            screens once every category has packages, and the save button used
-            to sit below all of it — easy to miss entirely. Pinning it to the
-            bottom of the viewport keeps it reachable from anywhere in the form.
-            Negative margins let it span the form's padding edge to edge. */}
-        <div
-          style={{
-            position: 'sticky', bottom: 0, zIndex: 5,
-            display: 'flex', gap: '0.7rem', alignItems: 'center', flexWrap: 'wrap',
-            marginTop: '1.25rem', marginLeft: '-1.5rem', marginRight: '-1.5rem', marginBottom: '-1.5rem',
-            padding: '0.9rem 1.5rem',
-            background: '#FFFFFF',
-            borderTop: '1px solid #EEE',
-            borderRadius: '0 0 18px 18px',
-            boxShadow: '0 -6px 18px rgba(15, 23, 42, 0.06)',
-          }}
-        >
+        <div style={{ display: 'flex', gap: '0.7rem', marginTop: '1.25rem' }}>
           <button type="submit" disabled={saving} style={{ ...gkBtn('primary'), cursor: saving ? 'wait' : 'pointer' }}>
             {saving ? <Loader size={14} /> : <Plus size={14} />} {editingId ? 'Save Changes' : 'Add Car'}
           </button>
@@ -3594,11 +3592,6 @@ const CarsManagement = ({ serviceTypes }) => {
             <button type="button" onClick={resetForm} style={gkBtn('ghost')}>
               <X size={14} /> Cancel
             </button>
-          )}
-          {editingId && (
-            <span style={{ color: '#64748B', fontSize: '0.76rem', fontWeight: 600 }}>
-              Editing {form.brand} {form.model} — nothing is saved until you press Save Changes.
-            </span>
           )}
         </div>
       </form>

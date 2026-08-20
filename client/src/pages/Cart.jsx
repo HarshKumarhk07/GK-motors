@@ -1,7 +1,7 @@
-import { useCart } from '../context/CartContext';
+import { useCart, useServiceCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, CreditCard, Truck, Shield, ChevronRight, User, Phone, MapPin, X, Check, Home as HomeIcon, Briefcase } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, CreditCard, Truck, Shield, ChevronRight, User, Phone, MapPin, X, Check, Home as HomeIcon, Briefcase, Wrench, ArrowRight } from 'lucide-react';
 import { placeOrder, createPartPayment, verifyPartPayment } from '../api/storeApi';
 import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
@@ -68,6 +68,7 @@ const StepIndicator = ({ step }) => (
 
 export default function Cart() {
   const { items, removeFromCart, updateQty, clearCart, total, totalOriginal, itemCount } = useCart();
+  const { car, services, totalAmount: serviceTotal, serviceCount } = useServiceCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -141,23 +142,98 @@ export default function Cart() {
   };
 
   if (items.length === 0) {
+    if (serviceCount > 0) {
+      return (
+        <div style={{ minHeight: '80vh', background: '#FFFFFF', padding: '3rem 1rem' }}>
+          <div className="max-w-3xl mx-auto">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+              <button onClick={() => navigate('/services')}
+                style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '0.6rem 1.2rem', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 700, fontFamily: 'Rajdhani, sans-serif' }}>
+                <ArrowLeft size={16} /> Services
+              </button>
+              <h1 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, margin: 0, letterSpacing: '0.04em' }}>
+                SERVICE <span style={{ color: '#1E3A8A' }}>BOOKING CART</span>
+              </h1>
+            </div>
+
+            <div style={{ background: '#FFF', border: '1.5px solid #E2E8F0', borderRadius: '24px', padding: '2rem', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
+              {car && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1.5rem', borderBottom: '1px solid #F1F5F9', marginBottom: '1.5rem' }}>
+                  <div style={{ width: 50, height: 50, borderRadius: '14px', background: 'rgba(30, 58, 138, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1E3A8A' }}>
+                    <Wrench size={24} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E3A8A', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'Rajdhani, sans-serif' }}>Selected Vehicle</span>
+                    <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 900, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif' }}>
+                      {car.brand} {car.model} {car.year && `(${car.year})`} {car.fuelType && `• ${car.fuelType.toUpperCase()}`}
+                    </h3>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'Rajdhani, sans-serif', display: 'block', marginBottom: '0.8rem' }}>Selected Packages ({serviceCount})</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {services.map((s) => (
+                    <div key={s.serviceId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.2rem', background: '#F8FAFC', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif' }}>{s.name}</h4>
+                        {s.categoryName && <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>{s.categoryName}</p>}
+                      </div>
+                      <span style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E3A8A', fontFamily: 'Rajdhani, sans-serif' }}>
+                        ₹{Number(s.price).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.2rem', background: 'linear-gradient(135deg, rgba(30,58,138,0.06) 0%, rgba(15,23,42,0.02) 100%)', borderRadius: '16px', border: '1px solid rgba(30,58,138,0.15)', marginBottom: '2rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'Rajdhani, sans-serif' }}>Total Estimate</span>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748B', fontWeight: 500 }}>Doorstep pickup & inspection included</p>
+                </div>
+                <span style={{ fontSize: '1.8rem', fontWeight: 950, color: '#1E3A8A', fontFamily: 'Rajdhani, sans-serif' }}>
+                  ₹{Number(serviceTotal).toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <Link to="/services"
+                  style={{ flex: 1, minWidth: '220px', background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', color: 'white', padding: '1rem 2rem', borderRadius: '14px', fontWeight: 900, textDecoration: 'none', textAlign: 'center', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em', fontSize: '1rem', boxShadow: '0 8px 25px rgba(30, 58, 138, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                  <Wrench size={18} /> PROCEED TO CHECKOUT & SCHEDULE SLOT
+                </Link>
+                <Link to="/parts"
+                  style={{ background: '#FFF', color: '#0F172A', border: '1.5px solid #E2E8F0', padding: '1rem 1.8rem', borderRadius: '14px', fontWeight: 800, textDecoration: 'none', textAlign: 'center', fontFamily: 'Rajdhani, sans-serif', fontSize: '0.95rem' }}>
+                  BROWSE SPARE PARTS
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', gap: '2rem' }}>
+      <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', gap: '2rem', padding: '2rem' }}>
         <div style={{ position: 'relative' }}>
           <div style={{ width: 140, height: 140, borderRadius: '40px', background: '#F9F9F9', border: '1.5px solid #EEE', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'rotate(-5deg)' }}>
             <ShoppingBag size={56} style={{ color: '#DDD' }} />
           </div>
           <div style={{ position: 'absolute', top: -10, right: -10, width: 44, height: 44, background: '#111', color: 'white', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', boxShadow: '0 8px 25px rgba(0,0,0,0.15)' }}>0</div>
         </div>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', maxWidth: '420px' }}>
           <h2 style={{ color: '#111', fontSize: '2.5rem', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', letterSpacing: '-0.02em', margin: 0, textTransform: 'uppercase' }}>YOUR CART IS EMPTY</h2>
-          <p style={{ color: '#666', marginTop: '0.6rem', fontSize: '1.1rem', fontWeight: 600, maxWidth: '300px', margin: '0.6rem auto' }}>Looks like you haven't added anything to your cart yet.</p>
+          <p style={{ color: '#666', marginTop: '0.6rem', fontSize: '1.05rem', fontWeight: 600 }}>Explore our certified car services or premium spare parts to get started.</p>
         </div>
-        <Link to="/" style={{ marginTop: '1rem', background: '#0F172A', color: 'white', padding: '1.2rem 3rem', borderRadius: '18px', fontWeight: 950, textDecoration: 'none', fontSize: '1rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.15em', boxShadow: '0 15px 40px rgba(15, 23, 42, 0.25)', transition: 'all 0.4s' }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
-          EXPLORE SHOWROOM →
-        </Link>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Link to="/services" style={{ background: '#1E3A8A', color: 'white', padding: '1rem 2.2rem', borderRadius: '16px', fontWeight: 950, textDecoration: 'none', fontSize: '0.95rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em', boxShadow: '0 12px 30px rgba(30, 58, 138, 0.25)', transition: 'all 0.4s' }}>
+            BOOK A SERVICE
+          </Link>
+          <Link to="/parts" style={{ background: '#0F172A', color: 'white', padding: '1rem 2.2rem', borderRadius: '16px', fontWeight: 950, textDecoration: 'none', fontSize: '0.95rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em', boxShadow: '0 12px 30px rgba(15, 23, 42, 0.2)', transition: 'all 0.4s' }}>
+            SHOP SPARE PARTS
+          </Link>
+        </div>
       </div>
     );
   }
@@ -204,6 +280,26 @@ export default function Cart() {
  
           {/* ── Cart Items ── */}
           <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
+            {serviceCount > 0 && (
+              <div style={{ background: 'rgba(30, 58, 138, 0.05)', border: '1.5px solid rgba(30, 58, 138, 0.15)', borderRadius: '16px', padding: '1rem 1.4rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '10px', background: '#1E3A8A', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Wrench size={18} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif' }}>
+                      Active Service Booking ({serviceCount} package{serviceCount > 1 ? 's' : ''})
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>
+                      {car ? `${car.brand} ${car.model}` : 'Vehicle Service'} • ₹{Number(serviceTotal).toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                </div>
+                <Link to="/services" style={{ background: '#1E3A8A', color: 'white', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 800, textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  CHECKOUT SERVICE <ArrowRight size={14} />
+                </Link>
+              </div>
+            )}
             {items.map((item) => {
               const itemPrice = item.effectivePrice ?? item.discountedPrice ?? item.price;
               const saved = item.price > itemPrice ? item.price - itemPrice : 0;

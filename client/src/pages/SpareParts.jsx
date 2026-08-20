@@ -6,7 +6,7 @@ import { ShoppingCart, Search, SlidersHorizontal, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 
-const formatCategoryLabel = (val) => val.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+const formatCategoryLabel = (val) => String(val || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
 export default function SpareParts() {
   const [parts, setParts] = useState([]);
@@ -31,7 +31,8 @@ export default function SpareParts() {
 
   useEffect(() => {
     getPartCategories()
-      .then(({ data }) => setCategories(data.categories || []))
+      // A part saved with a null category would otherwise render a blank tab.
+      .then(({ data }) => setCategories((data.categories || []).filter(Boolean)))
       .catch(() => {});
   }, []);
 

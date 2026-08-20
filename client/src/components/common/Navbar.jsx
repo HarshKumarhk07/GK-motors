@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Menu, X, ChevronDown, User, LogOut, Settings, Wrench, Phone, ShoppingCart, Heart } from 'lucide-react';
-import { useCart } from '../../context/CartContext';
+import { useCart, useServiceCart } from '../../context/CartContext';
 
 const navLinks = [
   { label: 'Home', href: '/' },
@@ -30,6 +30,9 @@ const isActive = (pathname, href) =>
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { itemCount } = useCart();
+  const { serviceCount } = useServiceCart();
+  const totalCartCount = (itemCount || 0) + (serviceCount || 0);
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
@@ -81,16 +84,16 @@ export default function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 md:gap-5 flex-shrink-0">
             {/* Book Service CTA */}
             <Link
               to="/services"
               className="hidden sm:inline-flex"
               style={{
-                alignItems: 'center', gap: '0.4rem',
+                alignItems: 'center', gap: '0.45rem',
                 background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
-                color: 'white', padding: '0.45rem 1rem', borderRadius: '10px',
-                fontSize: '0.72rem', fontWeight: 800, textDecoration: 'none',
+                color: 'white', padding: '0.5rem 1.1rem', borderRadius: '10px',
+                fontSize: '0.75rem', fontWeight: 800, textDecoration: 'none',
                 fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.06em',
                 textTransform: 'uppercase', whiteSpace: 'nowrap',
                 boxShadow: '0 4px 14px rgba(30, 58, 138, 0.25)', transition: 'all 0.2s'
@@ -102,21 +105,24 @@ export default function Navbar() {
             </Link>
 
             {/* Cart */}
-            <Link to="/cart" style={{ position: 'relative', color: '#0F172A', display: 'flex', alignItems: 'center' }}>
-              <ShoppingCart size={19} />
-              {itemCount > 0 && (
+            <Link to="/cart" style={{ position: 'relative', color: '#0F172A', display: 'flex', alignItems: 'center', padding: '0.4rem', borderRadius: '8px', transition: 'background 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(15, 23, 42, 0.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+              <ShoppingCart size={20} />
+              {totalCartCount > 0 && (
                 <span style={{
-                  position: 'absolute', top: '-7px', right: '-7px',
+                  position: 'absolute', top: '-2px', right: '-2px',
                   background: '#1E3A8A', color: 'white', borderRadius: '50%',
-                  width: '17px', height: '17px', fontSize: '0.65rem',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
-                }}>{itemCount}</span>
+                  width: '18px', height: '18px', fontSize: '0.65rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800,
+                  border: '2px solid white', boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
+                }}>{totalCartCount}</span>
               )}
             </Link>
 
             {/* Call us */}
-            <a href="tel:+919253625099" className="hidden lg:flex items-center" style={{ gap: '0.35rem', color: '#0F172A', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 700 }}>
-              <Phone size={15} style={{ color: '#1E3A8A' }} /> +91 92536 25099
+            <a href="tel:+919253625099" className="hidden lg:flex items-center" style={{ gap: '0.4rem', color: '#0F172A', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 700, padding: '0.4rem 0.75rem', borderRadius: '8px', background: 'rgba(30, 58, 138, 0.04)', border: '1px solid rgba(30, 58, 138, 0.08)' }}>
+              <Phone size={14} style={{ color: '#1E3A8A' }} /> +91 92536 25099
             </a>
 
             {/* User Menu */}
@@ -125,10 +131,11 @@ export default function Navbar() {
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: '0.3rem',
-                    background: '#FFF', border: '1px solid rgba(156, 163, 175, 0.3)',
-                    borderRadius: '8px', padding: '0.35rem 0.6rem', color: '#0F172A',
-                    cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700
+                    display: 'flex', alignItems: 'center', gap: '0.4rem',
+                    background: '#FFF', border: '1.5px solid rgba(156, 163, 175, 0.3)',
+                    borderRadius: '10px', padding: '0.4rem 0.75rem', color: '#0F172A',
+                    cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
                   }}
                 >
                   {dropdownOpen ? (
