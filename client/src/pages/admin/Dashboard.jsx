@@ -1062,6 +1062,7 @@ const PartsTab = () => {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [showAddCategory, setShowAddCategory] = useState(false);
+  const [showManageCategories, setShowManageCategories] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [categories, setCategories] = useState([]);
   const [newCatImage, setNewCatImage] = useState(null);
@@ -1123,25 +1124,47 @@ const PartsTab = () => {
 
   useEffect(() => {
     adminApi.getParts().then(({ data }) => setData(data.parts || [])).finally(() => setLoading(false));
-    adminApi.getAdminCategories().then(({ data }) => setCategories(data.categories || []));
+    Promise.all([adminApi.getAdminCategories(), adminApi.getPartCategories()])
+      .then(([catRes, partCatRes]) => {
+        const dbCats = catRes.data.categories || [];
+        const partCats = (partCatRes.data.categories || []).map(name => ({ name }));
+        const map = new Map();
+        const defaultCats = [
+          { name: 'brakes' }, { name: 'electrical' }, { name: 'engine' }, { name: 'exterior' },
+          { name: 'filters' }, { name: 'fluids' }, { name: 'lighting' }, { name: 'tyres_wheels' }, { name: 'other' }
+        ];
+        defaultCats.forEach(c => map.set(c.name.toLowerCase().replace(/\s+/g, '_'), c));
+        partCats.forEach(c => map.set(c.name.toLowerCase().replace(/\s+/g, '_'), c));
+        dbCats.forEach(c => map.set(c.name.toLowerCase().replace(/\s+/g, '_'), c));
+        setCategories(Array.from(map.values()));
+      })
+      .catch(() => {
+        adminApi.getAdminCategories().then(({ data }) => setCategories(data.categories || []));
+      });
   }, []);
 
   const handleSaveCategory = async () => {
-    if (!newCatName.trim()) return;
+    if (!newCatName.trim()) return toast.error('Please enter a category name');
     try {
       const fd = new FormData();
-      fd.append('name', newCatName.trim());
+      const cleanName = newCatName.trim().toLowerCase().replace(/\s+/g, '_');
+      fd.append('name', cleanName);
       if (newCatImage) fd.append('image', newCatImage);
       const { data } = await adminApi.createCategory(fd);
-      setCategories([...categories, data.category]);
-      setFormData({ ...formData, category: data.category.name });
-      setShowAddCategory(false); setNewCatName(''); setNewCatImage(null); setNewCatImagePreview('');
-      toast.success('Category added');
-    } catch { toast.error('Error adding category'); }
+      setCategories(prev => [...prev.filter(c => c.name !== (data.category?.name || cleanName)), data.category || { name: cleanName }]);
+      setFormData(prev => ({ ...prev, category: data.category?.name || cleanName }));
+      setShowAddCategory(false);
+      setNewCatName('');
+      setNewCatImage(null);
+      setNewCatImagePreview('');
+      toast.success('Category created successfully!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error creating category');
+    }
   };
 
   const handleDeleteCategory = async (id) => {
-    if (!window.confirm('Delete category?')) return;
+    if (!window.confirm('Are you sure you want to delete this category?')) return;
     try {
       await adminApi.deleteCategory(id);
       setCategories(categories.filter(c => c._id !== id));
@@ -1268,7 +1291,7 @@ const PartsTab = () => {
   };
 
   const filtered = data.filter(item => {
-    if (statusFilter !== 'all' && item.category !== statusFilter) return false;
+    if (statusFilter !== 'all' && (item.category || '').toLowerCase() !== statusFilter.toLowerCase()) return false;
     if (filterMode === 'all') return true;
     const created = new Date(item.createdAt);
     if (filterMode === 'day') return created.toISOString().split('T')[0] === filterDay;
@@ -1302,7 +1325,12 @@ const PartsTab = () => {
               <div className="admin-form-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div><label style={{ color: '#666', fontSize: '0.85rem', fontWeight: 800, marginBottom: '0.5rem', display: 'block' }}>BRAND</label><input className="input-light" style={{ height: '54px', fontWeight: 600 }} value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} /></div>
                 <div>
-                  <label style={{ color: '#666', fontSize: '0.85rem', fontWeight: 800, marginBottom: '0.5rem', display: 'block' }}>CATEGORY</label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <label style={{ color: '#666', fontSize: '0.85rem', fontWeight: 800, display: 'block', margin: 0 }}>CATEGORY *</label>
+                    <button type="button" onClick={() => setShowAddCategory(!showAddCategory)} style={{ background: 'none', border: 'none', color: '#1E3A8A', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer' }}>
+                      {showAddCategory ? '✕ Close' : '+ New Category'}
+                    </button>
+                  </div>
                   <select className="input-light" style={{ height: '54px', fontWeight: 700 }} value={formData.category} onChange={e => {
                     if (e.target.value === 'CREATE_NEW') { setShowAddCategory(true); setFormData({ ...formData, category: '' }); }
                     else { setShowAddCategory(false); setFormData({ ...formData, category: e.target.value }); }
@@ -1321,14 +1349,14 @@ const PartsTab = () => {
           {showAddCategory && (
             <div style={{ background: '#FFF1F0', padding: '2rem', borderRadius: '20px', border: '1.5px dashed #E53935', position: 'relative' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h4 style={{ color: '#E53935', fontSize: '0.85rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>NEW CATEGORY</h4>
+                <h4 style={{ color: '#E53935', fontSize: '0.85rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>CREATE NEW CATEGORY</h4>
                 <button type="button" onClick={() => setShowAddCategory(false)} style={{ background: '#FFFFFF', border: '1.5px solid #EEE', color: '#111', width: 32, height: 32, borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>✕</button>
               </div>
               <div style={{ display: 'grid', gap: '1.2rem', marginBottom: '0.5rem' }}>
-                <input className="input-light" style={{ height: '54px', fontWeight: 600 }} placeholder="Category Name" value={newCatName} onChange={e => setNewCatName(e.target.value)} />
-                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                <input className="input-light" style={{ height: '54px', fontWeight: 600 }} placeholder="Category Name (e.g. Engine Oil, Body Covers)" value={newCatName} onChange={e => setNewCatName(e.target.value)} />
+                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ color: '#666', fontSize: '0.8rem', fontWeight: 800, marginBottom: '0.5rem', display: 'block' }}>CATEGORY IMAGE / ICON</label>
+                    <label style={{ color: '#666', fontSize: '0.8rem', fontWeight: 800, marginBottom: '0.5rem', display: 'block' }}>CATEGORY IMAGE / ICON (OPTIONAL)</label>
                     <input type="file" accept="image/*" onChange={e => {
                       const file = e.target.files[0];
                       if (file) { setNewCatImage(file); setNewCatImagePreview(URL.createObjectURL(file)); }
@@ -1342,13 +1370,19 @@ const PartsTab = () => {
           )}
 
           <div style={{ background: '#F9F9F9', padding: '1.5rem', borderRadius: '20px', border: '1.5px solid #EEE' }}>
-            <h4 style={{ color: '#888', fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1.2rem', letterSpacing: '0.1em' }}>EXISTING CATEGORIES</h4>
+            <h4 style={{ color: '#888', fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1.2rem', letterSpacing: '0.1em' }}>AVAILABLE CATEGORIES</h4>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
               {categories.length > 0 ? categories.map(cat => (
-                <div key={cat._id} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', background: '#FFFFFF', border: '1.5px solid #EEE', padding: '0.5rem 0.6rem 0.5rem 1rem', borderRadius: '30px', color: '#111', fontSize: '0.8rem', fontWeight: 800 }}>
-                  {cat.image && <img src={cat.image} style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #EEE' }} />}
-                  <span style={{ textTransform: 'uppercase' }}>{cat.name}</span>
-                  <button type="button" onClick={() => handleDeleteCategory(cat._id)} style={{ background: '#F9F9F9', border: 'none', color: '#E53935', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', marginLeft: '4px' }}>✕</button>
+                <div key={cat._id || cat.name} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', background: '#FFFFFF', border: '1.5px solid #EEE', padding: '0.5rem 0.6rem 0.5rem 1rem', borderRadius: '30px', color: '#111', fontSize: '0.8rem', fontWeight: 800 }}>
+                  {cat.image ? (
+                    <img src={cat.image} alt={cat.name} style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #EEE' }} />
+                  ) : (
+                    <span>📦</span>
+                  )}
+                  <span style={{ textTransform: 'uppercase' }}>{(cat.name || '').replace(/_/g, ' ')}</span>
+                  {cat._id && (
+                    <button type="button" onClick={() => handleDeleteCategory(cat._id)} style={{ background: '#F9F9F9', border: 'none', color: '#E53935', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', marginLeft: '4px' }}>✕</button>
+                  )}
                 </div>
               )) : (
                 <p style={{ color: '#AAA', fontSize: '0.85rem', fontWeight: 600, fontStyle: 'italic' }}>No custom categories added yet</p>
@@ -1356,15 +1390,11 @@ const PartsTab = () => {
             </div>
           </div>
 
-          {/* Sub-category flags only */}
-
           {/* Sub-Categories */}
           <div className="admin-form-2col" style={{ background: '#F9F9F9', padding: '2rem', borderRadius: '20px', border: '1.5px solid #EEE', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div><label style={{ color: '#666', fontSize: '0.85rem', fontWeight: 800, marginBottom: '0.5rem', display: 'block' }}>ITEM TYPE</label><input className="input-light" style={{ height: '54px', fontWeight: 600 }} placeholder="e.g. Disc Brake" value={formData.itemType} onChange={e => setFormData({ ...formData, itemType: e.target.value })} /></div>
             <div><label style={{ color: '#666', fontSize: '0.85rem', fontWeight: 800, marginBottom: '0.5rem', display: 'block' }}>SUB CATEGORY</label><input className="input-light" style={{ height: '54px', fontWeight: 600 }} placeholder="e.g. Front Brake" value={formData.subCategory} onChange={e => setFormData({ ...formData, subCategory: e.target.value })} /></div>
           </div>
-
-
 
           {/* Multi-Row Pincode & Inventory */}
           <div style={{ background: 'rgba(33,150,243,0.03)', padding: '2rem', borderRadius: '24px', border: '1.5px solid rgba(33,150,243,0.15)' }}>
@@ -1463,8 +1493,128 @@ const PartsTab = () => {
             ({filtered.length}{filtered.length !== data.length ? ` of ${data.length}` : ''})
           </span>
         </h3>
-        <button className="btn-primary" style={{ padding: '0.8rem 1.6rem', borderRadius: '14px', gap: '0.6rem', fontWeight: 900 }} onClick={() => setShowForm(true)}><Plus size={20} /> ADD PRODUCT</button>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setShowManageCategories(!showManageCategories)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              background: showManageCategories ? '#F1F5F9' : '#FFFFFF',
+              color: showManageCategories ? '#0F172A' : '#1E3A8A',
+              border: `1.5px solid ${showManageCategories ? '#0F172A' : '#CBD5E1'}`,
+              borderRadius: '14px', padding: '0.75rem 1.3rem', fontWeight: 900,
+              fontSize: '0.85rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em',
+              cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+            }}
+          >
+            <List size={16} /> {showManageCategories ? 'HIDE CATEGORIES' : '+ MANAGE CATEGORIES'}
+          </button>
+          <button className="btn-primary" style={{ padding: '0.8rem 1.6rem', borderRadius: '14px', gap: '0.6rem', fontWeight: 900 }} onClick={() => setShowForm(true)}>
+            <Plus size={20} /> ADD PRODUCT
+          </button>
+        </div>
       </div>
+
+      {/* ── Category Management Drawer/Card on Main Screen ── */}
+      {showManageCategories && (
+        <div style={{ background: '#F8FAFC', border: '1.5px solid #CBD5E1', borderRadius: '20px', padding: '1.6rem', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', paddingBottom: '0.8rem', borderBottom: '1px solid #E2E8F0' }}>
+            <div>
+              <h4 style={{ margin: 0, color: '#0F172A', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                SPARE PARTS <span style={{ color: '#1E3A8A' }}>CATEGORIES</span>
+              </h4>
+              <p style={{ margin: '0.2rem 0 0', color: '#64748B', fontSize: '0.78rem', fontWeight: 600 }}>Create new categories, add icons, or remove categories</p>
+            </div>
+            <button type="button" onClick={() => setShowManageCategories(false)} style={{ background: '#FFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', cursor: 'pointer', color: '#64748B' }}>
+              <X size={14} />
+            </button>
+          </div>
+
+          {/* Inline Create Form */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', alignItems: 'flex-end', background: '#FFF', padding: '1.2rem', borderRadius: '14px', border: '1.5px solid #E2E8F0', marginBottom: '1.2rem' }}>
+            <div>
+              <label style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>CATEGORY NAME *</label>
+              <input
+                className="input-light"
+                placeholder="e.g. Engine Oil, Brake Pads, Accessories"
+                value={newCatName}
+                onChange={e => setNewCatName(e.target.value)}
+                style={{ height: 44, fontWeight: 700, background: '#FFF', border: '1.5px solid #CBD5E1', borderRadius: '10px', width: '100%', padding: '0 0.8rem', fontSize: '0.85rem' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>ICON / IMAGE (OPTIONAL)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={e => {
+                  const file = e.target.files[0];
+                  if (file) { setNewCatImage(file); setNewCatImagePreview(URL.createObjectURL(file)); }
+                }}
+                style={{ fontSize: '0.78rem', color: '#64748B' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+              {newCatImagePreview && (
+                <img src={newCatImagePreview} alt="Preview" style={{ width: 44, height: 44, borderRadius: '10px', objectFit: 'cover', border: '1.5px solid #CBD5E1' }} />
+              )}
+              <button
+                type="button"
+                onClick={handleSaveCategory}
+                style={{
+                  background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
+                  color: 'white', border: 'none', padding: '0 1.8rem', height: 44,
+                  borderRadius: '10px', fontWeight: 900, cursor: 'pointer',
+                  fontFamily: 'Rajdhani, sans-serif', fontSize: '0.85rem', letterSpacing: '0.06em',
+                  textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  boxShadow: '0 4px 12px rgba(30,58,138,0.25)'
+                }}
+              >
+                <Plus size={16} /> Save Category
+              </button>
+            </div>
+          </div>
+
+          {/* Active Categories List */}
+          <div>
+            <label style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              ACTIVE CATEGORIES ({categories.length})
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
+              {categories.map(cat => {
+                const count = data.filter(d => (d.category || '').toLowerCase() === (cat.name || '').toLowerCase()).length;
+                return (
+                  <div key={cat._id || cat.name} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#FFFFFF', border: '1.5px solid #E2E8F0', padding: '0.4rem 0.8rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+                    {cat.image ? (
+                      <img src={cat.image} alt={cat.name} style={{ width: 22, height: 22, borderRadius: '6px', objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ fontSize: '0.9rem' }}>📦</span>
+                    )}
+                    <span style={{ fontWeight: 800, fontSize: '0.8rem', color: '#0F172A', textTransform: 'uppercase', fontFamily: 'Rajdhani, sans-serif' }}>
+                      {(cat.name || '').replace(/_/g, ' ')}
+                    </span>
+                    <span style={{ background: '#F1F5F9', color: '#64748B', fontSize: '0.68rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '6px' }}>
+                      {count}
+                    </span>
+                    {cat._id && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCategory(cat._id)}
+                        title="Delete Category"
+                        style={{ background: '#FEF2F2', border: 'none', color: '#EF4444', borderRadius: '6px', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter bar */}
       <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '0.8rem 1rem', marginBottom: '1.2rem', display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center' }}>
@@ -1511,10 +1661,21 @@ const PartsTab = () => {
 
         <span style={{ width: 1, height: 24, background: '#E2E8F0', margin: '0 0.4rem' }} />
 
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-          className="input-light" style={{ height: 36, padding: '0 0.6rem', fontSize: '0.8rem', fontWeight: 700 }}>
+        <select
+          value={statusFilter}
+          onChange={e => {
+            if (e.target.value === 'CREATE_NEW') {
+              setShowManageCategories(true);
+            } else {
+              setStatusFilter(e.target.value);
+            }
+          }}
+          className="input-light"
+          style={{ height: 36, padding: '0 0.6rem', fontSize: '0.8rem', fontWeight: 700 }}
+        >
           <option value="all">All Categories</option>
           {categories.map(c => <option key={c._id || c.name} value={c.name}>{(c.name || '').replace(/_/g, ' ').toUpperCase()}</option>)}
+          <option value="CREATE_NEW" style={{ color: '#1E3A8A', fontWeight: 'bold' }}>+ Create / Manage Categories...</option>
         </select>
       </div>
 
