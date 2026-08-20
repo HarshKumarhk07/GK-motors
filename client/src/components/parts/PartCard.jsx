@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { ShoppingCart, Star, Heart } from 'lucide-react';
+import { ShoppingCart, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Shipped in client/public. The old fallback pointed at via.placeholder.com,
@@ -36,7 +36,9 @@ export default function PartCard({ part }) {
   }, [part.pincodePricing, selectedPincode]);
 
   const effectivePrice = pincodeData ? Number(pincodeData.price) : (part.discountedPrice || part.price);
-  const effectiveOriginalPrice = pincodeData?.originalPrice ? Number(pincodeData.originalPrice) : part.price;
+  const effectiveOriginalPrice = pincodeData?.originalPrice
+    ? Number(pincodeData.originalPrice)
+    : (part.discountedPrice && part.discountedPrice < part.price ? Number(part.price) : null);
   const effectiveStock = pincodeData ? Number(pincodeData.inventory) : part.stock;
   const effectiveLocation = pincodeData?.location || null;
 
@@ -75,6 +77,25 @@ export default function PartCard({ part }) {
               transition: 'transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)',
             }}
           />
+
+          {/* Top-left: Discount Badge */}
+          {discount > 0 && (
+            <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 6 }}>
+              <span style={{
+                background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                color: 'white',
+                fontSize: '0.68rem',
+                fontWeight: 950,
+                padding: '3px 8px',
+                borderRadius: '6px',
+                letterSpacing: '0.04em',
+                fontFamily: 'Rajdhani, sans-serif',
+                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.35)'
+              }}>
+                {discount}% OFF
+              </span>
+            </div>
+          )}
           
           {/* Top-right: Heart (Wishlist) */}
           <button
@@ -104,19 +125,6 @@ export default function PartCard({ part }) {
             <Heart size={14} fill={isWishlisted ? 'white' : 'none'} color="white" />
           </button>
 
-          {/* Top-left: Category/Status Placeholder (Already removed from logic) */}
-          {part.condition === 'new' && (
-            <div style={{ position: 'absolute', top: 12, left: 12 }}>
-              <span style={{
-                background: 'rgba(30,190,130,1)', color: 'white',
-                fontSize: '0.65rem', fontWeight: 950,
-                padding: '3px 12px', borderRadius: '30px',
-                letterSpacing: '0.04em', textTransform: 'uppercase'
-              }}>
-                NEW
-              </span>
-            </div>
-          )}
           {/* Out of stock overlay */}
           {effectiveStock === 0 && (
             <div style={{
@@ -136,9 +144,9 @@ export default function PartCard({ part }) {
         </div>
 
         {/* Bottom Content Section (White background) */}
-        <div style={{ padding: '0.75rem', flex: 1, display: 'flex', flexDirection: 'column', background: '#FFFFFF', borderTop: '1px solid #EEE' }}>
-          {/* Category & Status */}
-          <div style={{ marginBottom: '0.4rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '0.85rem', flex: 1, display: 'flex', flexDirection: 'column', background: '#FFFFFF', borderTop: '1px solid #EEE' }}>
+          {/* Category */}
+          <div style={{ marginBottom: '0.3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{
               fontSize: '0.65rem', color: '#1E3A8A',
               textTransform: 'uppercase', fontWeight: 950,
@@ -150,8 +158,8 @@ export default function PartCard({ part }) {
 
           {/* Name */}
           <h3 className="product-card-title" style={{
-            color: '#111', fontWeight: 900, fontSize: '0.85rem',
-            lineHeight: 1.2, marginBottom: '0.3rem',
+            color: '#111', fontWeight: 900, fontSize: '0.88rem',
+            lineHeight: 1.25, marginBottom: '0.25rem',
             fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.02em',
             textTransform: 'uppercase',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
@@ -160,25 +168,24 @@ export default function PartCard({ part }) {
           </h3>
 
           {part.brand && (
-            <p style={{ color: '#888', fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.3rem' }}>
+            <p style={{ color: '#888', fontSize: '0.72rem', fontWeight: 600, margin: '0 0 0.5rem 0' }}>
               {part.brand}
             </p>
           )}
-          {/* Ratings Section */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '0.4rem' }}>
-            <div style={{ display: 'flex', gap: '1px' }}>
-              {[1, 2, 3, 4, 5].map(i => (
-                <Star key={i} size={9} fill="#FFB400" color="#FFB400" />
-              ))}
-            </div>
-            <span style={{ color: '#AAA', fontSize: '0.65rem', fontWeight: 600, marginLeft: '2px' }}>
-              ({part.numReviews || 12})
-            </span>
-          </div>
 
           {/* Price row + CTA */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.4rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {discount > 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ textDecoration: 'line-through', color: '#94A3B8', fontSize: '0.78rem', fontWeight: 700, fontFamily: 'Rajdhani, sans-serif', lineHeight: 1 }}>
+                    ₹{effectiveOriginalPrice?.toLocaleString('en-IN')}
+                  </span>
+                  <span style={{ color: '#16A34A', fontSize: '0.72rem', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', lineHeight: 1 }}>
+                    {discount}% OFF
+                  </span>
+                </div>
+              ) : null}
               <span className="product-card-price" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.25rem', fontWeight: 950, color: '#1E3A8A', lineHeight: 1 }}>
                 ₹{effectivePrice?.toLocaleString('en-IN')}
               </span>
@@ -231,15 +238,15 @@ export default function PartCard({ part }) {
                   }}
                   disabled={effectiveStock === 0}
                   style={{
-                    height: '28px',
-                    padding: '0 0.7rem',
+                    height: '30px',
+                    padding: '0 0.8rem',
                     background: effectiveStock === 0 ? '#E2E8F0' : '#1E3A8A',
                     border: 'none', borderRadius: '8px', color: 'white',
                     cursor: effectiveStock === 0 ? 'not-allowed' : 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     boxShadow: effectiveStock === 0 ? 'none' : '0 4px 12px rgba(30, 58, 138, 0.25)',
                     transition: 'all 0.2s',
-                    gap: '0.3rem', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '0.65rem', letterSpacing: '0.04em'
+                    gap: '0.35rem', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '0.7rem', letterSpacing: '0.04em'
                   }}
                 >
                   <ShoppingCart size={13} /> ADD
