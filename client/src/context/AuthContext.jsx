@@ -38,6 +38,18 @@ export const AuthProvider = ({ children }) => {
 
   const toggleWishlist = (id) => setWishlist(id);
 
+  // Sync latest user details (including saved addresses) on load/token change
+  useEffect(() => {
+    if (state.token) {
+      authApi.getMe().then(({ data }) => {
+        if (data.user) {
+          dispatch({ type: 'UPDATE_USER', payload: data.user });
+          localStorage.setItem('bikeservice_user', JSON.stringify({ ...state.user, ...data.user }));
+        }
+      }).catch(() => {});
+    }
+  }, [state.token]);
+
   const login = async (credentials) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {

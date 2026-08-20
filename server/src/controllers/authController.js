@@ -36,6 +36,7 @@ const register = asyncHandler(async (req, res) => {
       phone: user.phone,
       role: user.role,
       avatar: user.avatar,
+      addresses: user.addresses || [],
     },
   });
 });
@@ -90,6 +91,7 @@ const login = asyncHandler(async (req, res) => {
       phone: user.phone,
       role: user.role,
       avatar: user.avatar,
+      addresses: user.addresses || [],
     },
   });
 });
@@ -170,9 +172,11 @@ const verifyOTP = asyncHandler(async (req, res) => {
       phone: user.phone,
       role: user.role,
       avatar: user.avatar,
+      addresses: user.addresses || [],
     },
   });
 });
+
 
 // @desc  Get current user profile
 // @route GET /api/auth/me

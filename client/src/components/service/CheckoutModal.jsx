@@ -40,7 +40,7 @@ const loadRazorpay = () =>
 
 export default function CheckoutModal({ open, onClose }) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { car, services, totalAmount, clearCart } = useServiceCart();
 
   const [step, setStep] = useState(1);
@@ -113,8 +113,13 @@ export default function CheckoutModal({ open, onClose }) {
       .then(({ data }) => {
         const list = data.user?.addresses || [];
         setAddresses(list);
-        if (list.length) setSelectedAddressId((prev) => prev ?? list[0]._id);
-        else setAddingAddress(true);
+        if (updateUser) updateUser({ addresses: list });
+        if (list.length) {
+          setSelectedAddressId((prev) => prev ?? list[0]._id);
+          setAddingAddress(false);
+        } else {
+          setAddingAddress(true);
+        }
       })
       .catch((err) => {
         reportApiError('CheckoutModal.getMe', err);
@@ -122,7 +127,7 @@ export default function CheckoutModal({ open, onClose }) {
         setAddingAddress(true);
       })
       .finally(() => setAddressesLoading(false));
-  }, []);
+  }, [updateUser]);
 
   useEffect(() => { if (open && user) loadAddresses(); }, [open, user, loadAddresses]);
 
@@ -133,9 +138,9 @@ export default function CheckoutModal({ open, onClose }) {
     const e = {};
     if (!addressForm.street.trim()) e.street = 'Street address is required';
     if (!addressForm.city.trim()) e.city = 'City is required';
-    if (!addressForm.state.trim()) e.state = 'State is required';
-    if (!/^[1-9]\d{5}$/.test(addressForm.pincode.trim())) {
-      e.pincode = 'Enter a valid 6-digit pincode (cannot start with 0)';
+    const pin = addressForm.pincode.trim();
+    if (!pin || !/^\d{6}$/.test(pin)) {
+      e.pincode = 'Enter a valid 6-digit pincode';
     }
     setAddressErrors(e);
     return Object.keys(e).length === 0;
@@ -158,8 +163,8 @@ export default function CheckoutModal({ open, onClose }) {
             ...prev,
             street: [a.house_number, a.road, a.neighbourhood, a.suburb].filter(Boolean).join(', ') || prev.street,
             city: a.city || a.town || a.village || a.county || prev.city,
-            state: a.state || prev.state,
-            pincode: a.postcode || prev.pincode,
+            state: a.state || prev.state || a.city || 'State',
+            pincode: (a.postcode || '').replace(/\D/g, '').slice(0, 6) || prev.pincode,
             lat, lng,
           }));
           toast.success('Address filled from your location');
@@ -186,10 +191,10 @@ export default function CheckoutModal({ open, onClose }) {
     );
   };
 
-  const saveAddress = async () => {
+  const saveAddress = async (andAdvance = false) => {
     if (!validateAddress()) {
-      toast.error('Please fix the highlighted fields');
-      return;
+      toast.error('Please fill in the required address fields');
+      return false;
     }
     setSavingAddress(true);
     try {
@@ -197,24 +202,46 @@ export default function CheckoutModal({ open, onClose }) {
         label: addressForm.label || 'Home',
         street: addressForm.street.trim(),
         city: addressForm.city.trim(),
-        state: addressForm.state.trim(),
+        state: addressForm.state.trim() || addressForm.city.trim() || 'State',
         pincode: addressForm.pincode.trim(),
         lat: addressForm.lat, lng: addressForm.lng,
       });
       const list = data.addresses || [];
       setAddresses(list);
-      setSelectedAddressId(list[list.length - 1]?._id || null);
+      if (updateUser) updateUser({ addresses: list });
+      const newlyCreated = list[list.length - 1];
+      if (newlyCreated) setSelectedAddressId(newlyCreated._id);
       setAddingAddress(false);
       setAddressForm({ label: 'Home', street: '', city: '', state: '', pincode: '', lat: null, lng: null });
-      toast.success('Address saved');
+      toast.success('Address saved successfully');
+      if (andAdvance) setStep(3);
+      return true;
     } catch (err) {
       toast.error(reportApiError('CheckoutModal.addAddress', err, 'Could not save the address'));
+      return false;
     } finally {
       setSavingAddress(false);
     }
   };
 
   const selectedAddress = addresses.find((a) => a._id === selectedAddressId) || null;
+
+  const handleStepContinue = async () => {
+    if (step === 1) {
+      if (!scheduledDate || !scheduledTime) {
+        toast.error('Please select both a date and a time slot');
+        return;
+      }
+      setStep(2);
+    } else if (step === 2) {
+      if (addingAddress || !selectedAddress) {
+        // If adding address, save and proceed
+        await saveAddress(true);
+      } else {
+        setStep(3);
+      }
+    }
+  };
 
   // ── payment ──
   const handlePay = async () => {
@@ -616,20 +643,20 @@ export default function CheckoutModal({ open, onClose }) {
               </button>
             )}
             <button
-              onClick={() => setStep(step + 1)}
-              disabled={step === 1 ? !canContinueFromDate : !canContinueFromAddress}
+              onClick={handleStepContinue}
+              disabled={savingAddress || (step === 1 ? !canContinueFromDate : (!selectedAddress && !addingAddress))}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
-                background: (step === 1 ? canContinueFromDate : canContinueFromAddress)
+                background: (step === 1 ? canContinueFromDate : (selectedAddress || addingAddress))
                   ? 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)' : '#E2E8F0',
-                color: (step === 1 ? canContinueFromDate : canContinueFromAddress) ? '#FFF' : '#94A3B8',
+                color: (step === 1 ? canContinueFromDate : (selectedAddress || addingAddress)) ? '#FFF' : '#94A3B8',
                 border: 'none', borderRadius: '10px', padding: '0.8rem',
                 fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.88rem',
                 letterSpacing: '0.07em', textTransform: 'uppercase',
-                cursor: (step === 1 ? canContinueFromDate : canContinueFromAddress) ? 'pointer' : 'not-allowed',
+                cursor: (step === 1 ? canContinueFromDate : (selectedAddress || addingAddress)) ? 'pointer' : 'not-allowed',
               }}
             >
-              Continue <ChevronRight size={15} />
+              {savingAddress ? 'Saving Address…' : step === 2 && addingAddress ? 'Save & Continue' : 'Continue'} <ChevronRight size={15} />
             </button>
           </div>
         )}

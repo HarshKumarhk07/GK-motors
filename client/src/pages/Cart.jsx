@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, CreditCard, Truck, Shield, ChevronRight, User, Phone, MapPin, X, Check, Home as HomeIcon, Briefcase, Wrench, ArrowRight } from 'lucide-react';
 import { placeOrder, createPartPayment, verifyPartPayment } from '../api/storeApi';
+import { addAddress } from '../api/authApi';
 import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -69,7 +70,7 @@ const StepIndicator = ({ step }) => (
 export default function Cart() {
   const { items, removeFromCart, updateQty, clearCart, total, totalOriginal, itemCount } = useCart();
   const { car, services, totalAmount: serviceTotal, serviceCount } = useServiceCart();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [placing, setPlacing] = useState(false);
@@ -83,6 +84,20 @@ export default function Cart() {
   });
   const paymentMethod = watch('paymentMethod');
   const watchedPincode = watch('pincode', savedPincode);
+
+  useEffect(() => {
+    if (user?.addresses?.length && !watch('street')) {
+      const first = user.addresses[0];
+      setValue('name', user.name || '');
+      setValue('phone', user.phone || '');
+      setValue('street', first.street || '');
+      setValue('city', first.city || '');
+      if (first.pincode) setValue('pincode', first.pincode);
+    } else if (user && !watch('name')) {
+      setValue('name', user.name || '');
+      setValue('phone', user.phone || '');
+    }
+  }, [user, setValue, watch]);
 
   const handleOrder = async (data) => {
     if (!user) { toast.error('Login to place order'); return; }
@@ -99,6 +114,21 @@ export default function Cart() {
         payment: { method: data.paymentMethod },
         totalAmount: total + shippingCharge,
       });
+
+      // Auto-save address to user profile if user has no saved addresses
+      if (user && (!user.addresses || user.addresses.length === 0)) {
+        addAddress({
+          label: 'Home',
+          street: data.street,
+          city: data.city,
+          state: data.state || data.city || 'State',
+          pincode: data.pincode,
+        }).then(({ data: addrData }) => {
+          if (addrData?.addresses && updateUser) {
+            updateUser({ addresses: addrData.addresses });
+          }
+        }).catch(() => {});
+      }
 
       if (data.paymentMethod === 'online') {
         const loaded = await loadRazorpay();
