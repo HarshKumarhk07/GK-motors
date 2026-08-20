@@ -6,7 +6,7 @@ import * as adminApi from '../../api/adminApi';
 import * as rentalApi from '../../api/rentalApi';
 import * as svcApi from '../../api/serviceApi';
 import toast from 'react-hot-toast';
-import { Users, Car, Wrench, TrendingUp, Package, Clock, Check, CheckCircle, AlertCircle, BarChart3, Settings, LogOut, Home, ShoppingBag, List, Loader, Plus, Edit2, Trash2, Menu, X, Calendar, MapPin, Search, ChevronUp, ChevronDown } from 'lucide-react';
+import { Users, Car, Wrench, TrendingUp, Package, Clock, Check, CheckCircle, AlertCircle, BarChart3, Settings, LogOut, Home, ShoppingBag, List, Loader, Plus, Edit2, Trash2, Menu, X, Calendar, MapPin, Search, ChevronUp, ChevronDown, Wind, Battery, CircleDot, Paintbrush, Sparkles, Droplets, Sun, Cog, Shield, Layers, Filter, Tag } from 'lucide-react';
 import { io } from 'socket.io-client';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
@@ -174,6 +174,50 @@ const UsersTab = () => {
   );
 };
 
+// ── Category Definitions for Service Types ──
+const SERVICE_CATEGORIES = [
+  { id: 1, slug: 'car-service', prefix: 'car_service_', name: 'Periodic Car Service', icon: Wrench, color: '#1E3A8A', bg: 'rgba(30,58,138,0.08)', desc: 'Scheduled maintenance, oil change & vehicle inspection' },
+  { id: 2, slug: 'ac-service', prefix: 'ac_', name: 'AC Service & Repair', icon: Wind, color: '#0284C7', bg: 'rgba(2,132,199,0.08)', desc: 'Refrigerant refill, cooling check & condenser clean' },
+  { id: 3, slug: 'batteries', prefix: 'battery_', name: 'Batteries & Electrical', icon: Battery, color: '#D97706', bg: 'rgba(217,119,6,0.08)', desc: 'Testing, jumpstart, replacement & charging diagnostics' },
+  { id: 4, slug: 'tyres-wheel-care', prefix: 'wheel_', altPrefix: 'tyre_', name: 'Tyre & Wheel Care', icon: CircleDot, color: '#EA580C', bg: 'rgba(234,88,12,0.08)', desc: 'Alignment, balancing, rotation & tyre replacements' },
+  { id: 5, slug: 'denting-painting', prefix: 'denting_', name: 'Denting & Painting', icon: Paintbrush, color: '#DB2777', bg: 'rgba(219,39,119,0.08)', desc: 'Panel repairs, scratch removal & full body painting' },
+  { id: 6, slug: 'detailing-service', prefix: 'detailing_', name: 'Detailing Service', icon: Sparkles, color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', desc: 'Ceramic coating, interior & exterior restoration' },
+  { id: 7, slug: 'car-spa-cleaning', prefix: 'spa_', altPrefix: 'cleaning_', name: 'Car Spa & Cleaning', icon: Droplets, color: '#0891B2', bg: 'rgba(8,145,178,0.08)', desc: 'Foam wash, deep sanitisation & waxing' },
+  { id: 8, slug: 'car-inspections', prefix: 'inspection_', name: 'Car Inspection', icon: Search, color: '#059669', bg: 'rgba(5,150,105,0.08)', desc: 'Multi-point inspection for buying, selling or health' },
+  { id: 9, slug: 'windshields-lights', prefix: 'windshield_', altPrefix: 'light_', name: 'Windshield & Lights', icon: Sun, color: '#B45309', bg: 'rgba(180,83,9,0.08)', desc: 'Glass repair, wiper change & headlight polishing' },
+  { id: 10, slug: 'suspension-fitments', prefix: 'suspension_', name: 'Suspension & Fitments', icon: Settings, color: '#4F46E5', bg: 'rgba(79,70,229,0.08)', desc: 'Shocks, struts & custom fitment installations' },
+  { id: 11, slug: 'clutch-body-parts', prefix: 'clutch_', altPrefix: 'brake_', name: 'Clutch & Mechanical Parts', icon: Cog, color: '#475569', bg: 'rgba(71,85,105,0.08)', desc: 'Clutch overhaul, brake pads & transmission repair' },
+  { id: 12, slug: 'insurance-claims', prefix: 'insurance_', name: 'Insurance Claims', icon: Shield, color: '#DC2626', bg: 'rgba(220,38,38,0.08)', desc: 'Cashless claim assistance & survey coordination' },
+];
+
+const UNCATEGORIZED_CAT = {
+  id: 0, slug: 'other', prefix: '', name: 'Other / Custom Services', icon: Layers, color: '#334155', bg: 'rgba(51,65,85,0.08)', desc: 'General or custom service packages'
+};
+
+const getCategoryForService = (st) => {
+  if (st.categoryId) {
+    const found = SERVICE_CATEGORIES.find(c => c.id === Number(st.categoryId));
+    if (found) return found;
+  }
+  const v = (st.value || '').toLowerCase();
+  const l = (st.label || '').toLowerCase();
+  
+  if (v.startsWith('car_service_') || l.includes('basic service') || l.includes('standard service') || l.includes('comprehensive service')) return SERVICE_CATEGORIES[0];
+  if (v.startsWith('ac_') || l.includes('ac ') || l.includes('cooling')) return SERVICE_CATEGORIES[1];
+  if (v.startsWith('battery_') || l.includes('battery') || l.includes('jump start')) return SERVICE_CATEGORIES[2];
+  if (v.startsWith('wheel_') || v.startsWith('tyre_') || l.includes('wheel') || l.includes('tyre') || l.includes('alignment')) return SERVICE_CATEGORIES[3];
+  if (v.startsWith('denting_') || l.includes('panel') || l.includes('paint') || l.includes('dent')) return SERVICE_CATEGORIES[4];
+  if (v.startsWith('detailing_') || l.includes('detailing') || l.includes('ceramic') || l.includes('ppf')) return SERVICE_CATEGORIES[5];
+  if (v.startsWith('spa_') || v.startsWith('cleaning_') || l.includes('spa') || l.includes('foam wash') || l.includes('cleaning')) return SERVICE_CATEGORIES[6];
+  if (v.startsWith('inspection_') || l.includes('inspection') || l.includes('checkup')) return SERVICE_CATEGORIES[7];
+  if (v.startsWith('windshield_') || v.startsWith('light_') || l.includes('windshield') || l.includes('headlight')) return SERVICE_CATEGORIES[8];
+  if (v.startsWith('suspension_') || l.includes('suspension') || l.includes('shock')) return SERVICE_CATEGORIES[9];
+  if (v.startsWith('clutch_') || v.startsWith('brake_') || l.includes('clutch') || l.includes('brake')) return SERVICE_CATEGORIES[10];
+  if (v.startsWith('insurance_') || l.includes('insurance') || l.includes('claim')) return SERVICE_CATEGORIES[11];
+  
+  return UNCATEGORIZED_CAT;
+};
+
 const ServicesTab = () => {
   const [data, setData] = useState([]);
   const [mechanics, setMechanics] = useState([]);
@@ -182,7 +226,14 @@ const ServicesTab = () => {
   const [stLoading, setStLoading] = useState(true);
   const [showStForm, setShowStForm] = useState(false);
   const [editSt, setEditSt] = useState(null);
-  const [stForm, setStForm] = useState({ value: '', label: '', price: '', desc: '', order: 0, isActive: true });
+  const [stForm, setStForm] = useState({
+    value: '', label: '', price: '', desc: '', order: 0, isActive: true,
+    categoryId: 1, categoryName: 'Periodic Car Service', tier: 'single', basePrice: 0
+  });
+  const [selectedCatFilter, setSelectedCatFilter] = useState('all');
+  const [stSearch, setStSearch] = useState('');
+  const [stStatusFilter, setStStatusFilter] = useState('all');
+
   const [showMechForm, setShowMechForm] = useState(false);
   const [mechForm, setMechForm] = useState({ name: '', phone: '', email: '', password: '' });
 
@@ -222,7 +273,6 @@ const ServicesTab = () => {
   const handleStatus = async (id, status, mechanicId, opts = {}) => {
     try {
       const payload = { status };
-      // Only include mechanic when caller actually wants to change it
       if (opts.changeMechanic) payload.mechanic = mechanicId || null;
       const { data: res } = await adminApi.updateServiceStatus(id, payload);
       toast.success(opts.changeMechanic
@@ -234,15 +284,35 @@ const ServicesTab = () => {
     }
   };
 
-  const resetStForm = () => { setShowStForm(false); setEditSt(null); setStForm({ value: '', label: '', price: '', desc: '', order: 0, isActive: true }); };
+  const resetStForm = () => {
+    setShowStForm(false);
+    setEditSt(null);
+    setStForm({
+      value: '', label: '', price: '', desc: '', order: 0, isActive: true,
+      categoryId: 1, categoryName: 'Periodic Car Service', tier: 'single', basePrice: 0
+    });
+  };
+
+  const handleCategorySelectChange = (catId) => {
+    const cat = SERVICE_CATEGORIES.find(c => c.id === Number(catId)) || UNCATEGORIZED_CAT;
+    setStForm(prev => ({
+      ...prev,
+      categoryId: cat.id,
+      categoryName: cat.name,
+      value: (!prev.value || prev.value.startsWith('car_service_') || prev.value.startsWith('ac_') || prev.value.startsWith('battery_') || prev.value.startsWith('wheel_') || prev.value.startsWith('denting_') || prev.value.startsWith('detailing_') || prev.value.startsWith('spa_') || prev.value.startsWith('inspection_') || prev.value.startsWith('windshield_') || prev.value.startsWith('suspension_') || prev.value.startsWith('clutch_') || prev.value.startsWith('insurance_'))
+        ? (cat.prefix ? `${cat.prefix}` : prev.value)
+        : prev.value
+    }));
+  };
 
   const handleStSubmit = async (e) => {
     e.preventDefault();
-    console.log('UPDATING SERVICE TYPE:', { id: editSt, payload: stForm });
+    if (!stForm.value.trim() || !stForm.label.trim() || !stForm.price.trim()) {
+      return toast.error('Value, Label, and Price are required');
+    }
     try {
       if (editSt) {
         const { data } = await adminApi.updateServiceType(editSt, stForm);
-        console.log('UPDATE RESPONSE:', data);
         if (data.serviceType) {
           setServiceTypes(prev => prev.map(s => s._id === editSt ? data.serviceType : s));
           toast.success('Service type updated!');
@@ -252,7 +322,6 @@ const ServicesTab = () => {
         }
       } else {
         const { data } = await adminApi.createServiceType(stForm);
-        console.log('CREATE RESPONSE:', data);
         if (data.serviceType) {
           setServiceTypes(prev => [...prev, data.serviceType]);
           toast.success('Service type added!');
@@ -268,13 +337,37 @@ const ServicesTab = () => {
   };
 
   const handleStEdit = (st) => {
+    const cat = getCategoryForService(st);
     setEditSt(st._id);
-    setStForm({ value: st.value, label: st.label, price: st.price, desc: st.desc || '', order: st.order || 0, isActive: st.isActive });
+    setStForm({
+      value: st.value,
+      label: st.label,
+      price: st.price,
+      desc: st.desc || '',
+      order: st.order || 0,
+      isActive: st.isActive !== false,
+      categoryId: st.categoryId || cat.id,
+      categoryName: st.categoryName || cat.name,
+      tier: st.tier || 'single',
+      basePrice: st.basePrice || 0
+    });
     setShowStForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleToggleStActive = async (st) => {
+    try {
+      const updated = { ...st, isActive: !st.isActive };
+      const { data } = await adminApi.updateServiceType(st._id, { isActive: !st.isActive });
+      setServiceTypes(prev => prev.map(s => s._id === st._id ? (data.serviceType || updated) : s));
+      toast.success(`${st.label} set to ${!st.isActive ? 'Active' : 'Inactive'}`);
+    } catch (err) {
+      toast.error('Failed to update status');
+    }
   };
 
   const handleStDelete = async (id) => {
-    if (!window.confirm('Delete this service type?')) return;
+    if (!window.confirm('Are you sure you want to delete this service type?')) return;
     try {
       await adminApi.deleteServiceType(id);
       setServiceTypes(serviceTypes.filter(s => s._id !== id));
@@ -282,9 +375,60 @@ const ServicesTab = () => {
     } catch { toast.error('Failed to delete'); }
   };
 
-  if(loading) return <div style={{textAlign:'center', padding:'3rem', color:'#888'}}><Loader style={{ animation: 'spin 1s linear infinite' }} size={24} /></div>;
+  const openAddForCategory = (cat) => {
+    setEditSt(null);
+    setStForm({
+      value: cat.prefix ? `${cat.prefix}` : '',
+      label: '',
+      price: 'From ₹',
+      desc: '',
+      order: serviceTypes.length,
+      isActive: true,
+      categoryId: cat.id,
+      categoryName: cat.name,
+      tier: 'single',
+      basePrice: 0
+    });
+    setShowStForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-  const filtered = data.filter(item => {
+  if (loading || stLoading) return <div style={{ textAlign: 'center', padding: '4rem', color: '#888' }}><Loader style={{ animation: 'spin 1s linear infinite' }} size={28} /></div>;
+
+  // Filter service types based on search and status
+  const filteredServiceTypes = serviceTypes.filter(st => {
+    if (stStatusFilter === 'active' && !st.isActive) return false;
+    if (stStatusFilter === 'inactive' && st.isActive) return false;
+    if (stSearch.trim()) {
+      const q = stSearch.toLowerCase().trim();
+      const matchName = (st.label || '').toLowerCase().includes(q);
+      const matchVal = (st.value || '').toLowerCase().includes(q);
+      const matchDesc = (st.desc || '').toLowerCase().includes(q);
+      const cat = getCategoryForService(st);
+      const matchCat = cat.name.toLowerCase().includes(q);
+      if (!matchName && !matchVal && !matchDesc && !matchCat) return false;
+    }
+    return true;
+  });
+
+  // Group service types by Category
+  const allCategoriesList = [...SERVICE_CATEGORIES, UNCATEGORIZED_CAT];
+  const categorizedMap = new Map();
+  allCategoriesList.forEach(cat => categorizedMap.set(cat.id, []));
+
+  filteredServiceTypes.forEach(st => {
+    const cat = getCategoryForService(st);
+    const list = categorizedMap.get(cat.id) || [];
+    list.push(st);
+    categorizedMap.set(cat.id, list);
+  });
+
+  // Determine which categories to display
+  const categoriesToDisplay = selectedCatFilter === 'all'
+    ? allCategoriesList.filter(cat => (categorizedMap.get(cat.id) || []).length > 0 || (stSearch === '' && stStatusFilter === 'all' && cat.id > 0 && cat.id <= 6))
+    : allCategoriesList.filter(cat => String(cat.id) === String(selectedCatFilter));
+
+  const filteredBookings = data.filter(item => {
     if (statusFilter !== 'all' && item.status !== statusFilter) return false;
     if (filterMode === 'all') return true;
     const created = new Date(item.createdAt);
@@ -303,73 +447,452 @@ const ServicesTab = () => {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* ── Service Types Management ── */}
-      <div style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '1.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
-          <h3 style={{ color: '#111', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', margin: 0, textTransform: 'uppercase' }}>SERVICE <span style={{ color: '#E53935' }}>TYPES</span></h3>
-          <button onClick={() => { resetStForm(); setShowStForm(!showStForm); }}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: showStForm ? '#F5F5F5' : '#E53935', color: showStForm ? '#666' : 'white', border: 'none', borderRadius: '10px', padding: '0.5rem 1.2rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem' }}>
-            {showStForm ? <><X size={14} /> Cancel</> : <><Plus size={14} /> Add Service</>}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+      
+      {/* ── Category-wise Service Types Management ── */}
+      <div style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '24px', padding: '1.8rem', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
+        
+        {/* Top Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <div style={{ width: 34, height: 34, borderRadius: '10px', background: 'rgba(30, 58, 138, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1E3A8A' }}>
+                <Layers size={18} />
+              </div>
+              <h3 style={{ color: '#0F172A', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.5rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                SERVICE <span style={{ color: '#1E3A8A' }}>PACKAGES & CATEGORIES</span>
+              </h3>
+            </div>
+            <p style={{ margin: '0.3rem 0 0 0', color: '#64748B', fontSize: '0.82rem', fontWeight: 500 }}>
+              Organized catalog of services ({serviceTypes.length} total packages across 12 categories)
+            </p>
+          </div>
+
+          <button onClick={() => { if (showStForm) resetStForm(); else setShowStForm(true); }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              background: showStForm ? '#F1F5F9' : 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
+              color: showStForm ? '#475569' : 'white',
+              border: 'none', borderRadius: '12px', padding: '0.65rem 1.3rem',
+              cursor: 'pointer', fontWeight: 800, fontSize: '0.85rem',
+              fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.06em',
+              textTransform: 'uppercase', boxShadow: showStForm ? 'none' : '0 6px 20px rgba(30, 58, 138, 0.25)',
+              transition: 'all 0.2s'
+            }}>
+            {showStForm ? <><X size={15} /> Close Form</> : <><Plus size={15} /> Add New Service</>}
           </button>
         </div>
 
+        {/* Add / Edit Form Modal/Drawer */}
         {showStForm && (
-          <form onSubmit={handleStSubmit} style={{ background: '#F9F9F9', border: '1px solid #EEE', borderRadius: '16px', padding: '1.2rem', marginBottom: '1.2rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.8rem' }}>
+          <form onSubmit={handleStSubmit} style={{ background: '#F8FAFC', border: '1.5px solid #CBD5E1', borderRadius: '20px', padding: '1.6rem', marginBottom: '2rem', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', paddingBottom: '0.8rem', borderBottom: '1px solid #E2E8F0' }}>
+              <span style={{ fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.1rem', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                {editSt ? 'Edit Service Package' : 'Create New Service Package'}
+              </span>
+              <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>All fields marked with * are required</span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.2rem' }}>
+              
+              {/* Category Selector */}
               <div>
-                <label style={{ color: '#666', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.3rem' }}>VALUE (unique key) *</label>
-                <input className="input-light" placeholder="e.g. engine_repair" value={stForm.value} onChange={e => setStForm({ ...stForm, value: e.target.value })} required style={{ height: 42, fontWeight: 600 }} />
+                <label style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>CATEGORY *</label>
+                <select
+                  value={stForm.categoryId}
+                  onChange={e => handleCategorySelectChange(e.target.value)}
+                  className="input-light"
+                  style={{ height: 44, fontWeight: 700, background: '#FFF', border: '1.5px solid #CBD5E1', borderRadius: '10px', width: '100%', padding: '0 0.8rem', fontSize: '0.85rem' }}
+                >
+                  {SERVICE_CATEGORIES.map(c => (
+                    <option key={c.id} value={c.id}>{c.id}. {c.name}</option>
+                  ))}
+                  <option value={0}>0. Other / Custom Services</option>
+                </select>
               </div>
+
+              {/* Unique Key / Value */}
               <div>
-                <label style={{ color: '#666', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.3rem' }}>LABEL *</label>
-                <input className="input-light" placeholder="e.g. Engine Repair" value={stForm.label} onChange={e => setStForm({ ...stForm, label: e.target.value })} required style={{ height: 42, fontWeight: 600 }} />
+                <label style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>UNIQUE KEY (system ID) *</label>
+                <input
+                  className="input-light"
+                  placeholder="e.g. ac_gas_refill"
+                  value={stForm.value}
+                  onChange={e => setStForm({ ...stForm, value: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
+                  required
+                  style={{ height: 44, fontWeight: 700, background: '#FFF', border: '1.5px solid #CBD5E1', borderRadius: '10px', width: '100%', padding: '0 0.8rem', fontSize: '0.85rem' }}
+                />
               </div>
+
+              {/* Label */}
               <div>
-                <label style={{ color: '#666', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.3rem' }}>PRICE TEXT *</label>
-                <input className="input-light" placeholder="e.g. From ₹999" value={stForm.price} onChange={e => setStForm({ ...stForm, price: e.target.value })} required style={{ height: 42, fontWeight: 600 }} />
+                <label style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>DISPLAY TITLE *</label>
+                <input
+                  className="input-light"
+                  placeholder="e.g. AC Gas Refill & Leak Check"
+                  value={stForm.label}
+                  onChange={e => setStForm({ ...stForm, label: e.target.value })}
+                  required
+                  style={{ height: 44, fontWeight: 700, background: '#FFF', border: '1.5px solid #CBD5E1', borderRadius: '10px', width: '100%', padding: '0 0.8rem', fontSize: '0.85rem' }}
+                />
               </div>
+
+              {/* Price String */}
               <div>
-                <label style={{ color: '#666', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.3rem' }}>DESCRIPTION</label>
-                <input className="input-light" placeholder="Short description" value={stForm.desc} onChange={e => setStForm({ ...stForm, desc: e.target.value })} style={{ height: 42, fontWeight: 600 }} />
+                <label style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>PRICE TEXT *</label>
+                <input
+                  className="input-light"
+                  placeholder="e.g. From ₹1,499"
+                  value={stForm.price}
+                  onChange={e => setStForm({ ...stForm, price: e.target.value })}
+                  required
+                  style={{ height: 44, fontWeight: 700, background: '#FFF', border: '1.5px solid #CBD5E1', borderRadius: '10px', width: '100%', padding: '0 0.8rem', fontSize: '0.85rem' }}
+                />
               </div>
+
+              {/* Package Tier */}
               <div>
-                <label style={{ color: '#666', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.3rem' }}>ORDER</label>
-                <input type="number" className="input-light" value={stForm.order} onChange={e => setStForm({ ...stForm, order: Number(e.target.value) })} style={{ height: 42, fontWeight: 600 }} />
+                <label style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>TIER / TYPE</label>
+                <select
+                  value={stForm.tier || 'single'}
+                  onChange={e => setStForm({ ...stForm, tier: e.target.value })}
+                  className="input-light"
+                  style={{ height: 44, fontWeight: 700, background: '#FFF', border: '1.5px solid #CBD5E1', borderRadius: '10px', width: '100%', padding: '0 0.8rem', fontSize: '0.85rem' }}
+                >
+                  <option value="single">Single Addon / Standalone</option>
+                  <option value="basic">Basic Tier</option>
+                  <option value="standard">Standard Tier</option>
+                  <option value="comprehensive">Comprehensive Tier</option>
+                </select>
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', color: '#111' }}>
-                  <input type="checkbox" checked={stForm.isActive} onChange={e => setStForm({ ...stForm, isActive: e.target.checked })} style={{ width: 18, height: 18, accentColor: '#E53935' }} /> Active
-                </label>
-                <button type="submit" style={{ background: '#E53935', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem' }}>
-                  {editSt ? 'Update' : 'Add'}
+
+              {/* Display Order */}
+              <div>
+                <label style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>SORT ORDER</label>
+                <input
+                  type="number"
+                  className="input-light"
+                  value={stForm.order}
+                  onChange={e => setStForm({ ...stForm, order: Number(e.target.value) })}
+                  style={{ height: 44, fontWeight: 700, background: '#FFF', border: '1.5px solid #CBD5E1', borderRadius: '10px', width: '100%', padding: '0 0.8rem', fontSize: '0.85rem' }}
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div style={{ marginBottom: '1.2rem' }}>
+              <label style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 800, display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>DESCRIPTION</label>
+              <textarea
+                className="input-light"
+                rows={2}
+                placeholder="Include features and service details..."
+                value={stForm.desc}
+                onChange={e => setStForm({ ...stForm, desc: e.target.value })}
+                style={{ width: '100%', padding: '0.6rem 0.8rem', fontWeight: 600, background: '#FFF', border: '1.5px solid #CBD5E1', borderRadius: '10px', fontSize: '0.85rem', resize: 'vertical' }}
+              />
+            </div>
+
+            {/* Footer Form Actions */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.8rem', borderTop: '1px solid #E2E8F0', flexWrap: 'wrap', gap: '1rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.85rem', color: '#0F172A' }}>
+                <input
+                  type="checkbox"
+                  checked={stForm.isActive}
+                  onChange={e => setStForm({ ...stForm, isActive: e.target.checked })}
+                  style={{ width: 18, height: 18, accentColor: '#1E3A8A' }}
+                />
+                Active (Live on website)
+              </label>
+
+              <div style={{ display: 'flex', gap: '0.6rem' }}>
+                <button
+                  type="button"
+                  onClick={resetStForm}
+                  style={{ background: '#E2E8F0', color: '#475569', border: 'none', borderRadius: '10px', padding: '0.6rem 1.2rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', color: 'white', border: 'none', borderRadius: '10px', padding: '0.6rem 1.8rem', cursor: 'pointer', fontWeight: 900, fontSize: '0.85rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(30,58,138,0.2)' }}
+                >
+                  {editSt ? 'Update Service' : 'Save Service'}
                 </button>
               </div>
             </div>
           </form>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.8rem' }}>
-          {serviceTypes.map(st => (
-            <div key={st._id} style={{ background: st.isActive ? '#FFF' : '#F9F9F9', border: '1px solid #EEE', borderRadius: '12px', padding: '1rem', opacity: st.isActive ? 1 : 0.6 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.3rem' }}>
-                <h4 style={{ color: '#111', fontWeight: 800, fontSize: '0.95rem', margin: 0, fontFamily: 'Rajdhani, sans-serif' }}>
-                  {st.label.toUpperCase()}
-                  <span style={{ fontSize: '0.65rem', color: '#AAA', marginLeft: '0.6rem', fontWeight: 600 }}>ID: {st.value}</span>
-                </h4>
-                <div style={{ display: 'flex', gap: '0.3rem' }}>
-                  <button onClick={() => handleStEdit(st)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', padding: '2px' }}><Edit2 size={14} /></button>
-                  <button onClick={() => handleStDelete(st._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E53935', padding: '2px' }}><Trash2 size={14} /></button>
-                </div>
-              </div>
-              <p style={{ color: '#666', fontSize: '0.72rem', margin: '0.2rem 0 0.5rem' }}>{st.desc}</p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#E53935', fontWeight: 800, fontFamily: 'Rajdhani, sans-serif', fontSize: '0.95rem' }}>{st.price}</span>
-                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: st.isActive ? '#2E7D32' : '#888' }}>{st.isActive ? 'ACTIVE' : 'INACTIVE'}</span>
-              </div>
+        {/* ── Search & Filter Controls ── */}
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1rem 1.2rem', marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>
+          
+          {/* Search Input */}
+          <div style={{ position: 'relative', flex: '1 1 260px', maxWidth: '400px' }}>
+            <div style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+              <Search size={15} />
             </div>
-          ))}
+            <input
+              type="text"
+              placeholder="Search service name, key, or category..."
+              value={stSearch}
+              onChange={e => setStSearch(e.target.value)}
+              className="input-light"
+              style={{ width: '100%', height: 38, paddingLeft: '2.4rem', fontSize: '0.82rem', fontWeight: 600, background: '#FFF', border: '1px solid #CBD5E1', borderRadius: '10px' }}
+            />
+            {stSearch && (
+              <button onClick={() => setStSearch('')} style={{ position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: 2 }}>
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
+          {/* Status Toggle Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.2rem' }}>Status:</span>
+            {[
+              { id: 'all', label: 'All Status' },
+              { id: 'active', label: 'Active' },
+              { id: 'inactive', label: 'Inactive' }
+            ].map(s => (
+              <button
+                key={s.id}
+                onClick={() => setStStatusFilter(s.id)}
+                style={{
+                  padding: '0.35rem 0.8rem', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                  background: stStatusFilter === s.id ? '#1E3A8A' : '#FFF',
+                  color: stStatusFilter === s.id ? '#FFF' : '#475569',
+                  fontWeight: 800, fontSize: '0.74rem',
+                  fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '0.03em',
+                  boxShadow: stStatusFilter === s.id ? '0 2px 8px rgba(30,58,138,0.2)' : '0 1px 3px rgba(0,0,0,0.05)'
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* ── Category Filter Pills ── */}
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.6rem', scrollbarWidth: 'thin' }}>
+            <button
+              onClick={() => setSelectedCatFilter('all')}
+              style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.4rem',
+                padding: '0.5rem 1rem', borderRadius: '12px', cursor: 'pointer',
+                background: selectedCatFilter === 'all' ? '#0F172A' : '#F8FAFC',
+                color: selectedCatFilter === 'all' ? '#FFF' : '#334155',
+                border: `1.5px solid ${selectedCatFilter === 'all' ? '#0F172A' : '#E2E8F0'}`,
+                fontWeight: 900, fontSize: '0.8rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em',
+                boxShadow: selectedCatFilter === 'all' ? '0 4px 14px rgba(15,23,42,0.15)' : 'none'
+              }}
+            >
+              <Layers size={14} />
+              ALL CATEGORIES
+              <span style={{
+                background: selectedCatFilter === 'all' ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
+                color: selectedCatFilter === 'all' ? '#FFF' : '#475569',
+                padding: '0.1rem 0.45rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800
+              }}>
+                {serviceTypes.length}
+              </span>
+            </button>
+
+            {allCategoriesList.map(cat => {
+              const count = (categorizedMap.get(cat.id) || []).length;
+              const Icon = cat.icon || Layers;
+              const isSelected = String(selectedCatFilter) === String(cat.id);
+              if (count === 0 && selectedCatFilter !== 'all' && !isSelected) return null;
+
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCatFilter(isSelected ? 'all' : cat.id)}
+                  style={{
+                    flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.45rem',
+                    padding: '0.5rem 0.9rem', borderRadius: '12px', cursor: 'pointer',
+                    background: isSelected ? cat.color : '#F8FAFC',
+                    color: isSelected ? '#FFF' : '#334155',
+                    border: `1.5px solid ${isSelected ? cat.color : '#E2E8F0'}`,
+                    fontWeight: 800, fontSize: '0.78rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.03em',
+                    boxShadow: isSelected ? `0 4px 14px ${cat.color}35` : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <Icon size={13} style={{ color: isSelected ? '#FFF' : cat.color }} />
+                  {cat.name.toUpperCase()}
+                  <span style={{
+                    background: isSelected ? 'rgba(255,255,255,0.25)' : '#E2E8F0',
+                    color: isSelected ? '#FFF' : '#64748B',
+                    padding: '0.1rem 0.45rem', borderRadius: '6px', fontSize: '0.68rem', fontWeight: 800
+                  }}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Category Structured Listing ── */}
+        {filteredServiceTypes.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#F8FAFC', borderRadius: '18px', border: '1.5px dashed #CBD5E1' }}>
+            <div style={{ width: 50, height: 50, borderRadius: '14px', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#64748B' }}>
+              <Search size={22} />
+            </div>
+            <h4 style={{ margin: '0 0 0.4rem 0', color: '#0F172A', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.2rem' }}>
+              NO SERVICE PACKAGES MATCHED
+            </h4>
+            <p style={{ margin: '0 0 1.2rem 0', color: '#64748B', fontSize: '0.85rem' }}>
+              {stSearch ? `No service types found matching "${stSearch}"` : 'No service types available under current filters'}
+            </p>
+            <button
+              onClick={() => { setStSearch(''); setStStatusFilter('all'); setSelectedCatFilter('all'); }}
+              style={{ background: '#0F172A', color: '#FFF', border: 'none', borderRadius: '10px', padding: '0.6rem 1.2rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif' }}
+            >
+              Reset All Filters
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {categoriesToDisplay.map(cat => {
+              const catServices = categorizedMap.get(cat.id) || [];
+              const Icon = cat.icon || Layers;
+              if (catServices.length === 0 && selectedCatFilter === 'all') return null;
+
+              return (
+                <div key={cat.id} style={{ background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '1.4rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+                  
+                  {/* Category Section Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '0.8rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.9rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                      <div style={{ width: 38, height: 38, borderRadius: '10px', background: cat.bg, color: cat.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon size={19} />
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                          <h4 style={{ margin: 0, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.25rem', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                            {cat.name}
+                          </h4>
+                          <span style={{ background: cat.color, color: 'white', fontSize: '0.68rem', fontWeight: 900, padding: '0.15rem 0.55rem', borderRadius: '6px', letterSpacing: '0.04em' }}>
+                            {catServices.length} {catServices.length === 1 ? 'Package' : 'Packages'}
+                          </span>
+                        </div>
+                        <p style={{ margin: '0.15rem 0 0 0', color: '#64748B', fontSize: '0.75rem', fontWeight: 500 }}>
+                          {cat.desc}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => openAddForCategory(cat)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.35rem',
+                        background: '#FFF', color: cat.color,
+                        border: `1.5px solid ${cat.color}30`, borderRadius: '10px',
+                        padding: '0.45rem 0.9rem', fontSize: '0.75rem', fontWeight: 800,
+                        cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = cat.color; e.currentTarget.style.color = '#FFF'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; e.currentTarget.style.color = cat.color; }}
+                    >
+                      <Plus size={13} /> Add to {cat.name.split(' ')[0]}
+                    </button>
+                  </div>
+
+                  {/* Category Grid */}
+                  {catServices.length === 0 ? (
+                    <div style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.82rem', fontWeight: 600 }}>
+                      No service packages in this category yet.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
+                      {catServices.map(st => (
+                        <div
+                          key={st._id}
+                          style={{
+                            background: '#FFFFFF',
+                            border: `1.5px solid ${st.isActive ? '#E2E8F0' : '#CBD5E1'}`,
+                            borderRadius: '16px', padding: '1.1rem',
+                            display: 'flex', flexDirection: 'column',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                            opacity: st.isActive ? 1 : 0.65,
+                            transition: 'all 0.25s'
+                          }}
+                        >
+                          {/* Card Header */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
+                            <div style={{ flex: 1, marginRight: '0.5rem' }}>
+                              <h5 style={{ color: '#0F172A', fontWeight: 900, fontSize: '1rem', margin: 0, fontFamily: 'Rajdhani, sans-serif', lineHeight: 1.25 }}>
+                                {st.label}
+                              </h5>
+                              <span style={{ fontSize: '0.66rem', color: '#94A3B8', fontWeight: 700, fontFamily: 'monospace', display: 'block', marginTop: '0.15rem' }}>
+                                ID: {st.value}
+                              </span>
+                            </div>
+
+                            {/* Actions */}
+                            <div style={{ display: 'flex', gap: '0.3rem', flexShrink: 0 }}>
+                              <button
+                                onClick={() => handleStEdit(st)}
+                                title="Edit Service"
+                                style={{ background: '#F1F5F9', border: 'none', borderRadius: '8px', cursor: 'pointer', color: '#475569', padding: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              >
+                                <Edit2 size={13} />
+                              </button>
+                              <button
+                                onClick={() => handleStDelete(st._id)}
+                                title="Delete Service"
+                                style={{ background: '#FEF2F2', border: 'none', borderRadius: '8px', cursor: 'pointer', color: '#EF4444', padding: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Description */}
+                          <p style={{ color: '#64748B', fontSize: '0.74rem', margin: '0.3rem 0 0.8rem', lineHeight: 1.45, flex: 1 }}>
+                            {st.desc || 'Standard doorstep vehicle service package.'}
+                          </p>
+
+                          {/* Bottom meta & Price */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.7rem', borderTop: '1px solid #F1F5F9', marginTop: 'auto' }}>
+                            <div>
+                              <span style={{ color: '#1E3A8A', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.15rem' }}>
+                                {st.price}
+                              </span>
+                              {st.tier && st.tier !== 'single' && (
+                                <span style={{ marginLeft: '0.4rem', fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748B', background: '#F1F5F9', padding: '0.1rem 0.35rem', borderRadius: '4px' }}>
+                                  {st.tier}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Active/Inactive Toggle */}
+                            <button
+                              onClick={() => handleToggleStActive(st)}
+                              style={{
+                                border: 'none', cursor: 'pointer',
+                                background: st.isActive ? 'rgba(46,125,50,0.1)' : '#F1F5F9',
+                                color: st.isActive ? '#2E7D32' : '#64748B',
+                                fontSize: '0.65rem', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif',
+                                letterSpacing: '0.04em', padding: '0.25rem 0.6rem', borderRadius: '6px',
+                                textTransform: 'uppercase'
+                              }}
+                            >
+                              {st.isActive ? '● ACTIVE' : '○ INACTIVE'}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ── Mechanics Management ── */}
@@ -4252,7 +4775,7 @@ export default function AdminDashboard() {
   const sidebarLinks = [
     { id: 'dashboard', icon: BarChart3, label: 'Dashboard' },
     { id: 'car-services', icon: Wrench, label: 'Services' },
-    { id: 'services', icon: Calendar, label: 'Bookings' },
+    { id: 'services', icon: Calendar, label: 'Service Types' },
     { id: 'live-tracking', icon: MapPin, label: 'Live Tracking' },
     { id: 'users', icon: Users, label: 'Users' },
     // Parts stays: the storefront is live on the site.
