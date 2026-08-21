@@ -50,11 +50,11 @@ const ScrollToTop = () => {
 };
 
 const Layout = ({ children, hideNav = false }) => (
-  <>
+  <div style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', position: 'relative' }}>
     {!hideNav && <Navbar />}
-    <main>{children}</main>
+    <main style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', position: 'relative' }}>{children}</main>
     {!hideNav && <Footer />}
-  </>
+  </div>
 );
 
 function App() {

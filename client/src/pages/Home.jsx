@@ -137,7 +137,7 @@ export default function Home() {
   ).filter(Boolean);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', width: '100%', maxWidth: '100%', overflowX: 'hidden', position: 'relative' }}>
       <style>{`
         /* ── Hero: ambient depth ─────────────────────────────────────────── */
         .gk-glow { position: absolute; pointer-events: none; border-radius: 50%; }
@@ -235,25 +235,27 @@ export default function Home() {
         }
 
         @media (max-width: 900px) {
+          .gk-glow-a, .gk-glow-b { display: none !important; }
+          .gk-svc-car, .gk-svc-streaks { display: none !important; }
         }
 
         @media (max-width: 768px) {
-          .gk-hero { padding: 2.25rem 0 2.5rem !important; min-height: auto !important; display: block !important; }
+          .gk-hero { padding: 2.25rem 0 2.5rem !important; min-height: auto !important; display: block !important; overflow: hidden !important; width: 100% !important; max-width: 100% !important; }
           .gk-hero h1 { font-size: 1.75rem !important; }
           .gk-hero-sub { font-size: 0.85rem !important; }
           .gk-hero-img { display: none !important; }
-          .gk-hero-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          .gk-cta-row { flex-direction: column !important; align-items: stretch !important; }
+          .gk-hero-grid { grid-template-columns: 1fr !important; gap: 1.75rem !important; width: 100% !important; }
+          .gk-cta-row { flex-direction: column !important; align-items: stretch !important; gap: 0.75rem !important; }
           .gk-cta-row > a { justify-content: center !important; }
           .gk-trust-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
-          .gk-section { padding: 2.25rem 0 !important; }
+          .gk-section { padding: 2.25rem 0 !important; width: 100% !important; max-width: 100% !important; overflow: hidden !important; }
           .gk-section h2 { font-size: 1.65rem !important; }
-          .gk-cat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.9rem !important; }
+          .gk-cat-grid { grid-template-columns: 1fr !important; gap: 0.9rem !important; width: 100% !important; }
           .gk-parts-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
-          .gk-cat-card { padding: 1.2rem 1.05rem 1.05rem !important; border-radius: 15px !important; }
+          .gk-cat-card { padding: 1.25rem 1.15rem 1.15rem !important; border-radius: 16px !important; }
           .gk-steps-grid { grid-template-columns: 1fr !important; }
           .gk-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .testimonial-section { padding: 2.5rem 0 !important; }
+          .testimonial-section { padding: 2.5rem 0 !important; width: 100% !important; max-width: 100% !important; overflow: hidden !important; }
           .testimonial-section h2 { font-size: 1.65rem !important; }
           .testimonial-track { gap: 2rem; padding: 1.5rem 0; }
         }
@@ -579,7 +581,7 @@ export default function Home() {
             }
           `}</style>
 
-          <div style={{ overflow: 'hidden' }}>
+          <div style={{ overflow: 'hidden', width: '100%', maxWidth: '100%', position: 'relative' }}>
             <div className="testimonial-track">
               {[...TESTIMONIALS, ...TESTIMONIALS.slice(0, 2)].map((item, i) => (
                 <div key={i} style={{ position: 'relative', width: '380px', flexShrink: 0 }}>

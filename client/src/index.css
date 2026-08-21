@@ -12,8 +12,13 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
-  width: 100%;
+  overflow-x: clip;
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  position: relative;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -23,8 +28,13 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-  width: 100%;
+  overflow-x: clip;
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  position: relative;
+  margin: 0;
+  padding: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -32,9 +42,14 @@ body {
    html and body already clip horizontal overflow above. #root is the third
    place a stray wide child can escape from, so it is clipped too.
    ═══════════════════════════════════════════════════════════════════════════ */
-#root {
-  overflow-x: hidden;
-  width: 100%;
+#root, main {
+  overflow-x: clip;
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  position: relative;
+  margin: 0;
+  padding: 0;
 }
 
 html {
