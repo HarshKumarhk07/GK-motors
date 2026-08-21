@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img" aria-label="Ceramic Coating">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F3F7FD"/><stop offset="100%" stop-color="#E3EBF8"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EDF1F7"/><stop offset="52%" stop-color="#C6D0E0"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF6FD"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <circle cx="112" cy="80" r="96" fill="#DBEAFE" opacity=".5"/>
+  <path d="M0 450 L600 148 L600 450Z" fill="#1E3A8A" opacity=".055"/>
+  <path d="M0 450 L432 450 L0 234Z" fill="#1E3A8A" opacity=".05"/>
+  <g transform="translate(72 152) scale(2.920)">
+    <path d="M6 64 L13 45c1.9-5.4 5.8-8 11.4-8h29c4.6 0 8 1.4 11 4.4L73 51l11 2.9c4.3 1.2 6.6 4.2 6.6 8.3V68c0 2.5-1.5 4-4 4H10c-2.5 0-4-1.5-4-4z" fill="#1E3A8A"/>
+    <path d="M24 42h25l9 10H21z" fill="#DBEAFE"/>
+    <circle cx="28" cy="72" r="9.5" fill="#0F172A"/><circle cx="28" cy="72" r="4" fill="#93C5FD"/>
+    <circle cx="71" cy="72" r="9.5" fill="#0F172A"/><circle cx="71" cy="72" r="4" fill="#93C5FD"/>
+  </g>
+  <g transform="translate(356 46) scale(2.000)">
+    <path d="M50 6l38 14v30c0 26-16 40-38 50C28 90 12 76 12 50V20z" fill="#1E3A8A"/>
+    <path d="M36 50l10 11 20-23" stroke="#FFFFFF" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g transform="translate(400 262) scale(1.520)">
+    <path d="M50 8c16 24 25 35 25 46a25 25 0 1 1-50 0C25 43 34 32 50 8z" fill="#38BDF8"/>
+    <path d="M38 58a12 12 0 0 0 8 12" stroke="#FFFFFF" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

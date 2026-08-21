@@ -43,6 +43,151 @@ const loadRazorpay = () =>
     document.body.appendChild(script);
   });
 
+/**
+ * Service-booking cart screen.
+ *
+ * Written as a stylesheet rather than inline styles because the whole point
+ * here is the breakpoints: at 360px the total row used to run its "Doorstep
+ * pickup & inspection included" line straight under the price, and the
+ * checkout label wrapped to three lines around a vertically-centred icon.
+ * Both are layout problems a media query solves and an inline style cannot.
+ */
+const SERVICE_CART_STYLES = `
+  .svc-cart { min-height: 80vh; background: #FFFFFF; padding: 3rem 1rem; }
+
+  .svc-cart-head {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: .75rem 1rem; margin-bottom: 2rem;
+  }
+  .svc-cart-back {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;
+    padding: .6rem 1.2rem; color: #475569; cursor: pointer;
+    font-family: Rajdhani, sans-serif; font-size: .85rem; font-weight: 700;
+    min-height: 44px;
+  }
+  .svc-cart-back:hover { background: #F1F5F9; }
+  .svc-cart-title {
+    color: #0F172A; font-family: Rajdhani, sans-serif; font-weight: 900;
+    font-size: clamp(1.55rem, 6.5vw, 2.2rem); letter-spacing: .04em;
+    margin: 0; line-height: 1.1;
+  }
+  .svc-cart-title span { color: #1E3A8A; }
+
+  .svc-cart-panel {
+    background: #FFFFFF; border: 1.5px solid #E2E8F0;
+    border-radius: clamp(16px, 4vw, 24px);
+    padding: clamp(1.1rem, 4vw, 2rem);
+    box-shadow: 0 10px 40px rgba(0,0,0,.04);
+  }
+
+  .svc-cart-eyebrow {
+    display: block; font-family: Rajdhani, sans-serif; font-size: .75rem;
+    font-weight: 900; color: #64748B; text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .svc-cart-eyebrow--blue { color: #1E3A8A; }
+
+  .svc-cart-car {
+    display: flex; align-items: center; gap: 1rem;
+    padding-bottom: 1.5rem; margin-bottom: 1.5rem;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .svc-cart-car-icon {
+    flex: none; width: 50px; height: 50px; border-radius: 14px;
+    background: rgba(30,58,138,.08); color: #1E3A8A;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .svc-cart-car-text { min-width: 0; }
+  .svc-cart-car-text h3 {
+    margin: 0; font-family: Rajdhani, sans-serif; font-weight: 900;
+    font-size: clamp(1.05rem, 4vw, 1.3rem); color: #0F172A; line-height: 1.25;
+  }
+
+  .svc-cart-section { margin-bottom: 1.5rem; }
+  .svc-cart-section > .svc-cart-eyebrow { margin-bottom: .8rem; }
+  .svc-cart-list { display: flex; flex-direction: column; gap: .75rem; }
+
+  .svc-cart-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: .75rem 1rem; padding: 1rem 1.2rem;
+    background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px;
+  }
+  .svc-cart-row-main { min-width: 0; }
+  .svc-cart-row-main h4 {
+    margin: 0; font-family: Rajdhani, sans-serif; font-weight: 800;
+    font-size: 1rem; color: #0F172A; line-height: 1.3;
+  }
+  .svc-cart-row-main p { margin: 0; font-size: .75rem; font-weight: 600; color: #64748B; }
+  .svc-cart-row-price {
+    flex: none; white-space: nowrap;
+    font-family: Rajdhani, sans-serif; font-weight: 950;
+    font-size: 1.2rem; color: #1E3A8A;
+  }
+
+  .svc-cart-total {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: .5rem 1.25rem; padding: 1.2rem; margin-bottom: 2rem;
+    background: linear-gradient(135deg, rgba(30,58,138,.06) 0%, rgba(15,23,42,.02) 100%);
+    border: 1px solid rgba(30,58,138,.15); border-radius: 16px;
+  }
+  .svc-cart-total-label { min-width: 0; }
+  .svc-cart-total-label p {
+    margin: .15rem 0 0; font-size: .8rem; font-weight: 500; color: #64748B;
+    line-height: 1.4;
+  }
+  .svc-cart-total-amount {
+    flex: none; white-space: nowrap;
+    font-family: Rajdhani, sans-serif; font-weight: 950;
+    font-size: clamp(1.5rem, 6vw, 1.8rem); color: #1E3A8A; line-height: 1;
+  }
+
+  .svc-cart-actions { display: flex; flex-wrap: wrap; gap: 1rem; }
+
+  .svc-cart-cta {
+    flex: 1 1 260px; display: inline-flex; align-items: center;
+    justify-content: center; gap: .6rem; min-height: 52px;
+    padding: .95rem 1.4rem; border: none; border-radius: 14px;
+    background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%); color: #FFFFFF;
+    font-family: Rajdhani, sans-serif; font-weight: 900;
+    font-size: clamp(.85rem, 3.2vw, 1rem); letter-spacing: .06em;
+    text-transform: uppercase; line-height: 1.25; cursor: pointer;
+    box-shadow: 0 8px 25px rgba(30,58,138,.25); transition: transform .25s;
+  }
+  .svc-cart-cta svg { flex: none; }
+  .svc-cart-cta:hover { transform: translateY(-2px); }
+
+  .svc-cart-alt {
+    flex: 0 1 auto; display: inline-flex; align-items: center;
+    justify-content: center; min-height: 52px; padding: .95rem 1.8rem;
+    background: #FFFFFF; color: #0F172A; border: 1.5px solid #E2E8F0;
+    border-radius: 14px; text-decoration: none;
+    font-family: Rajdhani, sans-serif; font-weight: 800; font-size: .95rem;
+    letter-spacing: .04em; text-transform: uppercase;
+  }
+  .svc-cart-alt:hover { background: #F8FAFC; }
+
+  /* Phones: the panel gives up its side padding first, then the total row and
+     the buttons stack so nothing has to share a line it cannot fit on. */
+  @media (max-width: 560px) {
+    .svc-cart { padding: 1.75rem .85rem; }
+    .svc-cart-head { gap: .6rem; margin-bottom: 1.4rem; }
+    .svc-cart-row { padding: .9rem 1rem; }
+    .svc-cart-total {
+      flex-direction: column; align-items: flex-start;
+      gap: .75rem; padding: 1.1rem; margin-bottom: 1.5rem;
+    }
+    .svc-cart-total-amount { align-self: flex-end; }
+    .svc-cart-actions { gap: .75rem; }
+    .svc-cart-cta, .svc-cart-alt { flex: 1 1 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .svc-cart-cta { transition: none; }
+    .svc-cart-cta:hover { transform: none; }
+  }
+`;
+
 const StepIndicator = ({ step }) => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: '2.5rem' }}>
     {[{ n: 1, label: 'Cart' }, { n: 2, label: 'Delivery' }].map(({ n, label }, idx) => (
@@ -176,43 +321,42 @@ export default function Cart() {
   if (items.length === 0) {
     if (serviceCount > 0) {
       return (
-        <div style={{ minHeight: '80vh', background: '#FFFFFF', padding: '3rem 1rem' }}>
+        <div className="svc-cart">
+          <style>{SERVICE_CART_STYLES}</style>
+
           <div className="max-w-3xl mx-auto">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-              <button onClick={() => navigate('/services')}
-                style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '0.6rem 1.2rem', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 700, fontFamily: 'Rajdhani, sans-serif' }}>
+            <div className="svc-cart-head">
+              <button type="button" className="svc-cart-back" onClick={() => navigate('/services')}>
                 <ArrowLeft size={16} /> Services
               </button>
-              <h1 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, margin: 0, letterSpacing: '0.04em' }}>
-                SERVICE <span style={{ color: '#1E3A8A' }}>BOOKING CART</span>
+              <h1 className="svc-cart-title">
+                SERVICE <span>BOOKING CART</span>
               </h1>
             </div>
 
-            <div style={{ background: '#FFF', border: '1.5px solid #E2E8F0', borderRadius: '24px', padding: '2rem', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
+            <div className="svc-cart-panel">
               {car && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1.5rem', borderBottom: '1px solid #F1F5F9', marginBottom: '1.5rem' }}>
-                  <div style={{ width: 50, height: 50, borderRadius: '14px', background: 'rgba(30, 58, 138, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1E3A8A' }}>
-                    <Wrench size={24} />
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E3A8A', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'Rajdhani, sans-serif' }}>Selected Vehicle</span>
-                    <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 900, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif' }}>
+                <div className="svc-cart-car">
+                  <div className="svc-cart-car-icon"><Wrench size={24} /></div>
+                  <div className="svc-cart-car-text">
+                    <span className="svc-cart-eyebrow svc-cart-eyebrow--blue">Selected Vehicle</span>
+                    <h3>
                       {car.brand} {car.model} {car.year && `(${car.year})`} {car.fuelType && `• ${car.fuelType.toUpperCase()}`}
                     </h3>
                   </div>
                 </div>
               )}
 
-              <div style={{ marginBottom: '1.5rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'Rajdhani, sans-serif', display: 'block', marginBottom: '0.8rem' }}>Selected Packages ({serviceCount})</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="svc-cart-section">
+                <span className="svc-cart-eyebrow">Selected Packages ({serviceCount})</span>
+                <div className="svc-cart-list">
                   {services.map((s) => (
-                    <div key={s.serviceId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.2rem', background: '#F8FAFC', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
-                      <div>
-                        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif' }}>{s.name}</h4>
-                        {s.categoryName && <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>{s.categoryName}</p>}
+                    <div key={s.serviceId} className="svc-cart-row">
+                      <div className="svc-cart-row-main">
+                        <h4>{s.name}</h4>
+                        {s.categoryName && <p>{s.categoryName}</p>}
                       </div>
-                      <span style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E3A8A', fontFamily: 'Rajdhani, sans-serif' }}>
+                      <span className="svc-cart-row-price">
                         ₹{Number(s.price).toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -220,18 +364,20 @@ export default function Cart() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.2rem', background: 'linear-gradient(135deg, rgba(30,58,138,0.06) 0%, rgba(15,23,42,0.02) 100%)', borderRadius: '16px', border: '1px solid rgba(30,58,138,0.15)', marginBottom: '2rem' }}>
-                <div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'Rajdhani, sans-serif' }}>Total Estimate</span>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748B', fontWeight: 500 }}>Doorstep pickup & inspection included</p>
+              <div className="svc-cart-total">
+                <div className="svc-cart-total-label">
+                  <span className="svc-cart-eyebrow">Total Estimate</span>
+                  <p>Doorstep pickup &amp; inspection included</p>
                 </div>
-                <span style={{ fontSize: '1.8rem', fontWeight: 950, color: '#1E3A8A', fontFamily: 'Rajdhani, sans-serif' }}>
+                <span className="svc-cart-total-amount">
                   ₹{Number(serviceTotal).toLocaleString('en-IN')}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <div className="svc-cart-actions">
                 <button
+                  type="button"
+                  className="svc-cart-cta"
                   onClick={() => {
                     if (!user) {
                       toast.error('Please login to complete your booking');
@@ -240,19 +386,15 @@ export default function Cart() {
                     }
                     setShowServiceCheckout(true);
                   }}
-                  style={{ flex: 1, minWidth: '220px', background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', color: 'white', border: 'none', padding: '1rem 2rem', borderRadius: '14px', fontWeight: 900, cursor: 'pointer', textAlign: 'center', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em', fontSize: '1rem', boxShadow: '0 8px 25px rgba(30, 58, 138, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.3s' }}
-                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                  <Wrench size={18} /> PROCEED TO CHECKOUT & SCHEDULE SLOT
+                  <Wrench size={18} aria-hidden="true" />
+                  <span>Proceed to checkout &amp; schedule slot</span>
                 </button>
-                <Link to="/parts"
-                  style={{ background: '#FFF', color: '#0F172A', border: '1.5px solid #E2E8F0', padding: '1rem 1.8rem', borderRadius: '14px', fontWeight: 800, textDecoration: 'none', textAlign: 'center', fontFamily: 'Rajdhani, sans-serif', fontSize: '0.95rem' }}>
-                  BROWSE SPARE PARTS
-                </Link>
+                <Link to="/parts" className="svc-cart-alt">Browse spare parts</Link>
               </div>
             </div>
           </div>
+
           <CheckoutModal open={showServiceCheckout} onClose={() => setShowServiceCheckout(false)} />
         </div>
       );

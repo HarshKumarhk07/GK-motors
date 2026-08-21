@@ -23,7 +23,9 @@ export const updateSellStatus = (id, data) => API.put(`/sell/${id}/status`, data
 export const getOrders = (page = 1) => API.get(`/store/orders?page=${page}&limit=20`);
 export const updateOrderStatus = (id, data) => API.put(`/store/orders/${id}/status`, data);
 
-export const getParts = () => API.get('/store/parts');
+// The admin list, not the storefront one: /store/parts pages at 12 and hides
+// inactive parts, so anything past the twelfth newest never reached the panel.
+export const getParts = () => API.get('/store/parts/admin');
 export const getPartCategories = () => API.get('/store/parts/categories');
 export const createPart = (data) => API.post('/store/parts', data);
 export const updatePart = (id, data) => API.put(`/store/parts/${id}`, data);
@@ -36,7 +38,7 @@ export const updateEnquiry = (id, data) => API.put(`/admin/enquiries/${id}`, dat
 
 // Service Types
 export const getServiceTypes = () => API.get('/admin/service-types');
-export const createServiceType = (data) => API.post('/admin/service-types', data);
+export const createServiceType = (data) => API.post('/admin/service-types', data, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const updateServiceType = (id, data) => API.put(`/admin/service-types/${id}`, data);
 export const deleteServiceType = (id) => API.delete(`/admin/service-types/${id}`);
 

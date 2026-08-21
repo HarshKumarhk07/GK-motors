@@ -76,12 +76,16 @@ const loginLimiter = rateLimit({
 });
 
 // OTP requests cost us an email send each, so they are capped tighter.
+// Keyed on the email alone: the OTP flow is email-only, and the key must match
+// what authController passes to clearRateLimit() on a successful verify.
+const otpKey = (req) => (req.body?.email || '').toString().trim().toLowerCase();
+
 const otpLimiter = rateLimit({
   name: 'otp',
   windowMs: 15 * 60 * 1000,
   max: 5,
   message: 'Too many OTP requests. Please wait 15 minutes before requesting another.',
-  keyBy: (req) => (req.body?.email || req.body?.phone || '').toString().toLowerCase(),
+  keyBy: otpKey,
 });
 
 const otpVerifyLimiter = rateLimit({
@@ -89,7 +93,7 @@ const otpVerifyLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: 'Too many verification attempts. Please request a new code.',
-  keyBy: (req) => (req.body?.email || req.body?.phone || '').toString().toLowerCase(),
+  keyBy: otpKey,
 });
 
 const registerLimiter = rateLimit({

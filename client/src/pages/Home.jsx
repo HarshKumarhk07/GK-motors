@@ -8,7 +8,7 @@ import {
 import { getServiceCategories, getCategories } from '../api/serviceApi';
 import { getFeaturedParts } from '../api/storeApi';
 import PartCard from '../components/parts/PartCard';
-import CategoryIcon, { categoryImageFrom } from '../components/service/CategoryIcon';
+import CategoryIcon from '../components/service/CategoryIcon';
 import heroCar from '../assets/hero-gt3-silver.png';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -19,19 +19,21 @@ import heroCar from '../assets/hero-gt3-silver.png';
    for the twelve built-in categories, which the API does not carry.
    Keyed by categoryId — the same join key the packages use.
    ═══════════════════════════════════════════════════════════════════════════ */
+const HOME_FEATURED_CATEGORY_IDS = [1, 2, 3, 4, 5, 12];
+
 const FALLBACK_CATEGORIES = [
   { id: 1,  slug: 'car-service',          label: 'Car Service',           icon: Wrench,     desc: 'Periodic maintenance & oil change' },
   { id: 2,  slug: 'ac-service',           label: 'AC Service & Repair',   icon: Zap,        desc: 'AC gas refill, cooling check' },
   { id: 3,  slug: 'batteries',            label: 'Batteries',             icon: Battery,    desc: 'Battery replacement & testing' },
   { id: 4,  slug: 'tyres-wheel-care',     label: 'Tyre & Wheel Care',     icon: CircleDot,  desc: 'Tyre rotation, alignment, balancing' },
   { id: 5,  slug: 'denting-painting',     label: 'Denting & Painting',    icon: PaintBucket,desc: 'Dent removal & premium painting' },
+  { id: 12, slug: 'insurance-claims',     label: 'Insurance Claims',      icon: Shield,     desc: 'Insurance claim assistance' },
   { id: 6,  slug: 'detailing-service',    label: 'Detailing Service',     icon: Award,      desc: 'Interior & exterior deep cleaning' },
   { id: 7,  slug: 'car-spa-cleaning',     label: 'Car Spa & Cleaning',    icon: Droplets,   desc: 'Washing, waxing & polishing' },
   { id: 8,  slug: 'car-inspections',      label: 'Car Inspection',        icon: CheckCircle,desc: 'Comprehensive vehicle checkup' },
   { id: 9,  slug: 'windshields-lights',   label: 'Windshield & Light',    icon: Sparkles,   desc: 'Glass repair & headlight restoration' },
   { id: 10, slug: 'suspension-fitments',  label: 'Suspension & Fitments', icon: Settings,   desc: 'Suspension repair & accessories' },
   { id: 11, slug: 'clutch-body-parts',    label: 'Clutch & Body Parts',   icon: Disc,       desc: 'Clutch replacement & body repair' },
-  { id: 12, slug: 'insurance-claims',     label: 'Insurance Claims',      icon: Shield,     desc: 'Insurance claim assistance' },
 ];
 
 const TRUST_INDICATORS = [
@@ -55,12 +57,26 @@ const HOW_IT_WORKS = [
   { step: '04', icon: CheckCircle, title: 'Service & Return',   desc: 'Track progress live and get your car back, ready to drive.' },
 ];
 
+/**
+ * Placeholder testimonials — replace with real, attributable customer reviews
+ * before this counts as social proof.
+ *
+ * The avatars are illustrations in client/public/testimonials/, deliberately not
+ * photographs: a stock photo of a real person attached to a review they never
+ * wrote presents a stranger as a GK Motors customer.
+ */
+/**
+ * How many service categories the home page shows before handing off to
+ * /services. Twelve tiles at this card size is a wall, not a menu.
+ */
+const HOME_CATEGORY_COUNT = 6;
+
 const TESTIMONIALS = [
-  { name: 'Rahul Sharma',  role: 'BMW 3 Series Owner',     review: 'Booked a periodic service and the pickup arrived exactly on time. Detailed report on WhatsApp, transparent bill, no upselling. Genuinely professional.', color: '#1E3A8A', img: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200' },
-  { name: 'Priya Patel',   role: 'Honda City Owner',       review: 'The doorstep car service is a life saver. Dedicated mechanic, genuine parts, and zero hassle. My car feels brand new again.', color: '#0F172A', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200' },
-  { name: 'Aman Singh',    role: 'Mercedes C-Class Owner', review: 'Denting and painting came back looking factory fresh. They matched the metallic finish perfectly and delivered a day early.', color: '#1E3A8A', img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200' },
-  { name: 'Suresh Kumar',  role: 'Toyota Fortuner Owner',  review: 'AC stopped cooling right before a road trip. Got a same-day slot, gas recharge plus filter clean, sorted in three hours.', color: '#0F172A', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200' },
-  { name: 'Anjali Mehta',  role: 'Audi A4 Owner',          review: 'Booked my 50k km service online. Pickup and drop were exactly on time. Very professional automotive experience end to end.', color: '#1E3A8A', img: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200' },
+  { name: 'Rahul Sharma',  role: 'BMW 3 Series Owner',     review: 'Booked a periodic service and the pickup arrived exactly on time. Detailed report on WhatsApp, transparent bill, no upselling. Genuinely professional.', color: '#1E3A8A', img: '/testimonials/rahul-sharma.jpg' },
+  { name: 'Priya Patel',   role: 'Honda City Owner',       review: 'The doorstep car service is a life saver. Dedicated mechanic, genuine parts, and zero hassle. My car feels brand new again.', color: '#0F172A', img: '/testimonials/priya-patel.jpg' },
+  { name: 'Aman Singh',    role: 'Mercedes C-Class Owner', review: 'Denting and painting came back looking factory fresh. They matched the metallic finish perfectly and delivered a day early.', color: '#1E3A8A', img: '/testimonials/aman-singh.jpg' },
+  { name: 'Suresh Kumar',  role: 'Toyota Fortuner Owner',  review: 'AC stopped cooling right before a road trip. Got a same-day slot, gas recharge plus filter clean, sorted in three hours.', color: '#0F172A', img: '/testimonials/suresh-kumar.jpg' },
+  { name: 'Anjali Mehta',  role: 'Audi A4 Owner',          review: 'Booked my 50k km service online. Pickup and drop were exactly on time. Very professional automotive experience end to end.', color: '#1E3A8A', img: '/testimonials/anjali-mehta.jpg' },
 ];
 
 export default function Home() {
@@ -109,12 +125,20 @@ export default function Home() {
   // to no price until the catalogue is seeded.
   const categories = serviceCategories.map((cat) => {
     const inCategory = packages.filter((p) => p.categoryId === cat.id);
-    const image = cat.apiImage || categoryImageFrom(inCategory);
+    // Only the admin's own category artwork; CategoryIcon falls back to the
+    // shipped /service-icons/<slug>.svg. Packages carry their own per-package
+    // illustration now, which is the wrong picture for a category tile.
+    const image = cat.apiImage;
     const priced = inCategory.filter((p) => p.basePrice > 0);
     if (!priced.length) return { ...cat, image, price: null };
     const cheapest = Math.min(...priced.map((p) => p.basePrice));
     return { ...cat, image, price: `From ₹${cheapest.toLocaleString('en-IN')}` };
   });
+
+  // Featured 6 categories to show on the homepage: 1, 2, 3, 4, 5, 12 (Insurance Claims)
+  const featuredCategories = HOME_FEATURED_CATEGORY_IDS.map((id) =>
+    categories.find((c) => c.id === id)
+  ).filter(Boolean);
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
@@ -228,29 +252,42 @@ export default function Home() {
           .gk-trust-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
           .gk-section { padding: 2.25rem 0 !important; }
           .gk-section h2 { font-size: 1.65rem !important; }
-          .gk-cat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
+          .gk-cat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.9rem !important; }
           .gk-parts-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
-          .gk-cat-card { padding: 0.85rem 0.7rem !important; }
+          .gk-cat-card { padding: 1.2rem 1.05rem 1.05rem !important; border-radius: 15px !important; }
           .gk-steps-grid { grid-template-columns: 1fr !important; }
           .gk-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .testimonial-section { padding: 2.5rem 0 !important; }
           .testimonial-section h2 { font-size: 1.65rem !important; }
           .testimonial-track { gap: 2rem; padding: 1.5rem 0; }
         }
-        /* ── Services: six across, stepping down with the viewport ──────── */
+        /* ── Services: six roomy cards, three across ──────────────────────
+           Twelve cards in a six-column grid left each one narrower than its
+           own thumbnail deserved. The home page now shows the first six and
+           sends people to /services for the rest. */
         .gk-cat-grid {
-          display: grid; grid-template-columns: repeat(6, 1fr);
-          gap: 0.85rem; align-items: stretch;
+          display: grid; grid-template-columns: repeat(3, 1fr);
+          gap: 1.35rem; align-items: stretch;
         }
         .gk-cat-card {
           display: flex; flex-direction: column; height: 100%;
           background: #FFFFFF;
-          border: 1px solid #E4EBF7; border-top: 2.5px solid #1D4ED8;
-          border-radius: 12px; padding: 1.05rem 0.95rem 1rem;
+          border: 1px solid #E4EBF7; border-top: 3px solid #1D4ED8;
+          border-radius: 18px; padding: 1.7rem 1.6rem 1.4rem;
           text-decoration: none;
-          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+          box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
           transition: transform .28s cubic-bezier(.2,.8,.2,1), box-shadow .28s;
         }
+        .gk-svc-all {
+          display: inline-flex; align-items: center; gap: .5rem;
+          margin: 2.1rem auto 0; padding: .85rem 1.9rem;
+          background: #1D4ED8; color: #FFFFFF; border-radius: 10px;
+          text-decoration: none; font-weight: 800; font-size: .88rem;
+          letter-spacing: .02em; white-space: nowrap;
+          box-shadow: 0 10px 24px rgba(29, 78, 216, .24);
+          transition: transform .25s, box-shadow .25s;
+        }
+        .gk-svc-all:hover { transform: translateY(-3px); box-shadow: 0 16px 30px rgba(29,78,216,.3); }
         .gk-cat-card:hover { transform: translateY(-6px); box-shadow: 0 20px 38px rgba(37,99,235,0.16); }
         /* Pins the price row to the bottom so it lines up across a row whose
            cards have different amounts of description text. */
@@ -274,12 +311,13 @@ export default function Home() {
           mask-image: linear-gradient(to bottom, #000 48%, transparent 86%);
         }
 
-        @media (max-width: 1200px) { .gk-cat-grid { grid-template-columns: repeat(4, 1fr); } }
-        @media (max-width: 900px)  {
-          .gk-cat-grid { grid-template-columns: repeat(3, 1fr); }
-          .gk-svc-car { width: 300px; opacity: 0.13; }
-        }
+        @media (max-width: 1100px) { .gk-cat-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 900px)  { .gk-svc-car { width: 300px; opacity: 0.13; } }
         @media (max-width: 640px)  { .gk-svc-car, .gk-svc-streaks { display: none; } }
+        @media (max-width: 520px)  {
+          .gk-cat-grid { grid-template-columns: 1fr !important; }
+          .gk-svc-all { width: 100%; justify-content: center; }
+        }
 
       `}</style>
 
@@ -395,27 +433,35 @@ export default function Home() {
           </div>
 
           <div className="gk-cat-grid">
-            {categories.map(({ id, slug, label, icon: Icon, image, price, desc }) => (
+            {featuredCategories.map(({ id, slug, label, icon: Icon, image, price, desc }) => (
               <Link key={id} to={`/services?category=${id}`} className="gk-cat-card">
-                <div style={{ marginBottom: '0.85rem' }}>
-                  <CategoryIcon slug={slug} image={image} icon={Icon} size={44} iconSize={21} />
+                <div style={{ marginBottom: '1.1rem' }}>
+                  <CategoryIcon slug={slug} image={image} icon={Icon} size={64} iconSize={30} />
                 </div>
-                <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0F172A', margin: '0 0 0.3rem', lineHeight: 1.25 }}>{label}</h3>
-                <p style={{ color: '#64748B', fontSize: '0.76rem', lineHeight: 1.5, fontWeight: 500, margin: '0 0 0.95rem' }}>{desc}</p>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0F172A', margin: '0 0 0.45rem', lineHeight: 1.25, letterSpacing: '-0.01em' }}>{label}</h3>
+                <p style={{ color: '#64748B', fontSize: '0.87rem', lineHeight: 1.6, fontWeight: 500, margin: '0 0 1.35rem' }}>{desc}</p>
                 <div className="gk-cat-foot">
-                  <span style={{ color: price ? '#1D4ED8' : '#94A3B8', fontWeight: 700, fontSize: '0.79rem' }}>
+                  <span style={{ color: price ? '#1D4ED8' : '#94A3B8', fontWeight: 800, fontSize: '0.95rem' }}>
                     {price || 'View packages'}
                   </span>
                   <span style={{
-                    width: 26, height: 26, borderRadius: '50%', border: '1.5px solid #BFD4F7',
+                    width: 34, height: 34, borderRadius: '50%', border: '1.5px solid #BFD4F7',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                   }}>
-                    <ArrowRight size={12} strokeWidth={2.4} style={{ color: '#2563EB' }} />
+                    <ArrowRight size={15} strokeWidth={2.4} style={{ color: '#2563EB' }} />
                   </span>
                 </div>
               </Link>
             ))}
           </div>
+
+          {categories.length > featuredCategories.length && (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Link to="/services" className="gk-svc-all">
+                View all {categories.length} services <ArrowRight size={16} />
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

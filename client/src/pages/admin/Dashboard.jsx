@@ -329,7 +329,7 @@ const ServicesTab = () => {
       if (stImage) {
         fd.append('image', stImage);
       } else if (stForm.image) {
-        fd.append('image', stForm.image);
+        fd.append('imageUrl', stForm.image);
       }
 
       if (editSt) {
@@ -1751,12 +1751,19 @@ const PartsTab = () => {
 
       <div className="admin-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
         {filtered.map((item) => (
-          <div key={item._id} className="card-light" style={{ display: 'flex', flexDirection: 'column', background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', overflow: 'hidden', transition: 'all 0.3s' }}>
+          <div key={item._id} className="card-light" style={{ display: 'flex', flexDirection: 'column', background: '#FFFFFF', border: `1.5px solid ${item.isActive === false ? '#CBD5E1' : '#EEE'}`, borderRadius: '24px', overflow: 'hidden', transition: 'all 0.3s', opacity: item.isActive === false ? 0.68 : 1 }}>
             <div style={{ padding: '1.8rem', flex: 1 }}>
               <div style={{ display: 'flex', gap: '1.2rem', marginBottom: '1.5rem' }}>
                 <img src={item.images?.[0] || 'https://via.placeholder.com/80'} alt={item.name} style={{ width: 90, height: 90, borderRadius: '16px', objectFit: 'cover', background: '#F9F9F9', border: '1.5px solid #EEE' }} />
                 <div>
-                  <h4 style={{ color: '#111', fontWeight: 900, margin: '0 0 0.4rem 0', fontSize: '1.2rem', lineHeight: 1.2, fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}>{item.name || 'Untitled'}</h4>
+                  <h4 style={{ color: '#111', fontWeight: 900, margin: '0 0 0.4rem 0', fontSize: '1.2rem', lineHeight: 1.2, fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}>
+                    {item.name || 'Untitled'}
+                    {item.isActive === false && (
+                      <span title="Hidden from the storefront" style={{ marginLeft: '0.5rem', verticalAlign: 'middle', background: '#F1F5F9', color: '#64748B', borderRadius: '999px', padding: '0.15rem 0.5rem', fontSize: '0.6rem', fontWeight: 900, letterSpacing: '0.06em' }}>
+                        HIDDEN
+                      </span>
+                    )}
+                  </h4>
                   <p style={{ color: '#888', margin: '0 0 0.8rem 0', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                     {item.brand ? `${item.brand} • ` : ''}{(item.category || '').replace('_', ' ')}
                   </p>
@@ -1795,7 +1802,7 @@ const PartsTab = () => {
             </div>
           </div>
         ))}
-        {data.length === 0 && <div style={{ gridColumn: '1 / -1', padding: '5rem 2rem', textAlign: 'center', color: '#AAA', fontWeight: 700, fontSize: '1.1rem', background: '#F9F9F9', borderRadius: '24px', border: '1.5px dashed #EEE' }}>No products found. Start adding inventory!</div>}
+        {filtered.length === 0 && <div style={{ gridColumn: '1 / -1', padding: '5rem 2rem', textAlign: 'center', color: '#AAA', fontWeight: 700, fontSize: '1.1rem', background: '#F9F9F9', borderRadius: '24px', border: '1.5px dashed #EEE' }}>No products found. Start adding inventory!</div>}
       </div>
     </div>
   );

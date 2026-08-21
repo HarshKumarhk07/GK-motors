@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import { sendOTP } from '../api/authApi';
 import toast from 'react-hot-toast';
-import { Eye, EyeOff, Lock, Mail, Phone, ArrowRight, Loader } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader, RotateCw } from 'lucide-react';
 
 export default function Login() {
   const { login, loginWithOTP, loading } = useAuth();
@@ -18,9 +18,46 @@ export default function Login() {
   const [otpSent, setOtpSent] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [requiresSecretKey, setRequiresSecretKey] = useState(false);
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
 
-  const contactValue = watch('email') || watch('phone');
+  // Seconds until 'Resend code' becomes available again. The server caps OTP
+  // requests at five per fifteen minutes, so an eager resend button just burns
+  // the user's own budget.
+  const [resendIn, setResendIn] = useState(0);
+  useEffect(() => {
+    if (resendIn <= 0) return undefined;
+    const t = setTimeout(() => setResendIn((n) => n - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendIn]);
+
+  const emailValue = watch('email');
+  // Once a code is out, the address it was sent to is fixed — editing it here
+  // and then verifying would submit a code against a different account.
+  const emailLocked = mode === 'otp' && otpSent;
+
+  const requestOtp = async (email) => {
+    await sendOTP({ email });
+    setOtpSent(true);
+    setResendIn(30);
+    setValue('otp', '');
+    toast.success('Code sent — check your inbox.');
+  };
+
+  /** Back to the address step, so a typo can be corrected. */
+  const changeEmail = () => {
+    setOtpSent(false);
+    setResendIn(0);
+    setValue('otp', '');
+  };
+
+  const resend = async () => {
+    if (resendIn > 0 || !emailValue) return;
+    try {
+      await requestOtp(emailValue);
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -33,12 +70,10 @@ export default function Login() {
         }
         toast.success('Welcome back!');
         navigate(redirectTo, { replace: true });
-      } else if (mode === 'otp' && !otpSent) {
-        await sendOTP({ email: data.email, phone: data.phone });
-        setOtpSent(true);
-        toast.success('OTP sent!');
-      } else if (mode === 'otp' && otpSent) {
-        await loginWithOTP({ email: data.email, phone: data.phone, otp: data.otp });
+      } else if (!otpSent) {
+        await requestOtp(data.email);
+      } else {
+        await loginWithOTP({ email: data.email, otp: data.otp });
         toast.success('Welcome!');
         navigate(redirectTo, { replace: true });
       }
@@ -81,7 +116,7 @@ export default function Login() {
         {/* Mode toggle */}
         <div className="mode-toggle" style={{ display: 'flex', background: '#F5F5F5', borderRadius: '12px', padding: '4px', marginBottom: '1.5rem', border: '1px solid #EEE' }}>
           {['password', 'otp'].map((m) => (
-            <button key={m} onClick={() => { setMode(m); setOtpSent(false); setRequiresSecretKey(false); }}
+            <button key={m} onClick={() => { setMode(m); setOtpSent(false); setResendIn(0); setRequiresSecretKey(false); setValue('otp', ''); }}
               style={{
                 flex: 1, padding: '0.7rem', borderRadius: '8px', border: 'none', cursor: 'pointer',
                 background: mode === m ? '#FFF' : 'transparent',
@@ -102,28 +137,17 @@ export default function Login() {
               <label className="form-label" style={{ color: '#333', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '0.4rem' }}>Email Address</label>
               <div style={{ position: 'relative' }}>
                 <Mail size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#AAA' }} />
-                <input type="email" className="input-light form-input" style={{ paddingLeft: '2.8rem', height: '48px', fontSize: '0.9rem' }}
+                <input type="email" className="input-light form-input" style={{ paddingLeft: '2.8rem', height: '48px', fontSize: '0.9rem', background: emailLocked ? '#F8FAFC' : undefined }}
                   placeholder="you@example.com"
-                  readOnly={requiresSecretKey}
-                  {...register('email', { pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' } })} />
+                  autoComplete="email"
+                  readOnly={requiresSecretKey || emailLocked}
+                  {...register('email', {
+                    required: 'Email address is required',
+                    pattern: { value: /^\S+@\S+\.\S+$/, message: 'Enter a valid email address' },
+                  })} />
               </div>
-              {errors.otp && <p style={{ color: '#1E3A8A', fontSize: '0.82rem', marginTop: '0.4rem', fontWeight: 600 }}>{errors.otp.message}</p>}
+              {errors.email && <p style={{ color: '#E53935', fontSize: '0.82rem', marginTop: '0.4rem', fontWeight: 600 }}>{errors.email.message}</p>}
             </div>
- 
-            {/* For OTP - phone option */}
-            {mode === 'otp' && (
-              <div className="form-input-wrapper" style={{ marginBottom: '1.2rem' }}>
-                <label className="form-label" style={{ color: '#333', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '0.4rem' }}>
-                  Or Mobile Number
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Phone size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#AAA' }} />
-                  <input type="tel" className="input-light form-input" style={{ paddingLeft: '2.8rem', height: '48px', fontSize: '0.9rem' }}
-                    placeholder="+91 98765 43210"
-                    {...register('phone')} />
-                </div>
-              </div>
-            )}
  
             {/* Password */}
             {mode === 'password' && (
@@ -163,11 +187,31 @@ export default function Login() {
             {/* OTP Input */}
             {mode === 'otp' && otpSent && (
               <div className="form-input-wrapper" style={{ marginBottom: '1.2rem' }}>
-                <label className="form-label" style={{ color: '#333', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '0.4rem' }}>Enter OTP</label>
-                <input type="text" className="input-light form-input" placeholder="6-digit OTP"
+                <label className="form-label" style={{ color: '#333', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '0.4rem' }}>Enter the 6-digit code</label>
+                <input type="text" className="input-light form-input" placeholder="000000"
+                  inputMode="numeric" autoComplete="one-time-code" autoFocus
                   maxLength={6} style={{ textAlign: 'center', fontSize: '1.2rem', letterSpacing: '0.4rem', height: '50px' }}
-                  {...register('otp', { required: 'OTP is required', minLength: { value: 6, message: 'Enter 6 digits' } })} />
+                  {...register('otp', {
+                    required: 'Enter the code we emailed you',
+                    pattern: { value: /^\d{6}$/, message: 'The code is 6 digits' },
+                  })} />
                 {errors.otp && <p style={{ color: '#E53935', fontSize: '0.82rem', marginTop: '0.4rem', fontWeight: 600 }}>{errors.otp.message}</p>}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem 1rem', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.6rem' }}>
+                  <span style={{ color: '#64748B', fontSize: '0.78rem', fontWeight: 500 }}>
+                    Valid for 10 minutes.
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.9rem' }}>
+                    <button type="button" onClick={resend} disabled={resendIn > 0}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'none', border: 'none', padding: 0, fontSize: '0.78rem', fontWeight: 700, cursor: resendIn > 0 ? 'default' : 'pointer', color: resendIn > 0 ? '#94A3B8' : '#1E3A8A' }}>
+                      <RotateCw size={13} />
+                      {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
+                    </button>
+                    <button type="button" onClick={changeEmail}
+                      style={{ background: 'none', border: 'none', padding: 0, fontSize: '0.78rem', fontWeight: 700, color: '#1E3A8A', cursor: 'pointer' }}>
+                      Change email
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
  

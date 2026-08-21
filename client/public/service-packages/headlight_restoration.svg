@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img" aria-label="Headlight Restoration">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F3F7FD"/><stop offset="100%" stop-color="#E3EBF8"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EDF1F7"/><stop offset="52%" stop-color="#C6D0E0"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF6FD"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <circle cx="112" cy="80" r="96" fill="#DBEAFE" opacity=".5"/>
+  <path d="M0 450 L600 148 L600 450Z" fill="#1E3A8A" opacity=".055"/>
+  <path d="M0 450 L432 450 L0 234Z" fill="#1E3A8A" opacity=".05"/>
+  <g transform="translate(78 118) scale(2.960)">
+    <path d="M10 30h40c19 0 33 9 33 20s-14 20-33 20H10z" fill="url(#glass)" stroke="#1E3A8A" stroke-width="6" stroke-linejoin="round"/>
+    <circle cx="38" cy="50" r="14" fill="#F6C445"/>
+    <g stroke="#F6C445" stroke-width="6" stroke-linecap="round"><path d="M90 34h10M92 50h10M90 66h10"/></g>
+  </g>
+  <g transform="translate(388 44) scale(1.640)">
+    <path d="M50 6l9 26 26 9-26 9-9 26-9-26-26-9 26-9z" fill="#F6C445"/>
+    <path d="M84 58l4 11 11 4-11 4-4 11-4-11-11-4 11-4z" fill="#FDE68A"/>
+  </g>
+</svg>

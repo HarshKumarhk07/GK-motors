@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img" aria-label="Interior + Exterior">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F3F7FD"/><stop offset="100%" stop-color="#E3EBF8"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EDF1F7"/><stop offset="52%" stop-color="#C6D0E0"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF6FD"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <circle cx="112" cy="80" r="96" fill="#DBEAFE" opacity=".5"/>
+  <path d="M0 450 L600 148 L600 450Z" fill="#1E3A8A" opacity=".055"/>
+  <path d="M0 450 L432 450 L0 234Z" fill="#1E3A8A" opacity=".05"/>
+  <g transform="translate(62 142) scale(2.880)">
+    <path d="M6 64 L13 45c1.9-5.4 5.8-8 11.4-8h29c4.6 0 8 1.4 11 4.4L73 51l11 2.9c4.3 1.2 6.6 4.2 6.6 8.3V68c0 2.5-1.5 4-4 4H10c-2.5 0-4-1.5-4-4z" fill="#1E3A8A"/>
+    <path d="M24 42h25l9 10H21z" fill="#DBEAFE"/>
+    <circle cx="28" cy="72" r="9.5" fill="#0F172A"/><circle cx="28" cy="72" r="4" fill="#93C5FD"/>
+    <circle cx="71" cy="72" r="9.5" fill="#0F172A"/><circle cx="71" cy="72" r="4" fill="#93C5FD"/>
+  </g>
+  <g transform="translate(356 62) scale(2.000)">
+    <circle cx="50" cy="64" r="32" fill="#F6C445"/>
+    <circle cx="50" cy="64" r="20" fill="#FDE68A"/>
+    <rect x="37" y="12" width="26" height="30" rx="8" fill="#0F172A"/>
+    <rect x="44" y="40" width="12" height="8" fill="#94A3B8"/>
+    <g fill="#FFFFFF" opacity=".9"><circle cx="20" cy="24" r="4"/><circle cx="84" cy="34" r="5"/></g>
+  </g>
+  <g transform="translate(396 258) scale(1.580)">
+    <path d="M28 92V52a18 18 0 0 1 18-18h12a18 18 0 0 1 18 18v40z" fill="#1E3A8A"/>
+    <path d="M40 46h20v34H40z" fill="#DBEAFE" opacity=".5"/>
+    <rect x="14" y="60" width="14" height="32" rx="7" fill="#0F172A"/>
+    <rect x="76" y="60" width="14" height="32" rx="7" fill="#0F172A"/>
+  </g>
+</svg>

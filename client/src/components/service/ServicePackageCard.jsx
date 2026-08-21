@@ -27,6 +27,18 @@ const TIER_LABEL = {
   comprehensive: 'Comprehensive',
 };
 
+/**
+ * "4 hrs" for a same-day job, "4 days" for body work, and nothing at all when
+ * the package has no duration set. Body shop jobs run to 96 hours, which reads
+ * as a mistake rather than four days if it is printed in hours.
+ */
+const durationLabel = (hours) => {
+  if (!Number.isFinite(hours) || hours <= 0) return '';
+  if (hours < 24) return `Approx. ${hours} hr${hours === 1 ? '' : 's'}`;
+  const days = Math.round(hours / 24);
+  return `Approx. ${days} day${days === 1 ? '' : 's'}`;
+};
+
 /** "1,000 km or 3 months", omitting whichever half is unset. */
 const joinSpec = (km, months, kmSuffix = 'km') => {
   const parts = [];
@@ -42,6 +54,9 @@ export default function ServicePackageCard({
   onAdd,
 }) {
   const [expanded, setExpanded] = useState(false);
+  // A broken image URL falls back to the placeholder rather than leaving the
+  // media box empty, which is what hiding the <img> used to do.
+  const [imageBroken, setImageBroken] = useState(false);
   const featuresId = useId();
 
   const unavailable = price === null || price === undefined;
@@ -50,6 +65,7 @@ export default function ServicePackageCard({
   const hiddenCount = features.length - shown.length;
 
   const tierLabel = TIER_LABEL[pkg.tier] || '';
+  const duration = durationLabel(Number(pkg.durationHours));
   const warranty = joinSpec(pkg.warranty?.distanceKm, pkg.warranty?.months);
   const interval = joinSpec(pkg.recommendedIntervalKm, pkg.recommendedIntervalMonths);
   const pickup = PICKUP_LABEL[pkg.pickupDrop] || '';
@@ -61,7 +77,7 @@ export default function ServicePackageCard({
   const saving = hasDiscount ? original - price : 0;
 
   const metaRows = [
-    pkg.durationHours > 0 && { icon: Clock, label: `${pkg.durationHours} hrs taken` },
+    duration && { icon: Clock, label: duration },
     warranty && { icon: ShieldCheck, label: `${warranty} warranty` },
     interval && { icon: RefreshCw, label: `Every ${interval}` },
     pickup && { icon: Truck, label: pickup },
@@ -74,12 +90,12 @@ export default function ServicePackageCard({
       <div className="gk-pkg-body">
         {/* ── Image ── */}
         <div className="gk-pkg-media">
-          {pkg.image ? (
+          {pkg.image && !imageBroken ? (
             <img
-              src={pkg.image}
-              alt={pkg.label}
+              src={pkg.image.endsWith('.svg') ? pkg.image.replace(/\.svg$/, '.jpg') : pkg.image}
+              alt={pkg.label || 'Service package'}
               loading="lazy"
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              onError={() => setImageBroken(true)}
             />
           ) : (
             <div className="gk-pkg-media-empty" aria-hidden="true"><Wrench size={26} /></div>

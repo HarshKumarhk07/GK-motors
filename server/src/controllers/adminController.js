@@ -155,7 +155,12 @@ const createMechanic = asyncHandler(async (req, res) => {
   });
 });
 
-const toUrl = (f) => f.path.includes('uploads') ? '/uploads' + f.path.split('uploads')[1].replace(/\\/g, '/') : f.path;
+const toUrl = (f) => {
+  if (!f) return null;
+  const p = f.path || f.url || f.secure_url || '';
+  if (!p) return null;
+  return p.includes('uploads') ? '/uploads' + p.split('uploads')[1].replace(/\\/g, '/') : p;
+};
 
 // @desc  Create Category
 const createCategory = asyncHandler(async (req, res) => {
@@ -248,7 +253,14 @@ const coerceServiceTypeBody = (body, file) => {
     if (!Number.isNaN(n)) out.order = n; else delete out.order;
   }
   if (out.isActive !== undefined) out.isActive = out.isActive === true || out.isActive === 'true';
-  if (file) out.image = toUrl(file);
+  if (file) {
+    out.image = toUrl(file);
+  } else if (out.imageUrl) {
+    out.image = out.imageUrl;
+    delete out.imageUrl;
+  } else if (out.image === '' || out.image === 'null' || out.image === 'undefined') {
+    delete out.image;
+  }
   return out;
 };
 

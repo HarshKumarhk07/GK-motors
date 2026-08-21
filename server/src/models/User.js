@@ -33,8 +33,12 @@ const userSchema = new mongoose.Schema(
     addresses: [addressSchema],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Bike' }],
     isActive: { type: Boolean, default: true },
-    otp: { type: String },
-    otpExpiry: { type: Date },
+    // OTP is stored as an HMAC, never in the clear — see authController.
+    // `otpAttempts` caps guesses against a single issued code; the route
+    // limiter only bounds requests per IP and address.
+    otp: { type: String, select: false },
+    otpExpiry: { type: Date, select: false },
+    otpAttempts: { type: Number, default: 0, select: false },
   },
   { timestamps: true }
 );

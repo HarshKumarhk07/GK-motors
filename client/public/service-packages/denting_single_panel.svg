@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img" aria-label="Single Panel">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F3F7FD"/><stop offset="100%" stop-color="#E3EBF8"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EDF1F7"/><stop offset="52%" stop-color="#C6D0E0"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF6FD"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <circle cx="112" cy="80" r="96" fill="#DBEAFE" opacity=".5"/>
+  <path d="M0 450 L600 148 L600 450Z" fill="#1E3A8A" opacity=".055"/>
+  <path d="M0 450 L432 450 L0 234Z" fill="#1E3A8A" opacity=".05"/>
+  <g transform="translate(96 118) scale(2.880)">
+    <path d="M6 22h74c6 0 10 4 10 10v42c0 6-4 10-10 10H6z" fill="#1E3A8A"/>
+    <rect x="16" y="32" width="44" height="20" rx="5" fill="#DBEAFE"/>
+    <rect x="16" y="66" width="34" height="7" rx="3.5" fill="#93C5FD"/>
+    <ellipse cx="70" cy="62" rx="13" ry="9" fill="#FFFFFF" opacity=".35"/>
+  </g>
+  <g transform="translate(372 42) scale(1.800)">
+    <rect x="14" y="34" width="46" height="20" rx="6" fill="#1E3A8A"/>
+    <path d="M60 37 88 27v34L60 51z" fill="#0F172A"/>
+    <path d="M30 54l-7 34h16l5-34z" fill="#1E3A8A"/>
+    <ellipse cx="34" cy="22" rx="13" ry="9" fill="#0F172A"/>
+    <rect x="27" y="22" width="14" height="14" fill="#0F172A"/>
+    <g fill="#93C5FD"><circle cx="94" cy="20" r="4"/><circle cx="90" cy="44" r="3"/><circle cx="96" cy="66" r="4"/></g>
+  </g>
+</svg>

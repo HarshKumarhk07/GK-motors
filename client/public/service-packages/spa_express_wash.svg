@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img" aria-label="Express Wash">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F3F7FD"/><stop offset="100%" stop-color="#E3EBF8"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EDF1F7"/><stop offset="52%" stop-color="#C6D0E0"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF6FD"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <circle cx="112" cy="80" r="96" fill="#DBEAFE" opacity=".5"/>
+  <path d="M0 450 L600 148 L600 450Z" fill="#1E3A8A" opacity=".055"/>
+  <path d="M0 450 L432 450 L0 234Z" fill="#1E3A8A" opacity=".05"/>
+  <g transform="translate(106 108) scale(2.680)">
+    <path d="M8 52c0-6 5-11 11-11h20v22H19c-6 0-11-5-11-11z" fill="#0F172A"/>
+    <path d="M26 62l-6 30h15l4-30z" fill="#1E3A8A"/>
+    <rect x="39" y="36" width="14" height="32" rx="4" fill="#1E3A8A"/>
+    <path d="M53 40 74 30v44L53 64z" fill="#94A3B8"/>
+    <g stroke="#38BDF8" stroke-width="6" stroke-linecap="round" opacity=".9">
+      <path d="M78 30 98 16M78 44h22M78 58 98 74M78 52h20M78 36h20"/>
+    </g>
+  </g>
+  <g transform="translate(396 214) scale(1.580)">
+    <path d="M50 8c16 24 25 35 25 46a25 25 0 1 1-50 0C25 43 34 32 50 8z" fill="#38BDF8"/>
+    <path d="M38 58a12 12 0 0 0 8 12" stroke="#FFFFFF" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

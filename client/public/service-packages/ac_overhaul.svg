@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img" aria-label="AC Overhaul">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F3F7FD"/><stop offset="100%" stop-color="#E3EBF8"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EDF1F7"/><stop offset="52%" stop-color="#C6D0E0"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF6FD"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <circle cx="112" cy="80" r="96" fill="#DBEAFE" opacity=".5"/>
+  <path d="M0 450 L600 148 L600 450Z" fill="#1E3A8A" opacity=".055"/>
+  <path d="M0 450 L432 450 L0 234Z" fill="#1E3A8A" opacity=".05"/>
+  <g transform="translate(108 98) scale(2.640)">
+    <circle cx="50" cy="50" r="40" fill="#0F172A"/>
+    <circle cx="50" cy="50" r="30" fill="url(#steel)"/>
+    <circle cx="50" cy="50" r="21" fill="#1E3A8A"/>
+    <circle cx="50" cy="50" r="9" fill="#F8FAFC"/>
+    <g stroke="#0F172A" stroke-width="4" opacity=".55"><path d="M50 20v10M50 70v10M20 50h10M70 50h10"/></g>
+  </g>
+  <g transform="translate(392 62) scale(1.500)">
+    <g stroke="#38BDF8" stroke-width="7" stroke-linecap="round">
+      <path d="M50 8v84M13 29l74 42M87 29L13 71"/>
+    </g>
+    <g stroke="#38BDF8" stroke-width="6" stroke-linecap="round" fill="none">
+      <path d="M50 22l-10-9M50 22l10-9M50 78l-10 9M50 78l10 9"/>
+      <path d="M22 34l-13 1M22 34l1-13M78 66l13-1M78 66l-1 13"/>
+      <path d="M78 34l13 1M78 34l-1-13M22 66l-13-1M22 66l1 13"/>
+    </g>
+  </g>
+  <g transform="translate(384 244) scale(1.680)">
+    <path d="M78 8a26 26 0 0 0-33 33L12 74a9 9 0 0 0 0 13l3 3a9 9 0 0 0 13 0l33-33a26 26 0 0 0 33-33L74 42 62 42 62 30z" fill="#0F172A"/>
+  </g>
+</svg>

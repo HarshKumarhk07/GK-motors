@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img" aria-label="Body Part Replacement">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F3F7FD"/><stop offset="100%" stop-color="#E3EBF8"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EDF1F7"/><stop offset="52%" stop-color="#C6D0E0"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF6FD"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <circle cx="112" cy="80" r="96" fill="#DBEAFE" opacity=".5"/>
+  <path d="M0 450 L600 148 L600 450Z" fill="#1E3A8A" opacity=".055"/>
+  <path d="M0 450 L432 450 L0 234Z" fill="#1E3A8A" opacity=".05"/>
+  <g transform="translate(82 108) scale(2.920)">
+    <path d="M14 38h44c9 0 15 6 15 14s-6 14-15 14H14c-7 0-11-5-11-14s4-14 11-14z" fill="#1E3A8A"/>
+    <rect x="16" y="44" width="34" height="16" rx="6" fill="#DBEAFE"/>
+    <rect x="72" y="46" width="22" height="12" rx="6" fill="#94A3B8"/>
+  </g>
+  <g transform="translate(356 244) scale(1.960)">
+    <path d="M6 22h74c6 0 10 4 10 10v42c0 6-4 10-10 10H6z" fill="#1E3A8A"/>
+    <rect x="16" y="32" width="44" height="20" rx="5" fill="#DBEAFE"/>
+    <rect x="16" y="66" width="34" height="7" rx="3.5" fill="#93C5FD"/>
+    <ellipse cx="70" cy="62" rx="13" ry="9" fill="#FFFFFF" opacity=".35"/>
+  </g>
+</svg>

@@ -32,7 +32,12 @@ export default function CategoryIcon({ slug, image, icon: Icon, size = 40, iconS
           src={src}
           alt=""
           onError={() => setAttempt((a) => a + 1)}
-          style={{ width: '78%', height: '78%', objectFit: 'contain', display: 'block' }}
+          style={{
+            width: src.includes('.svg') ? '78%' : '100%',
+            height: src.includes('.svg') ? '78%' : '100%',
+            objectFit: src.includes('.svg') ? 'contain' : 'cover',
+            display: 'block',
+          }}
         />
       </div>
     );
@@ -43,14 +48,4 @@ export default function CategoryIcon({ slug, image, icon: Icon, size = 40, iconS
       {Icon ? <Icon size={iconSize} style={{ color: '#1E3A8A' }} /> : null}
     </div>
   );
-}
-
-/**
- * The category image is stored on the ServiceType documents in that category
- * (every package in a category shares the same artwork), so the first package
- * carrying an image defines it.
- */
-export function categoryImageFrom(packages = []) {
-  const withImage = packages.find((p) => p && p.image);
-  return withImage ? withImage.image : null;
 }

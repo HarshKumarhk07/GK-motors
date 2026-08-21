@@ -25,26 +25,114 @@ const { CATEGORIES, LEGACY_VALUES, CATEGORY_SLUGS, CATEGORY_BLURBS, inr } = requ
  */
 const META_KEY = 'catalogueHighWater';
 
+/**
+ * Bumped whenever catalogueData gains presentation detail that packages
+ * created by an earlier version are missing. See backfillPackageDetail().
+ */
+const DETAIL_KEY = 'catalogueDetailVersion';
+const DETAIL_VERSION = 2;
+
 const meta = () => mongoose.connection.collection('appmeta');
 
-const readHighWater = async () => {
-  const doc = await meta().findOne({ _id: META_KEY });
+const readMeta = async (key) => {
+  const doc = await meta().findOne({ _id: key });
   return doc?.value ?? 0;
 };
 
-const writeHighWater = async (value) => {
+const writeMeta = async (key, value) => {
   await meta().updateOne(
-    { _id: META_KEY },
+    { _id: key },
     { $set: { value, updatedAt: new Date() } },
     { upsert: true }
   );
+};
+
+const readHighWater = () => readMeta(META_KEY);
+const writeHighWater = (value) => writeMeta(META_KEY, value);
+
+/** The fields a ServiceType carries beyond its identity and price. */
+const detailFrom = (pkg) => ({
+  image: pkg.image ?? null,
+  features: Array.isArray(pkg.features) ? pkg.features : [],
+  durationHours: pkg.durationHours ?? null,
+  warranty: {
+    months: pkg.warranty?.months ?? null,
+    distanceKm: pkg.warranty?.distanceKm ?? null,
+  },
+  recommendedIntervalKm: pkg.recommendedIntervalKm ?? null,
+  recommendedIntervalMonths: pkg.recommendedIntervalMonths ?? null,
+  pickupDrop: pkg.pickupDrop ?? '',
+  isRecommended: pkg.isRecommended === true,
+});
+
+/**
+ * Top up packages that predate the detail fields.
+ *
+ * Runs once per DETAIL_VERSION and only writes a field that is still at its
+ * empty default — a missing image, an empty feature list, a null duration. An
+ * admin who has set an image, rewritten the features or cleared the
+ * recommended flag keeps their version; this only fills blanks. Prices, labels
+ * and descriptions are never touched.
+ */
+const backfillPackageDetail = async () => {
+  if (await readMeta(DETAIL_KEY) >= DETAIL_VERSION) return 0;
+
+  let updated = 0;
+
+  for (const cat of CATEGORIES) {
+    for (const pkg of cat.packages) {
+      const existing = await ServiceType.findOne({ value: pkg.value });
+      if (!existing) continue;
+
+      const detail = detailFrom(pkg);
+      const $set = {};
+
+      if ((!existing.image || existing.image.endsWith('.svg')) && detail.image) {
+        $set.image = detail.image;
+      }
+      if (!existing.features?.length && detail.features.length) $set.features = detail.features;
+      if (existing.durationHours == null && detail.durationHours != null) {
+        $set.durationHours = detail.durationHours;
+      }
+      if (existing.warranty?.months == null && detail.warranty.months != null) {
+        $set['warranty.months'] = detail.warranty.months;
+      }
+      if (existing.warranty?.distanceKm == null && detail.warranty.distanceKm != null) {
+        $set['warranty.distanceKm'] = detail.warranty.distanceKm;
+      }
+      if (existing.recommendedIntervalKm == null && detail.recommendedIntervalKm != null) {
+        $set.recommendedIntervalKm = detail.recommendedIntervalKm;
+      }
+      if (existing.recommendedIntervalMonths == null && detail.recommendedIntervalMonths != null) {
+        $set.recommendedIntervalMonths = detail.recommendedIntervalMonths;
+      }
+      if (!existing.pickupDrop && detail.pickupDrop) $set.pickupDrop = detail.pickupDrop;
+      // isRecommended defaults to false, so "unset" and "deliberately off" look
+      // identical. Only ever turn it on, and only for packages the catalogue
+      // marks — never off, which would undo an admin's choice.
+      if (detail.isRecommended && !existing.isRecommended) $set.isRecommended = true;
+
+      if (Object.keys($set).length === 0) continue;
+      await ServiceType.updateOne({ _id: existing._id }, { $set });
+      updated += 1;
+    }
+  }
+
+  await writeMeta(DETAIL_KEY, DETAIL_VERSION);
+  if (updated) console.log(`Catalogue detail backfilled on ${updated} package(s).`);
+  return updated;
 };
 
 const bootstrapCatalogue = async () => {
   try {
     const highWater = await readHighWater();
     const fresh = CATEGORIES.filter((c) => c.id > highWater);
-    if (fresh.length === 0) return { skipped: true };
+
+    // The detail backfill is independent of the high-water mark: the
+    // categories may all exist already and still be missing the newer fields.
+    const detailUpdated = await backfillPackageDetail();
+
+    if (fresh.length === 0) return { skipped: detailUpdated === 0, detailUpdated };
 
     let createdCats = 0;
     let createdPkgs = 0;
@@ -75,6 +163,7 @@ const bootstrapCatalogue = async () => {
           categoryName: cat.name,
           categoryType: 'service',
           tier: pkg.tier,
+          ...detailFrom(pkg),
           isActive: true,
           order,
         });
@@ -82,10 +171,11 @@ const bootstrapCatalogue = async () => {
       }
     }
 
-    // The nine original single-service types are superseded by the packages
-    // above, so retire them the first time through rather than listing both.
+    // The original single-service types are superseded by the packages above,
+    // so retire them the first time through rather than listing both. Values
+    // that are still live packages are already filtered out of LEGACY_VALUES.
     let retired = 0;
-    if (createdPkgs > 0) {
+    if (createdPkgs > 0 && LEGACY_VALUES.length > 0) {
       const res = await ServiceType.updateMany(
         { value: { $in: LEGACY_VALUES }, isActive: true },
         { $set: { isActive: false } }
@@ -110,16 +200,19 @@ const bootstrapCatalogue = async () => {
         `${createdPkgs} package(s) added${retired ? `, ${retired} legacy type(s) retired` : ''}.`
       );
     }
-    return { createdCats, createdPkgs, retired };
+    return { createdCats, createdPkgs, retired, detailUpdated };
   } catch (err) {
     console.error('Catalogue bootstrap failed (the API is still running) ->', err.message);
     return { error: err.message };
   }
 };
 
-/** Forget the high-water mark, so the next boot re-adds anything missing. */
+/**
+ * Forget the bookkeeping, so the next boot re-adds anything missing and
+ * re-runs the detail backfill over every package.
+ */
 const resetCatalogueBootstrap = async () => {
-  await meta().deleteOne({ _id: META_KEY });
+  await meta().deleteMany({ _id: { $in: [META_KEY, DETAIL_KEY] } });
 };
 
-module.exports = { bootstrapCatalogue, resetCatalogueBootstrap, META_KEY };
+module.exports = { bootstrapCatalogue, resetCatalogueBootstrap, META_KEY, DETAIL_KEY };

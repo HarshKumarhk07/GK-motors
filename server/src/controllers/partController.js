@@ -28,6 +28,22 @@ const getParts = asyncHandler(async (req, res) => {
   res.json({ success: true, total, parts });
 });
 
+// @desc  Every part, for the admin panel
+// @route GET /api/store/parts/admin
+// @access Admin
+/**
+ * The admin list is deliberately not the customer list.
+ *
+ * getParts() pages at 12 and hides isActive:false, which is right for the
+ * storefront and wrong here — an admin calling it without params saw only the
+ * twelve newest parts and could never see, let alone re-enable, one they had
+ * hidden. This returns everything, newest first.
+ */
+const getAllParts = asyncHandler(async (req, res) => {
+  const parts = await SparePart.find().sort({ createdAt: -1 });
+  res.json({ success: true, total: parts.length, parts });
+});
+
 // @desc  Get featured parts
 // @route GET /api/store/parts/featured
 const getFeaturedParts = asyncHandler(async (req, res) => {
@@ -354,6 +370,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
 module.exports = {
   cancelMyOrder,
   getParts,
+  getAllParts,
   getPart,
   getPartCategories,
   getFeaturedParts,

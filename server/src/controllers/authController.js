@@ -3,9 +3,45 @@ const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const { sendOTPEmail, sendWelcomeEmail } = require('../services/emailService');
 const crypto = require('crypto');
+const { clearRateLimit } = require('../middleware/rateLimit');
 
-// Generate 6-digit OTP
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
+/** Both endpoints answer with this, whatever actually went wrong. */
+const OTP_INVALID = 'That code is not valid or has expired. Please request a new one.';
+/** Same reply for a known and an unknown address, so neither can be probed. */
+const OTP_SENT = 'If an account exists for that email, a verification code has been sent.';
+
+/**
+ * Math.random() is not a CSPRNG — its output is predictable from earlier draws,
+ * and a predictable login code is not a login code.
+ */
+const generateOTP = () => String(crypto.randomInt(100000, 1000000));
+
+/**
+ * Codes are stored as an HMAC, never in the clear, so a database dump is not a
+ * pile of live login codes. Keyed rather than a bare hash because the whole
+ * 6-digit space precomputes in well under a second.
+ */
+const hashOTP = (otp) =>
+  crypto
+    .createHmac('sha256', process.env.OTP_SECRET || process.env.JWT_SECRET || 'gk-motors-otp')
+    .update(String(otp))
+    .digest('hex');
+
+/** Constant-time compare, so response timing cannot leak a partial match. */
+const hashesMatch = (a, b) => {
+  const left = Buffer.from(String(a), 'utf8');
+  const right = Buffer.from(String(b), 'utf8');
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+};
+
+/**
+ * The schema lowercases and trims on save, but not on query — so a lookup for
+ * ' User@Example.com ' misses the document it created. Every read of an email
+ * goes through here.
+ */
+const normaliseEmail = (value) => String(value || '').trim().toLowerCase();
 
 // @desc  Register user
 // @route POST /api/auth/register
@@ -62,7 +98,7 @@ const register = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const { email, phone, password } = req.body;
 
-  const user = await User.findOne(email ? { email } : { phone });
+  const user = await User.findOne(email ? { email: normaliseEmail(email) } : { phone: String(phone || '').trim() });
   if (!user || !user.password) {
     res.status(401);
     throw new Error('Invalid credentials');
@@ -112,70 +148,114 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc  Send OTP to email/phone
+// @desc  Email a one-time login code
 // @route POST /api/auth/send-otp
+/**
+ * Email only. There is no SMS provider wired up, and an OTP path that cannot
+ * deliver is worse than no path at all — see the login screen, which no longer
+ * offers a phone field.
+ */
 const sendOTP = asyncHandler(async (req, res) => {
-  const { email, phone } = req.body;
-  if (!email && !phone) {
+  const email = normaliseEmail(req.body.email);
+
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
     res.status(400);
-    throw new Error('Email or phone required');
+    throw new Error('Enter a valid email address.');
   }
 
-  const user = await User.findOne(email ? { email: String(email).toLowerCase().trim() } : { phone });
+  const user = await User.findOne({ email }).select('+otp +otpExpiry +otpAttempts');
 
-  // An unknown address is answered exactly like a known one. Previously this
-  // endpoint created an account for whatever was submitted, which let anyone
-  // fill the users collection unauthenticated; it also let a caller probe
-  // which addresses are registered by watching the response differ.
+  // An unknown address is answered exactly like a known one. This endpoint used
+  // to create an account for whatever was submitted, which let anyone fill the
+  // users collection unauthenticated and probe which addresses are registered.
   if (!user || !user.isActive) {
-    return res.json({
-      success: true,
-      message: 'If that account exists, a verification code has been sent.',
-    });
+    return res.json({ success: true, message: OTP_SENT });
   }
 
   const otp = generateOTP();
-  user.otp = otp;
-  user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+  user.otp = hashOTP(otp);
+  user.otpExpiry = new Date(Date.now() + OTP_TTL_MS);
+  user.otpAttempts = 0;
   await user.save();
 
-  if (email) {
+  try {
     await sendOTPEmail(user.email, otp);
-  } else {
-    // No SMS provider is wired up yet, so a phone-only OTP cannot be delivered.
-    // Say so rather than returning success for a code the user will never get.
-    // The code is never logged: server logs are not a delivery channel.
-    console.warn(`OTP requested for phone ${phone} but no SMS provider is configured.`);
-    res.status(503);
-    throw new Error('SMS login is not available yet. Please use your email address.');
+  } catch (err) {
+    // Clear the code we could not deliver rather than leaving a live one behind
+    // that nobody has seen. The code itself is never logged: server logs are
+    // not a delivery channel.
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+    await user.save();
+    console.error('[authController.sendOTP]', err.message);
+    res.status(502);
+    throw new Error('We could not send the code just now. Please try again in a minute.');
   }
 
-  res.json({
-    success: true,
-    message: 'If that account exists, a verification code has been sent.',
-  });
+  res.json({ success: true, message: OTP_SENT });
 });
 
-// @desc  Verify OTP and login
+// @desc  Verify an emailed code and log the user in
 // @route POST /api/auth/verify-otp
 const verifyOTP = asyncHandler(async (req, res) => {
-  const { email, phone, otp } = req.body;
+  const email = normaliseEmail(req.body.email);
+  const otp = String(req.body.otp ?? '').trim();
 
-  const user = await User.findOne(email ? { email } : { phone });
-  if (!user) {
-    res.status(404);
-    throw new Error('User not found');
-  }
-
-  if (user.otp !== otp || user.otpExpiry < new Date()) {
+  // Shape is checked before anything is loaded. Without this, a request with no
+  // `otp` at all reached a `user.otp !== otp` comparison where both sides were
+  // undefined — which is false, so the guard passed and the endpoint handed out
+  // a token for any email address.
+  if (!email || !/^\d{6}$/.test(otp)) {
     res.status(400);
-    throw new Error('Invalid or expired OTP');
+    throw new Error(OTP_INVALID);
   }
 
-  user.otp = undefined;
-  user.otpExpiry = undefined;
-  if (!user.name || user.name === 'User') user.name = email ? email.split('@')[0] : `User${Date.now()}`;
-  await user.save();
+  const user = await User.findOne({ email }).select('+otp +otpExpiry +otpAttempts');
+
+  // Identical answer whether or not the account exists, so verification cannot
+  // be used to enumerate addresses either.
+  if (!user || !user.isActive || !user.otp || !user.otpExpiry) {
+    res.status(400);
+    throw new Error(OTP_INVALID);
+  }
+
+  const clearCode = async () => {
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+    user.otpAttempts = 0;
+    await user.save();
+  };
+
+  if (user.otpExpiry.getTime() < Date.now()) {
+    await clearCode();
+    res.status(400);
+    throw new Error(OTP_INVALID);
+  }
+
+  if ((user.otpAttempts || 0) >= OTP_MAX_ATTEMPTS) {
+    await clearCode();
+    res.status(400);
+    throw new Error('Too many incorrect attempts. Please request a new code.');
+  }
+
+  if (!hashesMatch(hashOTP(otp), user.otp)) {
+    user.otpAttempts = (user.otpAttempts || 0) + 1;
+    await user.save();
+    res.status(400);
+    throw new Error(OTP_INVALID);
+  }
+
+  await clearCode();
+
+  // A code is single use, so a successful login should not leave the address
+  // part-way through its verify budget.
+  clearRateLimit('otp-verify', req, email);
+  clearRateLimit('otp', req, email);
+
+  if (!user.name || user.name === 'User') {
+    user.name = email.split('@')[0];
+    await user.save();
+  }
 
   const token = generateToken(user._id);
   res.json({
@@ -192,7 +272,6 @@ const verifyOTP = asyncHandler(async (req, res) => {
     },
   });
 });
-
 
 // @desc  Get current user profile
 // @route GET /api/auth/me

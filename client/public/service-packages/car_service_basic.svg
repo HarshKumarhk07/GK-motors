@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450" role="img" aria-label="Basic Service">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F3F7FD"/><stop offset="100%" stop-color="#E3EBF8"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EDF1F7"/><stop offset="52%" stop-color="#C6D0E0"/><stop offset="100%" stop-color="#9AA9BF"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF6FD"/><stop offset="100%" stop-color="#A8CFE8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <circle cx="112" cy="80" r="96" fill="#DBEAFE" opacity=".5"/>
+  <path d="M0 450 L600 148 L600 450Z" fill="#1E3A8A" opacity=".055"/>
+  <path d="M0 450 L432 450 L0 234Z" fill="#1E3A8A" opacity=".05"/>
+  <g transform="translate(118 96) scale(2.680)">
+    <path d="M6 60h10v14H6z" fill="#0F172A"/>
+    <rect x="14" y="46" width="54" height="40" rx="10" fill="#1E3A8A"/>
+    <rect x="27" y="33" width="24" height="15" rx="4" fill="#0F172A"/>
+    <path d="M66 56 92 33" stroke="#94A3B8" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <path d="M24 60h30" stroke="#93C5FD" stroke-width="5" stroke-linecap="round"/>
+    <path d="M92 44c4.6 6.8 6.8 10.4 6.8 13.4a6.8 6.8 0 1 1-13.6 0c0-3 2.2-6.6 6.8-13.4z" fill="#38BDF8"/>
+  </g>
+  <g transform="translate(388 214) scale(1.680)">
+    <rect x="28" y="26" width="44" height="58" rx="9" fill="#1E3A8A"/>
+    <ellipse cx="50" cy="26" rx="22" ry="8" fill="#0F172A"/>
+    <path d="M28 44h44M28 58h44M28 72h44" stroke="#93C5FD" stroke-width="4" opacity=".7"/>
+  </g>
+</svg>

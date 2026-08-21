@@ -10,7 +10,7 @@ import { useServiceCart } from '../context/CartContext';
 import { getServiceCategories, getCategories } from '../api/serviceApi';
 import { reportApiError } from '../api/apiError';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import CategoryIcon, { categoryImageFrom } from '../components/service/CategoryIcon';
+import CategoryIcon from '../components/service/CategoryIcon';
 import CarSelector from '../components/service/CarSelector';
 import ServiceSelector from '../components/service/ServiceSelector';
 import ServiceCart from '../components/service/ServiceCart';
@@ -237,7 +237,7 @@ export default function Services() {
                       >
                         <CategoryIcon
                           slug={cat.slug}
-                          image={cat.image || categoryImageFrom(catPackages)}
+                          image={cat.image}
                           icon={cat.icon}
                           size={44}
                           iconSize={19}
