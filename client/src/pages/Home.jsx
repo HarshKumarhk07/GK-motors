@@ -22,18 +22,18 @@ import heroCar from '../assets/hero-gt3-silver.png';
 const HOME_FEATURED_CATEGORY_IDS = [1, 2, 3, 4, 5, 12];
 
 const FALLBACK_CATEGORIES = [
-  { id: 1,  slug: 'car-service',          label: 'Car Service',           icon: Wrench,     desc: 'Periodic maintenance & oil change' },
-  { id: 2,  slug: 'ac-service',           label: 'AC Service & Repair',   icon: Zap,        desc: 'AC gas refill, cooling check' },
-  { id: 3,  slug: 'batteries',            label: 'Batteries',             icon: Battery,    desc: 'Battery replacement & testing' },
-  { id: 4,  slug: 'tyres-wheel-care',     label: 'Tyre & Wheel Care',     icon: CircleDot,  desc: 'Tyre rotation, alignment, balancing' },
-  { id: 5,  slug: 'denting-painting',     label: 'Denting & Painting',    icon: PaintBucket,desc: 'Dent removal & premium painting' },
-  { id: 12, slug: 'insurance-claims',     label: 'Insurance Claims',      icon: Shield,     desc: 'Insurance claim assistance' },
-  { id: 6,  slug: 'detailing-service',    label: 'Detailing Service',     icon: Award,      desc: 'Interior & exterior deep cleaning' },
-  { id: 7,  slug: 'car-spa-cleaning',     label: 'Car Spa & Cleaning',    icon: Droplets,   desc: 'Washing, waxing & polishing' },
-  { id: 8,  slug: 'car-inspections',      label: 'Car Inspection',        icon: CheckCircle,desc: 'Comprehensive vehicle checkup' },
-  { id: 9,  slug: 'windshields-lights',   label: 'Windshield & Light',    icon: Sparkles,   desc: 'Glass repair & headlight restoration' },
-  { id: 10, slug: 'suspension-fitments',  label: 'Suspension & Fitments', icon: Settings,   desc: 'Suspension repair & accessories' },
-  { id: 11, slug: 'clutch-body-parts',    label: 'Clutch & Body Parts',   icon: Disc,       desc: 'Clutch replacement & body repair' },
+  { id: 1,  slug: 'car-service',          label: 'Car Service',           icon: Wrench,     desc: 'Periodic maintenance & oil change',   fromPrice: 2999 },
+  { id: 2,  slug: 'ac-service',           label: 'AC Service & Repair',   icon: Zap,        desc: 'AC gas refill, cooling check',        fromPrice: 1499 },
+  { id: 3,  slug: 'batteries',            label: 'Batteries',             icon: Battery,    desc: 'Battery replacement & testing',       fromPrice: 299 },
+  { id: 4,  slug: 'tyres-wheel-care',     label: 'Tyre & Wheel Care',     icon: CircleDot,  desc: 'Tyre rotation, alignment, balancing', fromPrice: 799 },
+  { id: 5,  slug: 'denting-painting',     label: 'Denting & Painting',    icon: PaintBucket,desc: 'Dent removal & premium painting',    fromPrice: 2499 },
+  { id: 12, slug: 'insurance-claims',     label: 'Insurance Claims',      icon: Shield,     desc: 'Insurance claim assistance',          fromPrice: 999 },
+  { id: 6,  slug: 'detailing-service',    label: 'Detailing Service',     icon: Award,      desc: 'Interior & exterior deep cleaning',    fromPrice: 2999 },
+  { id: 7,  slug: 'car-spa-cleaning',     label: 'Car Spa & Cleaning',    icon: Droplets,   desc: 'Washing, waxing & polishing',        fromPrice: 499 },
+  { id: 8,  slug: 'car-inspections',      label: 'Car Inspection',        icon: CheckCircle,desc: 'Comprehensive vehicle checkup',      fromPrice: 999 },
+  { id: 9,  slug: 'windshields-lights',   label: 'Windshield & Light',    icon: Sparkles,   desc: 'Glass repair & headlight restoration', fromPrice: 899 },
+  { id: 10, slug: 'suspension-fitments',  label: 'Suspension & Fitments', icon: Settings,   desc: 'Suspension repair & accessories',     fromPrice: 799 },
+  { id: 11, slug: 'clutch-body-parts',    label: 'Clutch & Body Parts',   icon: Disc,       desc: 'Clutch replacement & body repair',     fromPrice: 2499 },
 ];
 
 const TRUST_INDICATORS = [
@@ -121,18 +121,14 @@ export default function Home() {
 
   }, []);
 
-  // Show each category's cheapest live package as its "from" price. Falls back
-  // to no price until the catalogue is seeded.
+  // Show each category's cheapest live package as its "from" price.
+  // Falls back to cat.fromPrice so cards always display clean pricing.
   const categories = serviceCategories.map((cat) => {
     const inCategory = packages.filter((p) => p.categoryId === cat.id);
-    // Only the admin's own category artwork; CategoryIcon falls back to the
-    // shipped /service-icons/<slug>.svg. Packages carry their own per-package
-    // illustration now, which is the wrong picture for a category tile.
     const image = cat.apiImage;
     const priced = inCategory.filter((p) => p.basePrice > 0);
-    if (!priced.length) return { ...cat, image, price: null };
-    const cheapest = Math.min(...priced.map((p) => p.basePrice));
-    return { ...cat, image, price: `From ₹${cheapest.toLocaleString('en-IN')}` };
+    const cheapest = priced.length ? Math.min(...priced.map((p) => p.basePrice)) : (cat.fromPrice || 499);
+    return { ...cat, image, price: `From ₹${Number(cheapest).toLocaleString('en-IN')}` };
   });
 
   // Featured 6 categories to show on the homepage: 1, 2, 3, 4, 5, 12 (Insurance Claims)
