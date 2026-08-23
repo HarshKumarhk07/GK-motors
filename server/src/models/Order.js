@@ -24,7 +24,9 @@ const orderSchema = new mongoose.Schema(
     shippingCharge: { type: Number, default: 50 },
     total: { type: Number, required: true },
     payment: {
-      method: { type: String, enum: ['online', 'cod'], default: 'cod' },
+      // Cash on delivery has been withdrawn — every parts order is prepaid
+      // online. Legacy 'cod' documents are migrated on boot (seeds/bootstrap.js).
+      method: { type: String, enum: ['online'], default: 'online' },
       status: { type: String, enum: ['pending', 'paid', 'failed', 'refunded'], default: 'pending' },
       transactionId: String,
       razorpayOrderId: String,

@@ -10,7 +10,7 @@ const path = require('path');
 const RentalBooking = require('./models/RentalBooking');
 
 const connectDB = require('./config/db');
-const { bootstrapCatalogue } = require('./seeds/bootstrap');
+const { bootstrapCatalogue, migrateLegacyPaymentMethods } = require('./seeds/bootstrap');
 const errorHandler = require('./middleware/errorHandler');
 
 const authRoutes = require('./routes/authRoutes');
@@ -28,7 +28,12 @@ const serviceCategoryRoutes = require('./routes/serviceCategoryRoutes');
 // has nothing to show without it, so this runs on every boot rather than
 // relying on someone remembering a seed command. It is additive and respects
 // anything the admin has since edited or deleted.
-connectDB().then(() => bootstrapCatalogue());
+connectDB().then(async () => {
+  await bootstrapCatalogue();
+  // One-off, idempotent: rewrites payment.method values left over from the
+  // withdrawn cash-on-delivery option so old documents still validate.
+  await migrateLegacyPaymentMethods();
+});
 
 const app = express();
 

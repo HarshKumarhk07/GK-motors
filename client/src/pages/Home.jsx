@@ -6,9 +6,9 @@ import {
   Calendar, Users, MapPin
 } from 'lucide-react';
 import { getServiceCategories, getCategories } from '../api/serviceApi';
-import { getFeaturedParts } from '../api/storeApi';
+import { getFeaturedParts, getRecentParts } from '../api/storeApi';
 import PartCard from '../components/parts/PartCard';
-import CategoryIcon from '../components/service/CategoryIcon';
+import ServiceCategoryGrid from '../components/service/ServiceCategoryGrid';
 import heroCar from '../assets/hero-gt3-silver.png';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -19,8 +19,6 @@ import heroCar from '../assets/hero-gt3-silver.png';
    for the twelve built-in categories, which the API does not carry.
    Keyed by categoryId — the same join key the packages use.
    ═══════════════════════════════════════════════════════════════════════════ */
-const HOME_FEATURED_CATEGORY_IDS = [1, 2, 3, 4, 5, 12];
-
 const FALLBACK_CATEGORIES = [
   { id: 1,  slug: 'car-service',          label: 'Car Service',           icon: Wrench,     desc: 'Periodic maintenance & oil change',   fromPrice: 2999 },
   { id: 2,  slug: 'ac-service',           label: 'AC Service & Repair',   icon: Zap,        desc: 'AC gas refill, cooling check',        fromPrice: 1499 },
@@ -67,9 +65,14 @@ const HOW_IT_WORKS = [
  */
 /**
  * How many service categories the home page shows before handing off to
- * /services. Twelve tiles at this card size is a wall, not a menu.
+ * /services. Every card is the same size, so this is a straight cap on the
+ * grid — a thirteenth category added by an admin surfaces the "view all" link
+ * rather than silently disappearing.
  */
-const HOME_CATEGORY_COUNT = 6;
+const HOME_CATEGORY_COUNT = 12;
+
+/** Products on the home shop strip — five across on a wide screen. */
+const HOME_PART_COUNT = 5;
 
 const TESTIMONIALS = [
   { name: 'Rahul Sharma',  role: 'BMW 3 Series Owner',     review: 'Booked a periodic service and the pickup arrived exactly on time. Detailed report on WhatsApp, transparent bill, no upselling. Genuinely professional.', color: '#1E3A8A', img: '/testimonials/rahul-sharma.jpg' },
@@ -113,11 +116,26 @@ export default function Home() {
       })
       .catch((err) => console.error('[Home.getServiceCategories]', err));
 
-    // Spare parts strip. Falls back to nothing if the store is empty, so the
-    // section simply does not render rather than showing an empty shelf.
-    getFeaturedParts({ limit: 5 })
-      .then(({ data }) => setParts((data.parts || []).slice(0, 5)))
-      .catch((err) => console.error('[Home.getFeaturedParts]', err));
+    // Shop strip. Featured products first; if the admin has not flagged any,
+    // fall back to the newest real products rather than rendering nothing —
+    // both come from the database, neither is a placeholder. If the store is
+    // genuinely empty the section does not render at all.
+    getFeaturedParts()
+      .then(({ data }) => {
+        const featured = data.parts || [];
+        if (featured.length >= HOME_PART_COUNT) return featured;
+        return getRecentParts({ limit: HOME_PART_COUNT })
+          .then((res) => {
+            const merged = [...featured];
+            (res.data.parts || []).forEach((p) => {
+              if (!merged.some((f) => f._id === p._id)) merged.push(p);
+            });
+            return merged;
+          })
+          .catch(() => featured);
+      })
+      .then((list) => setParts(list.slice(0, HOME_PART_COUNT)))
+      .catch((err) => console.error('[Home.loadShopStrip]', err));
 
   }, []);
 
@@ -131,10 +149,9 @@ export default function Home() {
     return { ...cat, image, price: `From ₹${Number(cheapest).toLocaleString('en-IN')}` };
   });
 
-  // Featured 6 categories to show on the homepage: 1, 2, 3, 4, 5, 12 (Insurance Claims)
-  const featuredCategories = HOME_FEATURED_CATEGORY_IDS.map((id) =>
-    categories.find((c) => c.id === id)
-  ).filter(Boolean);
+  // How many categories the home page actually renders. Used to decide
+  // whether the "view all" link still has anything left to show.
+  const shownCount = Math.min(categories.length, HOME_CATEGORY_COUNT);
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', width: '100%', maxWidth: '100%', overflowX: 'hidden', position: 'relative' }}>
@@ -250,31 +267,12 @@ export default function Home() {
           .gk-trust-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
           .gk-section { padding: 2.25rem 0 !important; width: 100% !important; max-width: 100% !important; overflow: hidden !important; }
           .gk-section h2 { font-size: 1.65rem !important; }
-          .gk-cat-grid { grid-template-columns: 1fr !important; gap: 0.9rem !important; width: 100% !important; }
-          .gk-parts-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
-          .gk-cat-card { padding: 1.25rem 1.15rem 1.15rem !important; border-radius: 16px !important; }
+          .gk-sec-head { margin-bottom: 1.3rem !important; }
           .gk-steps-grid { grid-template-columns: 1fr !important; }
           .gk-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .testimonial-section { padding: 2.5rem 0 !important; width: 100% !important; max-width: 100% !important; overflow: hidden !important; }
           .testimonial-section h2 { font-size: 1.65rem !important; }
           .testimonial-track { gap: 2rem; padding: 1.5rem 0; }
-        }
-        /* ── Services: six roomy cards, three across ──────────────────────
-           Twelve cards in a six-column grid left each one narrower than its
-           own thumbnail deserved. The home page now shows the first six and
-           sends people to /services for the rest. */
-        .gk-cat-grid {
-          display: grid; grid-template-columns: repeat(3, 1fr);
-          gap: 1.35rem; align-items: stretch;
-        }
-        .gk-cat-card {
-          display: flex; flex-direction: column; height: 100%;
-          background: #FFFFFF;
-          border: 1px solid #E4EBF7; border-top: 3px solid #1D4ED8;
-          border-radius: 18px; padding: 1.7rem 1.6rem 1.4rem;
-          text-decoration: none;
-          box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-          transition: transform .28s cubic-bezier(.2,.8,.2,1), box-shadow .28s;
         }
         .gk-svc-all {
           display: inline-flex; align-items: center; gap: .5rem;
@@ -286,10 +284,28 @@ export default function Home() {
           transition: transform .25s, box-shadow .25s;
         }
         .gk-svc-all:hover { transform: translateY(-3px); box-shadow: 0 16px 30px rgba(29,78,216,.3); }
-        .gk-cat-card:hover { transform: translateY(-6px); box-shadow: 0 20px 38px rgba(37,99,235,0.16); }
-        /* Pins the price row to the bottom so it lines up across a row whose
-           cards have different amounts of description text. */
-        .gk-cat-foot { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+
+        /* ── Shop Car Essentials ──────────────────────────────────────────
+           auto-fill with a min() floor: the track can never demand more than
+           the container's own width, which is what stops a five-across strip
+           from forcing a horizontal scrollbar on a 320px phone. */
+        .gk-parts-grid {
+          display: grid; width: 100%;
+          grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+          gap: 0.9rem; align-items: stretch;
+        }
+        .gk-shop-head {
+          display: flex; flex-wrap: wrap; gap: 1rem;
+          align-items: flex-end; justify-content: space-between; margin-bottom: 1.6rem;
+        }
+        .gk-shop-all {
+          display: inline-flex; align-items: center; gap: .45rem;
+          background: #1E3A8A; color: #FFFFFF; padding: .7rem 1.4rem; min-height: 44px;
+          border-radius: 10px; text-decoration: none; font-weight: 800; font-size: .82rem;
+          white-space: nowrap; box-shadow: 0 8px 20px rgba(30,58,138,.22);
+          transition: transform .2s, box-shadow .2s;
+        }
+        .gk-shop-all:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(30,58,138,.28); }
 
         /* Decoration: diagonal light streaks behind the heading, fading left. */
         .gk-svc-streaks {
@@ -309,11 +325,18 @@ export default function Home() {
           mask-image: linear-gradient(to bottom, #000 48%, transparent 86%);
         }
 
-        @media (max-width: 1100px) { .gk-cat-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 900px)  { .gk-svc-car { width: 300px; opacity: 0.13; } }
         @media (max-width: 640px)  { .gk-svc-car, .gk-svc-streaks { display: none; } }
-        @media (max-width: 520px)  {
-          .gk-cat-grid { grid-template-columns: 1fr !important; }
+        @media (max-width: 640px) {
+          /* Two product cards across on a phone — readable, and eight of them
+             cost less scrolling than five full-width ones. */
+          .gk-parts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+          .gk-shop { padding: 2.5rem 0 !important; }
+          .gk-shop-head { margin-bottom: 1.1rem; }
+          .gk-shop-head h2 { font-size: 1.65rem !important; }
+          .gk-shop-all { width: 100%; justify-content: center; }
+        }
+        @media (max-width: 520px) {
           .gk-svc-all { width: 100%; justify-content: center; }
         }
 
@@ -419,41 +442,20 @@ export default function Home() {
         <img className="gk-svc-car" src="/car.png" alt="" aria-hidden="true" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative' }}>
-          <div style={{ marginBottom: '2.4rem' }}>
+          <div className="gk-sec-head" style={{ marginBottom: '2.4rem' }}>
             <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>What We Do</p>
             <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.5rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.02, letterSpacing: '-0.01em', margin: 0 }}>
               Our <span style={{ color: '#2563EB' }}>Services</span>
             </h2>
             <p style={{ color: '#64748B', fontSize: '0.87rem', fontWeight: 500, lineHeight: 1.6, maxWidth: '390px', margin: '0.7rem 0 0' }}>
-              Twelve categories covering everything your car needs — each with upfront pricing and free pickup and drop.
+              {categories.length} categories covering everything your car needs — each with upfront pricing and free pickup and drop.
             </p>
             <div style={{ width: 56, height: 4, background: '#2563EB', margin: '1.1rem 0 0', borderRadius: '3px' }} />
           </div>
 
-          <div className="gk-cat-grid">
-            {featuredCategories.map(({ id, slug, label, icon: Icon, image, price, desc }) => (
-              <Link key={id} to={`/services?category=${id}`} className="gk-cat-card">
-                <div style={{ marginBottom: '1.1rem' }}>
-                  <CategoryIcon slug={slug} image={image} icon={Icon} size={64} iconSize={30} />
-                </div>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0F172A', margin: '0 0 0.45rem', lineHeight: 1.25, letterSpacing: '-0.01em' }}>{label}</h3>
-                <p style={{ color: '#64748B', fontSize: '0.87rem', lineHeight: 1.6, fontWeight: 500, margin: '0 0 1.35rem' }}>{desc}</p>
-                <div className="gk-cat-foot">
-                  <span style={{ color: price ? '#1D4ED8' : '#94A3B8', fontWeight: 800, fontSize: '0.95rem' }}>
-                    {price || 'View packages'}
-                  </span>
-                  <span style={{
-                    width: 34, height: 34, borderRadius: '50%', border: '1.5px solid #BFD4F7',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  }}>
-                    <ArrowRight size={15} strokeWidth={2.4} style={{ color: '#2563EB' }} />
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <ServiceCategoryGrid categories={categories} limit={HOME_CATEGORY_COUNT} />
 
-          {categories.length > featuredCategories.length && (
+          {categories.length > shownCount && (
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Link to="/services" className="gk-svc-all">
                 View all {categories.length} services <ArrowRight size={16} />
@@ -462,6 +464,32 @@ export default function Home() {
           )}
         </div>
       </section>
+
+      {/* ════════════════════ SHOP CAR ESSENTIALS ════════════════════ */}
+      {parts.length > 0 && (
+        <section className="gk-section gk-shop" style={{ background: '#F8FAFC', padding: '3.5rem 0' }}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="gk-shop-head">
+              <div style={{ minWidth: 0 }}>
+                <p style={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>GK Motors Spares</p>
+                <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.05, margin: 0 }}>
+                  Shop Car <span style={{ color: '#1E3A8A' }}>Essentials</span>
+                </h2>
+                <p style={{ color: '#64748B', fontSize: '0.85rem', fontWeight: 500, margin: '0.55rem 0 0', maxWidth: '420px' }}>
+                  Genuine oils, filters, batteries and accessories — delivered, or fitted at your service.
+                </p>
+              </div>
+              <Link to="/parts" className="gk-shop-all">
+                View All Products <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            <div className="gk-parts-grid">
+              {parts.map((part) => <PartCard key={part._id} part={part} />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ════════════════════ HOW IT WORKS ════════════════════ */}
       <section className="gk-section" style={{ background: '#FFFFFF', padding: '4rem 0' }}>
@@ -488,30 +516,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* ════════════════════ GENUINE SPARES ════════════════════ */}
-      {parts.length > 0 && (
-        <section className="gk-section" style={{ background: '#F8FAFC', padding: '4rem 0' }}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem' }}>
-              <div>
-                <p style={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.7rem' }}>GK Motors Spares</p>
-                <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.05 }}>
-                  Genuine <span style={{ color: '#1E3A8A' }}>Spares</span>
-                </h2>
-              </div>
-              <Link to="/parts" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: '#1E3A8A', color: '#FFF', padding: '0.65rem 1.5rem', borderRadius: '8px', textDecoration: 'none', fontWeight: 800, fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
-                Shop All Parts <ArrowRight size={15} />
-              </Link>
-            </div>
-            {/* Its own class: the services grid is pinned to six columns now,
-                and five part cards should not inherit that. */}
-            <div className="gk-parts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '0.85rem' }}>
-              {parts.map((part) => <PartCard key={part._id} part={part} />)}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ════════════════════ STATS ════════════════════ */}
       <section style={{ background: '#131B31', borderTop: '1px solid rgba(148,163,184,0.10)', borderBottom: '1px solid rgba(148,163,184,0.10)', padding: '2.75rem 0' }}>

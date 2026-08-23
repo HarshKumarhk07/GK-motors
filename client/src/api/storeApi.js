@@ -25,5 +25,6 @@ export const getMyOrders = () => API.get('/store/orders/my');
 export const getOrder = (id) => API.get(`/store/orders/${id}`);
 export const createPartPayment = (id) => API.post(`/store/orders/${id}/payment`);
 export const verifyPartPayment = (id, data) => API.post(`/store/orders/${id}/verify-payment`, data);
+export const cancelMyOrder = (id) => API.put(`/store/orders/${id}/cancel`);
 export const updateOrderStatus = (id, data) => API.put(`/store/orders/${id}/status`, data);
 export const getAllOrders = (params) => API.get('/store/orders', { params });

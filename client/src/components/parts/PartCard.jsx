@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { ShoppingCart, Heart } from 'lucide-react';
+import { ShoppingCart, Heart, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Shipped in client/public. The old fallback pointed at via.placeholder.com,
@@ -11,7 +11,6 @@ import toast from 'react-hot-toast';
 const PART_PLACEHOLDER = '/part-images/_placeholder.svg';
 
 export default function PartCard({ part }) {
-  const navigate = useNavigate();
   const { items, addToCart, updateQty } = useCart();
   const cartItem = items.find(i => i._id === part._id);
   const { wishlist = [], toggleWishlist, user } = useAuth();
@@ -40,13 +39,19 @@ export default function PartCard({ part }) {
     ? Number(pincodeData.originalPrice)
     : (part.discountedPrice && part.discountedPrice < part.price ? Number(part.price) : null);
   const effectiveStock = pincodeData ? Number(pincodeData.inventory) : part.stock;
-  const effectiveLocation = pincodeData?.location || null;
 
   const discount = effectiveOriginalPrice && effectiveOriginalPrice > effectivePrice
     ? Math.round(((effectiveOriginalPrice - effectivePrice) / effectiveOriginalPrice) * 100)
     : 0;
 
+  // A rating is shown only when the catalogue actually has one. Rendering
+  // "0.0 ★" on every unrated product would be inventing social proof.
+  const rating = Number(part.ratings) > 0 ? Number(part.ratings) : null;
+  const hasPrice = Number(effectivePrice) > 0;
+
   return (
+    <>
+    <style>{PART_CARD_STYLES}</style>
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -66,7 +71,7 @@ export default function PartCard({ part }) {
     >
       <Link to={`/parts/${part._id}`} style={{ textDecoration: 'none', height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Top Image Section (Light background, rounded corners) */}
-        <div style={{ position: 'relative', height: '180px', background: '#F5F5F5', overflow: 'hidden' }}>
+        <div className="gk-pc-media">
           <img
             src={part.images?.[0] || PART_PLACEHOLDER}
             onError={(e) => { if (e.currentTarget.src.indexOf(PART_PLACEHOLDER) === -1) e.currentTarget.src = PART_PLACEHOLDER; }}
@@ -157,25 +162,22 @@ export default function PartCard({ part }) {
           </div>
 
           {/* Name */}
-          <h3 className="product-card-title" style={{
-            color: '#111', fontWeight: 900, fontSize: '0.88rem',
-            lineHeight: 1.25, marginBottom: '0.25rem',
-            fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.02em',
-            textTransform: 'uppercase',
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
-          }}>
-            {part.name}
-          </h3>
+          <h3 className="product-card-title gk-pc-name">{part.name}</h3>
 
-          {part.brand && (
-            <p style={{ color: '#888', fontSize: '0.72rem', fontWeight: 600, margin: '0 0 0.5rem 0' }}>
-              {part.brand}
-            </p>
-          )}
+          <div className="gk-pc-sub">
+            {part.brand && <span className="gk-pc-brand">{part.brand}</span>}
+            {rating && (
+              <span className="gk-pc-rating">
+                <Star size={11} fill="#F59E0B" color="#F59E0B" />
+                {rating.toFixed(1)}
+                {Number(part.numReviews) > 0 && <span className="gk-pc-reviews">({part.numReviews})</span>}
+              </span>
+            )}
+          </div>
 
           {/* Price row + CTA */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.4rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div className="gk-pc-priceRow">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
               {discount > 0 ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <span style={{ textDecoration: 'line-through', color: '#94A3B8', fontSize: '0.78rem', fontWeight: 700, fontFamily: 'Rajdhani, sans-serif', lineHeight: 1 }}>
@@ -186,12 +188,12 @@ export default function PartCard({ part }) {
                   </span>
                 </div>
               ) : null}
-              <span className="product-card-price" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.25rem', fontWeight: 950, color: '#1E3A8A', lineHeight: 1 }}>
-                ₹{effectivePrice?.toLocaleString('en-IN')}
+              <span className="product-card-price gk-pc-price">
+                {hasPrice ? `₹${Number(effectivePrice).toLocaleString('en-IN')}` : 'Price on request'}
               </span>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
               {cartItem ? (
                 <div style={{ 
                   display: 'flex', 
@@ -236,20 +238,21 @@ export default function PartCard({ part }) {
                     }
                     addToCart({ ...part, effectivePrice });
                   }}
-                  disabled={effectiveStock === 0}
+                  disabled={effectiveStock === 0 || !hasPrice}
+                  title={!hasPrice ? 'This product has no price set yet' : undefined}
                   style={{
-                    height: '30px',
-                    padding: '0 0.8rem',
-                    background: effectiveStock === 0 ? '#E2E8F0' : '#1E3A8A',
+                    height: '32px', minWidth: 0,
+                    padding: '0 0.75rem',
+                    background: effectiveStock === 0 || !hasPrice ? '#E2E8F0' : '#1E3A8A',
                     border: 'none', borderRadius: '8px', color: 'white',
-                    cursor: effectiveStock === 0 ? 'not-allowed' : 'pointer',
+                    cursor: effectiveStock === 0 || !hasPrice ? 'not-allowed' : 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: effectiveStock === 0 ? 'none' : '0 4px 12px rgba(30, 58, 138, 0.25)',
+                    boxShadow: effectiveStock === 0 || !hasPrice ? 'none' : '0 4px 12px rgba(30, 58, 138, 0.25)',
                     transition: 'all 0.2s',
                     gap: '0.35rem', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '0.7rem', letterSpacing: '0.04em'
                   }}
                 >
-                  <ShoppingCart size={13} /> ADD
+                  <ShoppingCart size={13} /> <span className="gk-pc-addlabel">ADD</span>
                 </button>
               )}
             </div>
@@ -257,7 +260,35 @@ export default function PartCard({ part }) {
         </div>
       </Link>
     </div>
-
+    </>
   );
 }
+
+/* Sized in ratios, not pixels: the media band follows the column width so the
+   same card works in a five-across desktop strip and a two-across phone grid
+   without a fixed height stretching it or a fixed width overflowing it. */
+const PART_CARD_STYLES = `
+  .gk-pc-media { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #F5F5F5; overflow: hidden; }
+  .gk-pc-name {
+    color: #111; font-weight: 900; font-size: 0.86rem; line-height: 1.25;
+    margin: 0 0 0.25rem; font-family: Rajdhani, sans-serif; letter-spacing: 0.02em;
+    text-transform: uppercase; overflow-wrap: anywhere;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    min-height: 2.15em;
+  }
+  .gk-pc-sub { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.5rem; min-height: 1rem; }
+  .gk-pc-brand { color: #888; font-size: 0.71rem; font-weight: 600; overflow-wrap: anywhere; }
+  .gk-pc-rating { display: inline-flex; align-items: center; gap: 0.18rem; color: #B45309; font-size: 0.7rem; font-weight: 800; }
+  .gk-pc-reviews { color: #94A3B8; font-weight: 600; }
+  /* A price must never break mid-number ('₹3,1 / 99'), so it stays nowrap
+     and the row wraps instead when the card is too narrow for both. */
+  .gk-pc-price { font-family: Rajdhani, sans-serif; font-size: 1.2rem; font-weight: 950; color: #1E3A8A; line-height: 1.1; white-space: nowrap; }
+  .gk-pc-priceRow { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.4rem 0.4rem; margin-top: auto; padding-top: 0.4rem; min-width: 0; }
+
+  @media (max-width: 420px) {
+    .gk-pc-name { font-size: 0.78rem; }
+    .gk-pc-price { font-size: 1.02rem; }
+    .gk-pc-addlabel { display: none; }
+  }
+`;
 

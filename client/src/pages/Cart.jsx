@@ -1,11 +1,11 @@
 import { useCart, useServiceCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, CreditCard, Truck, Shield, ChevronRight, User, Phone, MapPin, X, Check, Home as HomeIcon, Briefcase, Wrench, ArrowRight } from 'lucide-react';
-import { placeOrder, createPartPayment, verifyPartPayment } from '../api/storeApi';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, Truck, Shield, ChevronRight, User, Phone, MapPin, X, Home as HomeIcon, Briefcase, Wrench, ArrowRight } from 'lucide-react';
+import { placeOrder, createPartPayment, verifyPartPayment, cancelMyOrder } from '../api/storeApi';
 import { addAddress } from '../api/authApi';
 import CheckoutModal from '../components/service/CheckoutModal';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -227,9 +227,8 @@ export default function Cart() {
   const [resolvedAddress, setResolvedAddress] = useState('');
   const savedPincode = localStorage.getItem('selectedPincode') || '';
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
-    defaultValues: { paymentMethod: 'cod', pincode: savedPincode }
+    defaultValues: { pincode: savedPincode }
   });
-  const paymentMethod = watch('paymentMethod');
   const watchedPincode = watch('pincode', savedPincode);
 
   useEffect(() => {
@@ -253,14 +252,18 @@ export default function Cart() {
       return;
     }
     setPlacing(true);
+    // Held so an abandoned or failed payment can release the stock the order
+    // reserved, instead of leaving an unpayable order holding units.
+    let createdOrderId = null;
     try {
-      const shippingCharge = total > 500 ? 0 : 50;
       const orderRes = await placeOrder({
-        items: items.map(i => ({ product: i._id, quantity: i.quantity, price: i.effectivePrice ?? i.discountedPrice ?? i.price })),
+        // Price is deliberately not sent: the server re-reads every part and
+        // recomputes the total, so a tampered payload cannot set its own price.
+        items: items.map(i => ({ product: i._id, quantity: i.quantity })),
         deliveryAddress: { street: data.street, city: data.city, state: data.state || data.city || 'State', pincode: data.pincode },
-        payment: { method: data.paymentMethod },
-        totalAmount: total + shippingCharge,
+        payment: { method: 'online' },
       });
+      createdOrderId = orderRes.data.order._id;
 
       // Auto-save address to user profile if user has no saved addresses
       if (user && (!user.addresses || user.addresses.length === 0)) {
@@ -277,11 +280,11 @@ export default function Cart() {
         }).catch(() => {});
       }
 
-      if (data.paymentMethod === 'online') {
+      {
         const loaded = await loadRazorpay();
-        if (!loaded) { toast.error('Payment gateway failed to load'); setPlacing(false); return; }
+        if (!loaded) throw new Error('Payment gateway failed to load');
 
-        const payRes = await createPartPayment(orderRes.data.order._id);
+        const payRes = await createPartPayment(createdOrderId);
         const rzpOrder = payRes.data.order;
         const rzpKey = import.meta.env.VITE_RAZORPAY_KEY_ID || payRes.data.key || payRes.data.keyId;
 
@@ -296,7 +299,7 @@ export default function Cart() {
             theme: { color: '#1E3A8A' },
             handler: async (response) => {
               try {
-                await verifyPartPayment(orderRes.data.order._id, {
+                await verifyPartPayment(createdOrderId, {
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
@@ -312,9 +315,22 @@ export default function Cart() {
 
       clearCart();
       toast.success('Order placed successfully!');
-      navigate('/my-orders');
+      // Straight to the Parts Orders tab — the order they just paid for is the
+      // first thing they should see.
+      navigate('/my-orders?tab=orders');
     } catch (err) {
-      toast.error(err.message === 'Payment cancelled' ? 'Payment cancelled' : err.response?.data?.message || 'Order failed');
+      // The order exists but was never paid for. Cancel it so the reserved
+      // stock goes back and the customer is not left with a dead order.
+      if (createdOrderId) {
+        await cancelMyOrder(createdOrderId).catch((cancelErr) =>
+          console.error('[Cart.releaseUnpaidOrder]', cancelErr?.response?.data || cancelErr)
+        );
+      }
+      toast.error(
+        err.message === 'Payment cancelled'
+          ? 'Payment cancelled — nothing was charged'
+          : err.response?.data?.message || err.message || 'We could not place your order'
+      );
     } finally { setPlacing(false); }
   };
 
@@ -430,12 +446,24 @@ export default function Cart() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <style>{`
-        @media (max-width: 768px) {
+        /* The summary column was a fixed 520px next to a flexible one, which
+           overflowed everything between the tablet breakpoint and ~1100px.
+           It is now a proportional track that collapses one step earlier. */
+        .cart-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 440px); gap: 2rem; align-items: start; }
+        .cart-item-grid > * { min-width: 0; }
+        @media (max-width: 1024px) {
           .cart-layout { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
-          .cart-item-grid { grid-template-columns: 80px 1fr !important; gap: 0.75rem !important; }
-          .cart-item-grid > div:last-child { grid-column: 1 / -1; }
+          .cart-summary { position: static !important; }
+        }
+        @media (max-width: 768px) {
+          .cart-item-grid { grid-template-columns: 84px minmax(0, 1fr) !important; gap: 0.75rem !important; }
+          .cart-item-grid > div:last-child { grid-column: 1 / -1; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; }
           .cart-addr-grid { grid-template-columns: 1fr !important; }
           .cart-addr-row { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 480px) {
+          .cart-item-grid { grid-template-columns: 64px minmax(0, 1fr) !important; padding: 0.85rem !important; }
+          .cart-item-grid a[href^="/parts"] { height: 64px !important; }
         }
       `}</style>
       {/* Top blue accent line */}
@@ -462,7 +490,7 @@ export default function Cart() {
         {/* Step indicator */}
         <StepIndicator step={step} />
  
-        <div className="animate-fadeIn cart-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 520px', gap: '3rem', alignItems: 'start' }}>
+        <div className="animate-fadeIn cart-layout">
  
           {/* ── Cart Items ── */}
           <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
@@ -573,7 +601,7 @@ export default function Cart() {
               <div style={{ marginTop: '1.5rem', background: 'rgba(229,57,53,0.04)', border: '1px solid rgba(229,57,53,0.15)', borderRadius: '16px', padding: '1.2rem', display: 'flex', alignItems: 'flex-start', gap: '0.8rem' }}>
                 <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>⚠️</span>
                 <p style={{ color: '#1E3A8A', fontSize: '0.9rem', margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
-                  <strong>NOTICE:</strong> Standard delivery for some items may be impacted at pincode <strong>{savedPincode}</strong>. Please check before selecting payment method.
+                  <strong>NOTICE:</strong> Standard delivery for some items may be impacted at pincode <strong>{savedPincode}</strong>. Please check the pincode before you place the order.
                 </p>
               </div>
             )}
@@ -592,7 +620,7 @@ export default function Cart() {
           </div>
  
           {/* ── Right Panel ── */}
-          <div className="animate-fadeInUp" style={{ position: 'sticky', top: 100, animationDelay: '0.2s' }}>
+          <div className="animate-fadeInUp cart-summary" style={{ position: 'sticky', top: 100, animationDelay: '0.2s', minWidth: 0 }}>
             {step === 1 ? (
               <div style={{ background: '#FFF', border: '1px solid #EEE', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 15px 50px rgba(0,0,0,0.03)' }}>
                 {/* Header */}
@@ -814,30 +842,19 @@ export default function Cart() {
                       </div>
                     </div>
 
-                    {/* Payment Method Section */}
+                    {/* Payment — online only. Cash on delivery has been withdrawn. */}
                     <div style={{ marginTop: '1rem', marginBottom: '1.2rem' }}>
-                      <p style={{ color: '#888', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.6rem' }}>PAYMENT METHOD</p>
-                      <div style={{ display: 'flex', gap: '0.8rem' }}>
-                        {[
-                          { value: 'cod', label: 'CASH ON DELIVERY' },
-                          { value: 'online', label: 'ONLINE PREPAY' },
-                        ].map(({ value, label }) => (
-                          <label key={value} style={{
-                            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                            background: paymentMethod === value ? '#111' : '#F9F9F9',
-                            border: `2px solid ${paymentMethod === value ? '#111' : '#EEE'}`,
-                            borderRadius: '12px', padding: '0.9rem 0.5rem',
-                            cursor: 'pointer', fontSize: '0.82rem',
-                            color: paymentMethod === value ? '#FFF' : '#666',
-                            fontWeight: 800,
-                            transition: 'all 0.25s',
-                            fontFamily: 'Rajdhani, sans-serif',
-                            letterSpacing: '0.04em'
-                          }}>
-                            <input type="radio" value={value} {...register('paymentMethod')} style={{ display: 'none' }} />
-                            {label}
-                          </label>
-                        ))}
+                      <p style={{ color: '#888', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.6rem' }}>PAYMENT</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', background: '#EFF6FF', border: '1.5px solid rgba(30, 58, 138, 0.18)', borderRadius: '12px', padding: '0.9rem 1rem' }}>
+                        <Shield size={18} style={{ color: '#1E3A8A', flexShrink: 0 }} />
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 900, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em' }}>
+                            SECURE ONLINE PAYMENT
+                          </p>
+                          <p style={{ margin: 0, fontSize: '0.75rem', color: '#475569', fontWeight: 600 }}>
+                            Card, UPI, net banking or wallet via Razorpay.
+                          </p>
+                        </div>
                       </div>
                     </div>
 
@@ -854,7 +871,7 @@ export default function Cart() {
                         </button>
                         <button type="submit" disabled={placing}
                           style={{ flex: 2, height: '54px', background: placing ? '#E2E8F0' : '#1E3A8A', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 950, cursor: placing ? 'not-allowed' : 'pointer', fontSize: '1.1rem', transition: 'all 0.3s', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em', boxShadow: placing ? 'none' : '0 12px 30px rgba(30, 58, 138, 0.25)' }}>
-                          {placing ? 'PROVISING...' : 'FINALIZE BOOKING'}
+                          {placing ? 'PROCESSING…' : 'PAY & PLACE ORDER'}
                         </button>
                       </div>
                       <p style={{ textAlign: 'center', color: '#AAA', fontSize: '0.7rem', marginTop: '1rem', fontWeight: 500 }}>Secure Payment via Razorpay</p>

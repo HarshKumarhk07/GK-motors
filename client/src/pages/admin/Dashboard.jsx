@@ -3480,7 +3480,7 @@ const RentalBookingsTab = ({ setActiveTab, setTrackingBookingId }) => {
                   </div>
                 )}
                 <div style={{ marginTop: '0.5rem', fontSize: '0.65rem', fontWeight: 800, color: b.payment?.status === 'paid' ? '#16A34A' : '#CA8A04', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {(b.payment?.method || 'cod').toUpperCase()} • {b.payment?.status === 'paid' ? '✓ PAID' : 'PAYMENT PENDING'}
+                  {(b.payment?.method === 'pay_at_drop' ? 'PAY AT DROP' : 'ONLINE')} • {b.payment?.status === 'paid' ? '✓ PAID' : 'PAYMENT PENDING'}
                 </div>
               </div>
             );
@@ -3624,7 +3624,7 @@ const RentalBookingDetailModal = ({ booking, onClose, onUpdateStatus, setActiveT
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
             <div style={{ color: '#64748B', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Payment</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.4rem 1rem', fontSize: '0.85rem', color: '#0F172A', fontWeight: 700 }}>
-              <div><strong style={{ color: '#475569', fontWeight: 600 }}>Method:</strong> {(booking.payment?.method || 'cod').toUpperCase()}</div>
+              <div><strong style={{ color: '#475569', fontWeight: 600 }}>Method:</strong> {booking.payment?.method === 'pay_at_drop' ? 'PAY AT DROP' : 'ONLINE'}</div>
               <div><strong style={{ color: '#475569', fontWeight: 600 }}>Status:</strong> <span style={{ color: booking.payment?.status === 'paid' ? '#16A34A' : '#CA8A04' }}>{(booking.payment?.status || 'pending').toUpperCase()}</span></div>
               {booking.payment?.razorpayOrderId && <div style={{ gridColumn: '1 / -1', wordBreak: 'break-all' }}><strong style={{ color: '#475569', fontWeight: 600 }}>Order ID:</strong> <span style={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>{booking.payment.razorpayOrderId}</span></div>}
               {booking.payment?.razorpayPaymentId && <div style={{ gridColumn: '1 / -1', wordBreak: 'break-all' }}><strong style={{ color: '#475569', fontWeight: 600 }}>Payment ID:</strong> <span style={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>{booking.payment.razorpayPaymentId}</span></div>}

@@ -326,7 +326,7 @@ const createRentalBooking = asyncHandler(async (req, res) => {
                           : paymentPlan === 'advance' ? Math.min(totalAmount, advanceQuote)
                           : 0;
       return {
-        method: paymentPlan === 'on_drop' ? 'cod' : (paymentMethod || 'online'),
+        method: paymentPlan === 'on_drop' ? 'pay_at_drop' : (paymentMethod || 'online'),
         status: 'pending',
         plan: paymentPlan,
         advanceAmount,

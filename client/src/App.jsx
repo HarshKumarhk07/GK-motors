@@ -22,6 +22,7 @@ import About from './pages/About';
 import SpareParts from './pages/SpareParts';
 import PartDetail from './pages/PartDetail';
 import Cart from './pages/Cart';
+import OrderDetail from './pages/OrderDetail';
 import Wishlist from './pages/Wishlist';
 import FeaturedParts from './pages/FeaturedParts';
 import BestsellerParts from './pages/BestsellerParts';
@@ -94,6 +95,7 @@ function App() {
             <Route path="/featured" element={<Layout><FeaturedParts /></Layout>} />
             <Route path="/bestseller" element={<Layout><BestsellerParts /></Layout>} />
             <Route path="/cart" element={<Layout><Cart /></Layout>} />
+            <Route path="/orders/:id" element={<Layout><OrderDetail /></Layout>} />
             <Route path="/wishlist" element={<Layout><Wishlist /></Layout>} />
 
             {/* ═══════════════════════════════════════════════════════════════

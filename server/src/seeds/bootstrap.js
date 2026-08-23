@@ -208,6 +208,39 @@ const bootstrapCatalogue = async () => {
 };
 
 /**
+ * Cash on delivery has been withdrawn, so 'cod' is no longer a member of the
+ * payment-method enums. Documents written before that change still carry it,
+ * and Mongoose validates on save() — so an admin updating the status of an old
+ * order or booking would hit a ValidationError on a field they never touched.
+ *
+ * This rewrites those stored values once. It is a targeted, idempotent update
+ * (nothing matches on the second run) and touches no other field:
+ *   Order / ServiceBooking  'cod' -> 'online'        (the only method left)
+ *   RentalBooking           'cod' -> 'pay_at_drop'   (the pay-on-drop plan)
+ * Payment *status* is deliberately left alone: an unpaid order stays unpaid.
+ */
+const migrateLegacyPaymentMethods = async () => {
+  const plan = [
+    ['orders', 'online'],
+    ['servicebookings', 'online'],
+    ['rentalbookings', 'pay_at_drop'],
+  ];
+  let migrated = 0;
+  for (const [collection, replacement] of plan) {
+    try {
+      const { modifiedCount } = await mongoose.connection
+        .collection(collection)
+        .updateMany({ 'payment.method': 'cod' }, { $set: { 'payment.method': replacement } });
+      migrated += modifiedCount || 0;
+    } catch (err) {
+      console.error(`Payment-method migration failed for ${collection} ->`, err.message);
+    }
+  }
+  if (migrated) console.log(`Payment method: ${migrated} legacy 'cod' record(s) migrated.`);
+  return migrated;
+};
+
+/**
  * Forget the bookkeeping, so the next boot re-adds anything missing and
  * re-runs the detail backfill over every package.
  */
@@ -215,4 +248,10 @@ const resetCatalogueBootstrap = async () => {
   await meta().deleteMany({ _id: { $in: [META_KEY, DETAIL_KEY] } });
 };
 
-module.exports = { bootstrapCatalogue, resetCatalogueBootstrap, META_KEY, DETAIL_KEY };
+module.exports = {
+  bootstrapCatalogue,
+  resetCatalogueBootstrap,
+  migrateLegacyPaymentMethods,
+  META_KEY,
+  DETAIL_KEY,
+};

@@ -126,7 +126,8 @@ const serviceBookingSchema = new mongoose.Schema(
     finalCost: { type: Number },
 
     payment: {
-      method: { type: String, enum: ['online', 'cod'], default: 'online' },
+      // Online only — cash on delivery has been withdrawn across the platform.
+      method: { type: String, enum: ['online'], default: 'online' },
       status: {
         type: String,
         enum: ['pending', 'paid', 'failed', 'refunded'],

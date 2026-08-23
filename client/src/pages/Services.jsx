@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Wrench, Wind, Battery, CircleDot, Paintbrush, Sparkles, Droplets,
-  Search, Sun, Settings, Cog, Shield, ChevronLeft, ArrowRight, AlertCircle,
+  Search, Sun, Settings, Cog, Shield, ChevronLeft, AlertCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -10,7 +10,7 @@ import { useServiceCart } from '../context/CartContext';
 import { getServiceCategories, getCategories } from '../api/serviceApi';
 import { reportApiError } from '../api/apiError';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import CategoryIcon from '../components/service/CategoryIcon';
+import ServiceCategoryGrid from '../components/service/ServiceCategoryGrid';
 import CarSelector from '../components/service/CarSelector';
 import ServiceSelector from '../components/service/ServiceSelector';
 import ServiceCart from '../components/service/ServiceCart';
@@ -167,8 +167,8 @@ export default function Services() {
           .gk-svc-cart { width: 100% !important; }
         }
         @media (max-width: 640px) {
-          .gk-svc-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.6rem !important; }
           .gk-svc-head h1 { font-size: 1.45rem !important; }
+          .gk-svc-page { padding: 1rem 1rem 2.5rem !important; }
         }
       `}</style>
 
@@ -184,7 +184,7 @@ export default function Services() {
         </div>
       </div>
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '1.5rem 1.5rem 3rem' }}>
+      <div className="gk-svc-page" style={{ maxWidth: '1400px', margin: '0 auto', padding: '1.5rem 1.5rem 3rem' }}>
         {loadError && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: '14px', padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
             <AlertCircle size={16} style={{ color: '#EF4444', flexShrink: 0 }} />
@@ -209,57 +209,13 @@ export default function Services() {
                   Choose a category to see packages and transparent pricing.
                 </p>
 
-                <div className="gk-svc-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.8rem' }}>
-                  {categories.map((cat) => {
-                    const catPackages = packagesByCategory.get(cat.id) || [];
-                    const count = catPackages.length;
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => openCategory(cat)}
-                        style={{
-                          background: '#FFF', border: '1px solid #E2E8F0', borderRadius: '12px',
-                          padding: '1.05rem 0.95rem', textAlign: 'left', cursor: 'pointer',
-                          transition: 'all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)',
-                          boxShadow: '0 2px 10px rgba(15,23,42,0.03)',
-                          display: 'flex', flexDirection: 'column', gap: '0.6rem',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-4px)';
-                          e.currentTarget.style.borderColor = '#1E3A8A';
-                          e.currentTarget.style.boxShadow = '0 18px 36px rgba(30,58,138,0.13)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.borderColor = '#E2E8F0';
-                          e.currentTarget.style.boxShadow = '0 2px 10px rgba(15,23,42,0.03)';
-                        }}
-                      >
-                        <CategoryIcon
-                          slug={cat.slug}
-                          image={cat.image}
-                          icon={cat.icon}
-                          size={44}
-                          iconSize={19}
-                        />
-                        <div>
-                          <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.95rem', color: '#0F172A', lineHeight: 1.25, marginBottom: '0.2rem' }}>
-                            {cat.name}
-                          </h3>
-                          <p style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 500, lineHeight: 1.45 }}>
-                            {cat.description}
-                          </p>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-                          <span style={{ color: '#94A3B8', fontSize: '0.64rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            {count > 0 ? `${count} package${count > 1 ? 's' : ''}` : 'Coming soon'}
-                          </span>
-                          <ArrowRight size={13} style={{ color: '#1E3A8A' }} />
-                        </div>
-                      </button>
-                    );
+                <ServiceCategoryGrid
+                  categories={categories.map((c) => {
+                    const count = (packagesByCategory.get(c.id) || []).length;
+                    return { ...c, meta: count > 0 ? `${count} package${count > 1 ? 's' : ''}` : 'Coming soon' };
                   })}
-                </div>
+                  onSelect={openCategory}
+                />
               </>
             ) : (
               <>

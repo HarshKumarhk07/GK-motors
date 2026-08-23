@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, ChevronDown, User, LogOut, Settings, Wrench, Phone, ShoppingCart, Heart } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, Settings, Wrench, Phone, ShoppingCart, Heart, Package } from 'lucide-react';
 import { useScrollLock } from '../../utils/responsive';
 import { useCart, useServiceCart } from '../../context/CartContext';
 
@@ -27,6 +27,22 @@ const marketplaceLinks = [
 
 const isActive = (pathname, href) =>
   href === '/' ? pathname === '/' : pathname.startsWith(href);
+
+const NAV_STYLES = `
+  .gk-burger { display: inline-flex; align-items: center; justify-content: center; }
+  @media (min-width: 1024px) { .gk-burger { display: none; } }
+  /* The link row is dense at exactly 1024px, so tighten it there and let it
+     breathe again on wider screens. */
+  @media (min-width: 1024px) and (max-width: 1180px) {
+    .gk-nav-links a { padding: 0.4rem 0.4rem !important; font-size: 0.78rem !important; }
+  }
+  /* Below 380px the name label crowds the row; the icons and the hamburger
+     are what actually need to stay reachable. */
+  @media (max-width: 380px) {
+    .gk-nav-row { gap: 0.35rem; }
+    .gk-nav-right { gap: 0.5rem !important; }
+  }
+`;
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -63,10 +79,11 @@ export default function Navbar() {
 
   return (
     <nav style={{ background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(0, 0, 0, 0.05)' }} className="sticky top-0 z-50">
+      <style>{NAV_STYLES}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 gap-2 min-w-0 gk-nav-row">
           {/* Logo — text based for now */}
-          <Link to="/" className="flex items-center gap-2 mr-4 sm:mr-0" style={{ textDecoration: 'none' }}>
+          <Link to="/" className="flex items-center gap-2 mr-2 sm:mr-0 min-w-0 flex-shrink" style={{ textDecoration: 'none' }}>
             <img
               src="/gkmotorslogo.png"
               alt="GK Motors"
@@ -76,7 +93,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1 gk-nav-links">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -101,7 +118,7 @@ export default function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-3 sm:gap-4 md:gap-5 flex-shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 md:gap-5 flex-shrink-0 gk-nav-right">
             {/* Book Service CTA */}
             <Link
               to="/services"
@@ -138,7 +155,7 @@ export default function Navbar() {
             </Link>
 
             {/* Call us */}
-            <a href="tel:+919253625099" className="hidden lg:flex items-center" style={{ gap: '0.4rem', color: '#0F172A', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 700, padding: '0.4rem 0.75rem', borderRadius: '8px', background: 'rgba(30, 58, 138, 0.04)', border: '1px solid rgba(30, 58, 138, 0.08)' }}>
+            <a href="tel:+919253625099" className="hidden xl:flex items-center gk-nav-phone" style={{ gap: '0.4rem', color: '#0F172A', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 700, padding: '0.4rem 0.75rem', borderRadius: '8px', background: 'rgba(30, 58, 138, 0.04)', border: '1px solid rgba(30, 58, 138, 0.08)' }}>
               <Phone size={14} style={{ color: '#1E3A8A' }} /> +91 92536 25099
             </a>
 
@@ -190,6 +207,11 @@ export default function Navbar() {
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
                       <Wrench size={15} /> My Bookings
                     </Link>
+                    <Link to="/my-orders?tab=orders" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', color: '#ccc', textDecoration: 'none', fontSize: '0.9rem' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = '#1E293B'; e.currentTarget.style.color = 'white'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
+                      <Package size={15} /> My Orders
+                    </Link>
                     <Link to="/wishlist" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', color: '#ccc', textDecoration: 'none', fontSize: '0.9rem' }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = '#1E293B'; e.currentTarget.style.color = 'white'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
@@ -213,16 +235,21 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+              <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap flex-shrink-0">
                 <Link to="/login" className="btn-outline-dark !px-2 !py-1 !text-[10px] sm:!px-[0.8rem] sm:!py-[0.4rem] sm:!text-[0.7rem]" style={{ fontWeight: 700 }}>Login</Link>
                 <Link to="/register" className="btn-primary !hidden sm:!inline-flex !px-2 !py-1 !text-[10px] sm:!px-[0.8rem] sm:!py-[0.4rem] sm:!text-[0.7rem]" style={{ fontWeight: 700 }}>Sign Up</Link>
               </div>
             )}
 
             {/* Mobile hamburger */}
+            {/* `display` must not be set inline here: an inline style beats
+                Tailwind's `md:hidden` (which is not !important), which is why
+                the hamburger was still rendering next to the desktop nav and
+                pushing the right-hand group past the container. Centring now
+                comes from .gk-burger, which yields to the hidden rule. */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden"
+              className="lg:hidden gk-burger"
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={mobileOpen}
               aria-controls="gk-mobile-nav"
@@ -230,7 +257,6 @@ export default function Navbar() {
                 color: '#0F172A', background: 'none', border: 'none', cursor: 'pointer',
                 // 44px is the smallest reliably tappable target.
                 minWidth: 44, minHeight: 44,
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 margin: '-0.2rem -0.4rem -0.2rem 0',   // grow the hit area, not the layout
               }}
             >
@@ -239,10 +265,16 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Nav */}
-        {mobileOpen && (
-          <div id="gk-mobile-nav" style={{ background: '#0F172A', margin: '0 -1rem', maxHeight: 'calc(100vh - 64px)', overflowY: 'auto' }}>
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '1.25rem 1rem 1rem' }}>
+      </div>
+
+      {/* Mobile Nav — a sibling of the padded container, not a child of it.
+          It used to bleed out with a hard-coded `margin: 0 -1rem`, but the
+          mobile stylesheet narrows that container to 0.75rem of padding, so
+          the drawer hung 4px past each edge. Sitting outside the container it
+          is full-width by construction, at any padding. */}
+      {mobileOpen && (
+        <div id="gk-mobile-nav" style={{ background: '#0F172A', width: '100%', maxHeight: 'calc(100vh - 64px)', overflowY: 'auto' }}>
+          <div className="max-w-7xl mx-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '1.25rem 1rem 1rem' }}>
               <Link to="/services" onClick={() => setMobileOpen(false)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
@@ -271,6 +303,12 @@ export default function Navbar() {
                   <Link to="/profile" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
                     <User size={15} /> My Profile
                   </Link>
+                  <Link to="/my-orders?tab=orders" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
+                    <Package size={15} /> My Orders
+                  </Link>
+                  <Link to="/wishlist" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
+                    <Heart size={15} /> Wishlist
+                  </Link>
                   {user.role === 'admin' && (
                     <Link to="/admin" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#93C5FD', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 700 }}>
                       <Settings size={15} /> Admin Panel
@@ -280,11 +318,10 @@ export default function Navbar() {
                     <LogOut size={15} /> Logout
                   </button>
                 </div>
-              )}
-            </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   );
 }

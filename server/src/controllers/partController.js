@@ -1,4 +1,5 @@
 const asyncHandler = require('express-async-handler');
+const mongoose = require('mongoose');
 const SparePart = require('../models/SparePart');
 const Order = require('../models/Order');
 const { createOrder: createRazorpayOrder, verifyPayment } = require('../services/paymentService');
@@ -199,11 +200,57 @@ const deletePart = asyncHandler(async (req, res) => {
 });
 
 // ---- ORDERS ----
+
+/**
+ * Unit price for one part, resolved the same way the storefront resolves it.
+ *
+ * The customer is shown a pincode-specific price when the part carries
+ * `pincodePricing` for their area (PartCard/PartDetail both do this), but the
+ * order used to be priced from `discountedPrice || price` regardless — so the
+ * amount charged could differ from the amount displayed. Delivery pincode is
+ * the deciding input, and it comes from the order's own delivery address, not
+ * from anything the client asserts about price.
+ */
+const resolveUnitPrice = (part, pincode) => {
+  if (pincode && Array.isArray(part.pincodePricing) && part.pincodePricing.length) {
+    const match = part.pincodePricing.find((p) => String(p.pincode) === String(pincode).trim());
+    if (match && Number(match.price) > 0) return Number(match.price);
+  }
+  const discounted = Number(part.discountedPrice);
+  if (Number.isFinite(discounted) && discounted > 0 && discounted < Number(part.price)) {
+    return discounted;
+  }
+  return Number(part.price) || 0;
+};
+
 // @desc  Place order
 const placeOrder = asyncHandler(async (req, res) => {
   const { items, deliveryAddress, payment } = req.body;
 
   if (!items || !items.length) { res.status(400); throw new Error('No items in order'); }
+
+  // Address is schema-required; failing here gives a readable message instead
+  // of a raw Mongoose ValidationError after stock has already been reserved.
+  const required = ['street', 'city', 'pincode'];
+  const missing = required.filter((k) => !String(deliveryAddress?.[k] || '').trim());
+  if (missing.length) {
+    res.status(400);
+    throw new Error(`Delivery address is incomplete (${missing.join(', ')})`);
+  }
+  // `state` is schema-required but rarely collected separately in the UI;
+  // falling back to the city keeps a valid document instead of a 500.
+  const address = {
+    ...deliveryAddress,
+    state: String(deliveryAddress.state || '').trim() || deliveryAddress.city,
+  };
+
+  // Cash on delivery has been withdrawn. Anything that is not an online
+  // payment is rejected here rather than quietly stored as a second method.
+  const method = payment?.method || 'online';
+  if (method !== 'online') {
+    res.status(400);
+    throw new Error('Only online payment is available');
+  }
 
   let subtotal = 0;
   const orderItems = [];
@@ -215,6 +262,12 @@ const placeOrder = asyncHandler(async (req, res) => {
       if (!Number.isInteger(qty) || qty < 1) {
         res.status(400);
         throw new Error('Invalid quantity');
+      }
+      // A malformed id would otherwise surface as a Mongoose CastError, which
+      // reads as a server fault rather than a bad basket.
+      if (!mongoose.Types.ObjectId.isValid(item.product)) {
+        res.status(400);
+        throw new Error('One of the items is no longer available');
       }
 
       // Decrement conditionally so two simultaneous orders cannot both pass a
@@ -236,18 +289,28 @@ const placeOrder = asyncHandler(async (req, res) => {
       }
 
       reserved.push({ id: part._id, qty });
-      const unitPrice = part.discountedPrice || part.price;
+      const unitPrice = resolveUnitPrice(part, address.pincode);
+      if (!(unitPrice > 0)) {
+        res.status(400);
+        throw new Error(`${part.name} is not available for purchase right now`);
+      }
       subtotal += unitPrice * qty;
-      orderItems.push({ product: part._id, name: part.name, price: unitPrice, quantity: qty, image: part.images[0] });
+      orderItems.push({
+        product: part._id,
+        name: part.name,
+        price: unitPrice,
+        quantity: qty,
+        image: Array.isArray(part.images) ? part.images[0] : undefined,
+      });
     }
 
     const shippingCharge = subtotal > 500 ? 0 : 50;
     const total = subtotal + shippingCharge;
 
     const order = await Order.create({
-      user: req.user._id, items: orderItems, deliveryAddress,
+      user: req.user._id, items: orderItems, deliveryAddress: address,
       subtotal, shippingCharge, total,
-      payment: { method: payment?.method || 'cod' },
+      payment: { method: 'online', status: 'pending' },
       statusHistory: [{ status: 'placed', note: 'Order placed' }],
     });
 
@@ -266,14 +329,28 @@ const placeOrder = asyncHandler(async (req, res) => {
 
 // @desc  Get user orders
 const getMyOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+  // `items.product` is populated so the dashboard can link to a live product
+  // page; the item snapshot (name/price/image) is what actually renders, so a
+  // product that has since been deleted still shows correctly.
+  const orders = await Order.find({ user: req.user._id })
+    .populate('items.product', 'name images category brand isActive')
+    .sort({ createdAt: -1 });
   res.json({ success: true, orders });
 });
 
 // @desc  Get single order
 const getOrder = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id).populate('user', 'name phone');
+  const order = await Order.findById(req.params.id)
+    .populate('user', 'name phone')
+    .populate('items.product', 'name images category brand isActive');
   if (!order) { res.status(404); throw new Error('Order not found'); }
+  // The route is only `protect`ed, so without this check any signed-in
+  // customer could read anyone else's order (and delivery address) by id.
+  const ownerId = order.user?._id ? String(order.user._id) : String(order.user);
+  if (req.user.role !== 'admin' && ownerId !== String(req.user._id)) {
+    res.status(403);
+    throw new Error('Not authorized to view this order');
+  }
   res.json({ success: true, order });
 });
 
@@ -281,6 +358,12 @@ const getOrder = asyncHandler(async (req, res) => {
 const createPartPayment = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) { res.status(404); throw new Error('Order not found'); }
+  if (String(order.user) !== String(req.user._id) && req.user.role !== 'admin') {
+    res.status(403); throw new Error('Not authorized');
+  }
+  if (order.payment?.status === 'paid') {
+    res.status(400); throw new Error('This order has already been paid');
+  }
   const razorpayOrder = await createRazorpayOrder({ amount: order.total, receipt: `ord_${order._id}` });
   res.json({ success: true, order: razorpayOrder, key: process.env.RAZORPAY_KEY_ID });
 });
@@ -292,6 +375,15 @@ const verifyPartPayment = asyncHandler(async (req, res) => {
   if (!isValid) { res.status(400); throw new Error('Payment verification failed'); }
 
   const order = await Order.findById(req.params.id);
+  if (!order) { res.status(404); throw new Error('Order not found'); }
+  if (String(order.user) !== String(req.user._id) && req.user.role !== 'admin') {
+    res.status(403); throw new Error('Not authorized');
+  }
+  if (order.payment?.status === 'paid') {
+    // Razorpay can fire the handler twice; the second call must not append a
+    // duplicate history entry.
+    return res.json({ success: true, order });
+  }
   order.payment.status = 'paid';
   order.payment.transactionId = razorpay_payment_id;
   order.payment.razorpayOrderId = razorpay_order_id;

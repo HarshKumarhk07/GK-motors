@@ -59,11 +59,13 @@ const rentalBookingSchema = new mongoose.Schema(
       },
     ],
     payment: {
-      method: { type: String, enum: ['online', 'cod'], default: 'online' },
+      // 'pay_at_drop' replaces the old 'cod' value: it is the rental
+      // pay-on-drop plan, not the withdrawn cash-on-delivery parts option.
+      method: { type: String, enum: ['online', 'pay_at_drop'], default: 'online' },
       status: { type: String, enum: ['pending', 'advance_paid', 'paid', 'refunded'], default: 'pending' },
       // 'full'    → pay totalAmount online up-front
       // 'advance' → pay securityDeposit (or quoted advance) online now, rest at drop
-      // 'on_drop' → pay everything in cash at drop time
+      // 'on_drop' → settle the whole amount at drop time
       plan: { type: String, enum: ['full', 'advance', 'on_drop'], default: 'full' },
       advanceAmount: { type: Number, default: 0 },   // amount charged online up-front
       balanceDue: { type: Number, default: 0 },      // amount to be collected at drop

@@ -43,7 +43,7 @@ availability) car platform with **six business verticals** in one app:
 2. **Sell your car** — multi-step form → algorithmic instant valuation → admin reviews and offers a price.
 3. **Car servicing** — pick a service type, schedule a doorstep slot, optional Razorpay advance, admin assigns a mechanic.
 4. **Car rentals** — daily *or* hourly rental with security deposit, KYC upload, 3 payment plans, and **live GPS tracking** of active rentals via Socket.IO.
-5. **Spare parts / accessories store** — catalog with variants and per-pincode pricing, cart, COD or Razorpay checkout, order tracking.
+5. **Spare parts / accessories store** — catalog with variants and per-pincode pricing, a persisted cart, Razorpay-only checkout (cash on delivery has been withdrawn), order tracking.
 6. **Admin dashboard** — one 3,451-line page with 10 tabs governing all of the above.
 
 Three roles: `user`, `mechanic`, `admin`.
@@ -350,9 +350,15 @@ Pure heuristic, no data source. Base by brand tier (₹35L luxury / ₹12L / ₹
 floored at ₹1,00,000. Called on both `/sell/estimate` and `/sell` create.
 
 ### Parts checkout — `partController.placeOrder`
-Server re-reads each `SparePart`, rejects if `stock < quantity`, recomputes price from
-`discountedPrice || price`, **decrements stock immediately** (even for COD), and computes
-`shipping = subtotal > 500 ? 0 : 50`.
+Server re-reads each `SparePart`, rejects if `stock < quantity`, recomputes the unit price
+via `resolveUnitPrice()` — the delivery pincode's `pincodePricing` entry when there is one,
+otherwise `discountedPrice || price`, so the amount charged matches the amount displayed —
+**decrements stock immediately**, and computes `shipping = subtotal > 500 ? 0 : 50`.
+The client sends only `{product, quantity}`; prices in the request body are ignored.
+`payment.method` must be `online` (COD is rejected). If the customer abandons or fails the
+Razorpay step, `Cart.jsx` calls `PUT /store/orders/:id/cancel`, which restores the stock.
+After a successful payment the customer is sent to `/my-orders?tab=orders`, which opens the
+dashboard's **Parts Orders** tab on the order they just paid for.
 
 ### Pincode availability (a cross-cutting frontend concept)
 Selected pincode lives in `localStorage['selectedPincode']`; changes are broadcast with a
@@ -442,9 +448,12 @@ Read this before "fixing" something that looks broken — most of it is known.
     (`POST /auth/wishlist/:id`) and `localStorage['moto_wishlist']` in `AuthContext`. UI
     components read the local one. `Wishlist.jsx` doesn't know whether an id is a part or a
     car, so it probes both endpoints.
-13. Cart is in-memory only — a page refresh empties it.
-14. `placeOrder` ignores `variants` and `pincodePricing` when pricing, so a per-pincode or
-    per-size price shown in the UI is not what gets charged.
+13. ~~Cart is in-memory only — a page refresh empties it.~~ **Fixed**: the parts cart is
+    persisted to `localStorage['gkmotors_parts_cart']` and synchronised across tabs, the
+    same way the service cart already was.
+14. `placeOrder` now honours `pincodePricing` for the delivery pincode (`resolveUnitPrice`).
+    **`variants` / per-size pricing is still not applied server-side** — a size-specific
+    price shown on `PartDetail` is not what gets charged. Still open.
 15. Stock is decremented at order creation, and never restored on cancellation or payment failure.
 16. `getRentalCars` includes `status: 'rented'` cars in the public list; only `createRentalBooking`
     rejects them, and it does so with a generic error.
