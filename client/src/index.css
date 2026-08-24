@@ -15,9 +15,10 @@ html {
   overflow-x: clip;
   max-width: 100% !important;
   width: 100% !important;
-  position: relative;
   margin: 0;
   padding: 0;
+  overscroll-behavior-y: none;
+  background-color: #0F172A;
 }
 
 body {
@@ -33,6 +34,7 @@ body {
   position: relative;
   margin: 0;
   padding: 0;
+  overscroll-behavior-y: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
