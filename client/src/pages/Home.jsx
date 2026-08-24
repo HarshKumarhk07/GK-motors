@@ -152,8 +152,19 @@ export default function Home() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', width: '100%', maxWidth: '100%', position: 'relative' }}>
       <style>{`
+        /* ── Skeleton shimmer (always available, even before PartCard mounts) ── */
+        @keyframes gk-shimmer {
+          0%   { background-position: -200% 0; }
+          100% { background-position:  200% 0; }
+        }
+        .gk-skel {
+          background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%) !important;
+          background-size: 200% 100% !important;
+          animation: gk-shimmer 1.5s infinite linear !important;
+        }
+
         /* ── Hero & Automotive Styling ─────────────────────────────────────── */
-        .gk-glow { position: absolute; pointer-events: none; border-radius: 50%; }
+        .gk-glow { position: absolute; pointer-events: none; border-radius: 50%; will-change: transform; }
         .gk-glow-a {
           top: -25%; right: -12%; width: 720px; height: 720px;
           background: radial-gradient(circle, rgba(37,99,235,0.22) 0%, transparent 68%);
@@ -195,6 +206,7 @@ export default function Home() {
         .gk-car {
           opacity: 0;
           filter: drop-shadow(0 30px 50px rgba(0,0,0,0.55));
+          will-change: transform, opacity;
           animation:
             gk-car-in 1s cubic-bezier(0.2,0.75,0.3,1) 0.2s forwards,
             gk-float 7s ease-in-out 1.2s infinite;
@@ -207,6 +219,21 @@ export default function Home() {
           0%,100% { transform: translate3d(0,0,0); }
           50%     { transform: translate3d(0,-10px,0); }
         }
+
+        /* On mobile: kill the heavy drift/float animations — they're invisible
+           anyway (glow blobs overflow outside the viewport) and cause scroll jank */
+        @media (max-width: 900px) {
+          .gk-glow-a, .gk-glow-b { animation: none !important; }
+          .gk-car { animation: gk-car-in 1s cubic-bezier(0.2,0.75,0.3,1) 0.2s forwards !important; }
+        }
+
+        /* Respect reduced-motion: strip all decorative animations */
+        @media (prefers-reduced-motion: reduce) {
+          .gk-glow-a, .gk-glow-b, .gk-car, .gk-shimmer { animation: none !important; }
+          .gk-car { opacity: 1 !important; }
+          .gk-shimmer { -webkit-text-fill-color: #60A5FA; }
+        }
+
 
         /* Booking Card responsive layout */
         .gk-booking-card {
@@ -249,19 +276,68 @@ export default function Home() {
         }
         .gk-shop-all:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(30,58,138,.28); }
 
+        /* ── Mobile hero: collapse two-col grid → single column ── */
         @media (max-width: 900px) {
           .gk-hero-img { display: none !important; }
+          .gk-hero-grid { grid-template-columns: 1fr !important; }
+          .gk-hero-grid > div:first-child { width: 100% !important; max-width: 100% !important; }
         }
 
         @media (max-width: 768px) {
-          .gk-hero { padding: 3rem 0 3.5rem !important; min-height: auto !important; }
-          .gk-hero h1 { font-size: 2rem !important; }
+          .gk-hero {
+            padding: 2.5rem 0 3rem !important;
+            min-height: auto !important;
+          }
+          .gk-hero h1 { font-size: clamp(1.75rem, 7vw, 2.25rem) !important; }
+          .gk-hero-desc { font-size: 0.88rem !important; margin-bottom: 1.4rem !important; }
+          .gk-hero-ctas {
+            flex-direction: column !important;
+            gap: 0.65rem !important;
+            margin-bottom: 1.5rem !important;
+          }
+          .gk-hero-ctas a {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 0.9rem 1rem !important;
+            white-space: nowrap !important;
+            box-sizing: border-box !important;
+          }
+          .gk-trust-row {
+            flex-direction: column !important;
+            gap: 0.6rem !important;
+            align-items: flex-start !important;
+          }
+          .gk-trust-row > div {
+            width: 100% !important;
+          }
+          .gk-social-proof {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.45rem !important;
+            margin-top: 1.1rem !important;
+          }
           .gk-booking-card { margin-top: 1.5rem !important; padding: 1.25rem !important; }
-          .gk-parts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.75rem !important; }
         }
 
-        @media (max-width: 375px) {
-          .gk-parts-grid { grid-template-columns: 1fr !important; }
+        /* ── All card grids: 2 columns on mobile ── */
+        @media (max-width: 640px) {
+          .gk-why-grid,
+          .gk-how-grid,
+          .gk-stats-grid,
+          .gk-testimonials-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 0.75rem !important;
+          }
+          .gk-why-grid > div,
+          .gk-how-grid > div {
+            padding: 1rem 0.85rem !important;
+            border-radius: 12px !important;
+          }
+          .gk-testimonials-grid > div {
+            padding: 1.1rem 1rem !important;
+          }
+          .gk-testimonials-grid p { font-size: 0.78rem !important; }
+          .gk-testimonials-grid h4 { font-size: 0.88rem !important; }
         }
       `}</style>
 
@@ -283,7 +359,7 @@ export default function Home() {
         <div className="gk-grid-overlay" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2, width: '100%' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '2.5rem', alignItems: 'center', width: '100%' }}>
+          <div className="gk-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '2.5rem', alignItems: 'center', width: '100%' }}>
             {/* LEFT TEXT CONTENT */}
             <div>
               <p style={{ color: '#93C5FD', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '0.8rem' }}>
@@ -295,13 +371,13 @@ export default function Home() {
                 <span className="gk-shimmer">Car Service &amp; Repair</span>
               </h1>
 
-              <p style={{ color: '#94A3B8', fontSize: '0.96rem', fontWeight: 500, lineHeight: 1.7, maxWidth: '480px', marginBottom: '2rem' }}>
+              <p className="gk-hero-desc" style={{ color: '#94A3B8', fontSize: '0.96rem', fontWeight: 500, lineHeight: 1.7, maxWidth: '480px', marginBottom: '2rem' }}>
                 Expert technicians, genuine parts, doorstep service. We ensure a safe ride for you
                 and your loved ones. Book online in under 2 minutes.
               </p>
 
               {/* CTAs */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.85rem', marginBottom: '2.2rem' }}>
+              <div className="gk-hero-ctas" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.85rem', marginBottom: '2.2rem' }}>
                 <Link
                   to="/services"
                   style={{
@@ -309,7 +385,7 @@ export default function Home() {
                     background: '#2563EB', color: '#FFFFFF',
                     padding: '0.85rem 2.1rem', borderRadius: '10px', textDecoration: 'none',
                     fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.9rem',
-                    letterSpacing: '0.06em', textTransform: 'uppercase',
+                    letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
                     boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)', transition: 'all 0.25s',
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.background = '#1D4ED8'; }}
@@ -326,7 +402,8 @@ export default function Home() {
                     padding: '0.85rem 2.1rem', borderRadius: '10px', textDecoration: 'none',
                     border: '1.5px solid rgba(255,255,255,0.25)',
                     fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: '0.9rem',
-                    letterSpacing: '0.06em', textTransform: 'uppercase', transition: 'all 0.25s',
+                    letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
+                    transition: 'all 0.25s',
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#FFFFFF'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
@@ -336,23 +413,23 @@ export default function Home() {
               </div>
 
               {/* Trust Tags */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.2rem', alignItems: 'center', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="gk-trust-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                 {TRUST_TAGS.map(({ icon: Icon, title }) => (
-                  <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-                    <div style={{ width: 24, height: 24, borderRadius: '6px', background: 'rgba(147, 197, 253, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon size={13} style={{ color: '#93C5FD' }} />
+                  <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', minWidth: 0 }}>
+                    <div style={{ width: 26, height: 26, borderRadius: '7px', background: 'rgba(147, 197, 253, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon size={14} style={{ color: '#93C5FD' }} />
                     </div>
-                    <span style={{ color: '#E2E8F0', fontSize: '0.78rem', fontWeight: 700 }}>{title}</span>
+                    <span style={{ color: '#E2E8F0', fontSize: '0.82rem', fontWeight: 700, whiteSpace: 'nowrap' }}>{title}</span>
                   </div>
                 ))}
               </div>
 
               {/* Social Proof */}
-              <div style={{ marginTop: '1.4rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span style={{ color: '#94A3B8', fontSize: '0.8rem', fontWeight: 600 }}>Trusted by 10,000+ Car Owners</span>
-                <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+              <div className="gk-social-proof" style={{ marginTop: '1.2rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <span style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 600, whiteSpace: 'nowrap' }}>Trusted by 10,000+ Car Owners</span>
+                <div style={{ display: 'flex', gap: '2px', alignItems: 'center', flexShrink: 0 }}>
                   {[...Array(5)].map((_, i) => <Star key={i} size={13} fill="#F59E0B" color="#F59E0B" />)}
-                  <span style={{ color: '#FFFFFF', fontSize: '0.8rem', fontWeight: 800, marginLeft: '0.3rem' }}>4.8/5 Rating</span>
+                  <span style={{ color: '#FFFFFF', fontSize: '0.82rem', fontWeight: 800, marginLeft: '0.35rem', whiteSpace: 'nowrap' }}>4.8/5 Rating</span>
                 </div>
               </div>
             </div>
@@ -547,7 +624,7 @@ export default function Home() {
             <div style={{ width: 52, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.1rem' }}>
+          <div className="gk-why-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.1rem' }}>
             {WHY_CHOOSE_US.map(({ icon: Icon, title, desc }) => (
               <div key={title} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1.5rem 1.25rem', textAlign: 'center', boxShadow: '0 6px 18px rgba(15, 23, 42, 0.04)' }}>
                 <div style={{ width: 46, height: 46, borderRadius: '14px', background: 'linear-gradient(135deg, #2563EB 0%, #1E3A8A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.9rem', boxShadow: '0 6px 16px rgba(37, 99, 235, 0.25)' }}>
@@ -574,7 +651,7 @@ export default function Home() {
             <div style={{ width: 50, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.1rem' }}>
+          <div className="gk-how-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.1rem' }}>
             {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
               <div key={step} style={{ position: 'relative', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1.5rem 1.25rem', overflow: 'hidden' }}>
                 <span style={{ position: 'absolute', top: '0.3rem', right: '0.8rem', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.8rem', fontWeight: 950, color: 'rgba(37, 99, 235, 0.08)', lineHeight: 1 }}>{step}</span>
@@ -592,7 +669,7 @@ export default function Home() {
       {/* ════════════════════ 7. STATS & TRUST SECTION ════════════════════ */}
       <section style={{ background: 'linear-gradient(180deg, #0F172A 0%, #131B31 100%)', borderTop: '1px solid rgba(148,163,184,0.12)', borderBottom: '1px solid rgba(148,163,184,0.12)', padding: '3rem 0' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem' }}>
+          <div className="gk-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem' }}>
             {STATS.map(({ value, label, icon: Icon }) => (
               <div key={label} style={{ textAlign: 'center' }}>
                 <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'rgba(147, 197, 253, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem' }}>
@@ -619,7 +696,7 @@ export default function Home() {
             <div style={{ width: 50, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
+          <div className="gk-testimonials-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
             {TESTIMONIALS.map((item, i) => (
               <div
                 key={i}

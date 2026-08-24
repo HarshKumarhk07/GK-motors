@@ -267,43 +267,42 @@ export default function PartCard({ part }) {
 
 export function PartCardSkeleton() {
   return (
-    <>
+    <div
+      style={{
+        position: 'relative',
+        borderRadius: '20px',
+        overflow: 'hidden',
+        background: '#FFF',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
+        border: '1px solid #F1F5F9'
+      }}
+    >
+      {/* Style injected inside the card div — NOT as a sibling grid item */}
       <style>{PART_CARD_STYLES}</style>
-      <div
-        style={{
-          position: 'relative',
-          borderRadius: '20px',
-          overflow: 'hidden',
-          background: '#FFF',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
-          height: '100%',
-          border: '1px solid #F1F5F9'
-        }}
-      >
-        {/* Media Placeholder */}
-        <div className="gk-pc-media gk-skel" style={{ aspectRatio: '4 / 3', background: '#F8FAFC' }} />
 
-        {/* Content Placeholder */}
-        <div style={{ padding: '0.85rem', flex: 1, display: 'flex', flexDirection: 'column', background: '#FFFFFF', gap: '0.5rem' }}>
-          {/* Category */}
-          <div className="gk-skel" style={{ height: '10px', width: '35%', borderRadius: '4px' }} />
+      {/* Media Placeholder */}
+      <div className="gk-pc-media gk-skel" style={{ background: '#F8FAFC' }} />
 
-          {/* Title */}
-          <div className="gk-skel" style={{ height: '16px', width: '85%', borderRadius: '4px', marginTop: '2px' }} />
+      {/* Content Placeholder */}
+      <div style={{ padding: '0.85rem', flex: 1, display: 'flex', flexDirection: 'column', background: '#FFFFFF', gap: '0.5rem' }}>
+        {/* Category */}
+        <div className="gk-skel" style={{ height: '10px', width: '35%', borderRadius: '4px' }} />
 
-          {/* Sub/Brand/Rating */}
-          <div className="gk-skel" style={{ height: '12px', width: '55%', borderRadius: '4px' }} />
+        {/* Title */}
+        <div className="gk-skel" style={{ height: '16px', width: '85%', borderRadius: '4px', marginTop: '2px' }} />
 
-          {/* Price & CTA Row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.6rem' }}>
-            <div className="gk-skel" style={{ height: '22px', width: '70px', borderRadius: '4px' }} />
-            <div className="gk-skel" style={{ height: '32px', width: '64px', borderRadius: '8px' }} />
-          </div>
+        {/* Sub/Brand/Rating */}
+        <div className="gk-skel" style={{ height: '12px', width: '55%', borderRadius: '4px' }} />
+
+        {/* Price & CTA Row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.6rem' }}>
+          <div className="gk-skel" style={{ height: '22px', width: '70px', borderRadius: '4px' }} />
+          <div className="gk-skel" style={{ height: '32px', width: '64px', borderRadius: '8px' }} />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

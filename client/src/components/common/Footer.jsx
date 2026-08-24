@@ -33,10 +33,24 @@ const LOCATIONS = [
 export default function Footer() {
   return (
     <footer style={{ background: '#0F172A', borderTop: '1px solid #1E293B', color: '#94A3B8' }}>
+      <style>{`
+        .gk-footer-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 2.5rem;
+        }
+        @media (max-width: 640px) {
+          .gk-footer-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+          }
+          .gk-footer-brand { grid-column: 1 / -1; }
+        }
+      `}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '2.5rem' }}>
-          {/* Brand */}
-          <div>
+        <div className="gk-footer-grid">
+          {/* Brand — spans full width on mobile */}
+          <div className="gk-footer-brand">
             <div className="flex items-center gap-3 mb-6">
               {/* The logo is dark-on-white artwork, so on the dark footer it
                   sits in a white chip rather than disappearing into it. */}
