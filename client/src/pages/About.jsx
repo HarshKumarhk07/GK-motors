@@ -25,7 +25,7 @@ export default function About() {
           .journey-subgrid { grid-template-columns: 1fr !important; gap: 1rem !important; }
           
           /* Values */
-          .values-grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+          .values-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
           .value-card-img { height: 140px !important; }
           .value-card-content { padding: 1.5rem !important; }
           .value-card-title { font-size: 1.3rem !important; }

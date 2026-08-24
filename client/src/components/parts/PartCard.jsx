@@ -268,6 +268,7 @@ export default function PartCard({ part }) {
 export function PartCardSkeleton() {
   return (
     <div
+      aria-hidden="true"
       style={{
         position: 'relative',
         borderRadius: '20px',
@@ -285,21 +286,36 @@ export function PartCardSkeleton() {
       {/* Media Placeholder */}
       <div className="gk-pc-media gk-skel" style={{ background: '#F8FAFC' }} />
 
-      {/* Content Placeholder */}
-      <div style={{ padding: '0.85rem', flex: 1, display: 'flex', flexDirection: 'column', background: '#FFFFFF', gap: '0.5rem' }}>
+      {/* Content placeholder — laid out by the real card's own classes
+          (.gk-pc-name / .gk-pc-sub / .gk-pc-priceRow) rather than by a second
+          set of hand-picked heights. Without that the placeholder sat ~48px
+          shorter than the card it stands in for, so the whole shelf jumped
+          when the products arrived. */}
+      <div className="gk-pc-body-skel">
         {/* Category */}
-        <div className="gk-skel" style={{ height: '10px', width: '35%', borderRadius: '4px' }} />
+        <div className="gk-pc-cat-skel">
+          <div className="gk-skel" style={{ height: '10px', width: '42%', borderRadius: '4px' }} />
+        </div>
 
-        {/* Title */}
-        <div className="gk-skel" style={{ height: '16px', width: '85%', borderRadius: '4px', marginTop: '2px' }} />
+        {/* Title — inherits the clamped two-line height */}
+        <h3 className="gk-pc-name gk-pc-name-skel">
+          <span className="gk-skel" style={{ display: 'block', height: '0.62rem', width: '94%', borderRadius: '4px' }} />
+          <span className="gk-skel" style={{ display: 'block', height: '0.62rem', width: '60%', borderRadius: '4px' }} />
+        </h3>
 
-        {/* Sub/Brand/Rating */}
-        <div className="gk-skel" style={{ height: '12px', width: '55%', borderRadius: '4px' }} />
+        {/* Brand + rating */}
+        <div className="gk-pc-sub">
+          <span className="gk-skel" style={{ display: 'block', height: '0.5rem', width: '3.2rem', borderRadius: '4px' }} />
+          <span className="gk-skel" style={{ display: 'block', height: '0.5rem', width: '2.2rem', borderRadius: '4px' }} />
+        </div>
 
-        {/* Price & CTA Row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.6rem' }}>
-          <div className="gk-skel" style={{ height: '22px', width: '70px', borderRadius: '4px' }} />
-          <div className="gk-skel" style={{ height: '32px', width: '64px', borderRadius: '8px' }} />
+        {/* Price & CTA row */}
+        <div className="gk-pc-priceRow">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
+            <span className="gk-skel" style={{ display: 'block', height: '0.62rem', width: '6rem', borderRadius: '4px' }} />
+            <span className="gk-skel" style={{ display: 'block', height: '1.2rem', width: '4.4rem', borderRadius: '4px' }} />
+          </div>
+          <span className="gk-skel" style={{ display: 'block', height: '32px', width: '58px', borderRadius: '8px', flexShrink: 0 }} />
         </div>
       </div>
     </div>
@@ -310,6 +326,11 @@ export function PartCardSkeleton() {
    same card works in a five-across desktop strip and a two-across phone grid
    without a fixed height stretching it or a fixed width overflowing it. */
 const PART_CARD_STYLES = `
+  /* Skeleton mirrors of the real card's body/category boxes, so the two stay
+     the same height. Kept beside the card's own rules for exactly that reason. */
+  .gk-pc-body-skel { padding: 0.85rem; flex: 1; display: flex; flex-direction: column; background: #FFFFFF; border-top: 1px solid #EEE; min-width: 0; }
+  .gk-pc-cat-skel { margin-bottom: 0.3rem; display: flex; align-items: center; min-height: 1.04rem; }
+  .gk-pc-name-skel { display: flex !important; flex-direction: column; justify-content: center; gap: 0.34rem; }
   @keyframes gk-shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }

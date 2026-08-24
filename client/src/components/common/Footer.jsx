@@ -34,14 +34,19 @@ export default function Footer() {
   return (
     <footer style={{ background: '#0F172A', borderTop: '1px solid #1E293B', color: '#94A3B8' }}>
       <style>{`
+        /* min() floor + min-width:0 on the items: without them a long address
+           line sets a column's min-content width and the footer runs 1px past
+           the viewport at 768px, which is enough for a scrollbar. */
         .gk-footer-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
           gap: 2.5rem;
         }
+        .gk-footer-grid > * { min-width: 0; }
+        .gk-footer-grid span, .gk-footer-grid p { overflow-wrap: anywhere; }
         @media (max-width: 640px) {
           .gk-footer-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1.5rem;
           }
           .gk-footer-brand { grid-column: 1 / -1; }

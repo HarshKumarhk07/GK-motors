@@ -165,19 +165,24 @@ export default function Home() {
 
         /* ── Hero & Automotive Styling ─────────────────────────────────────── */
         .gk-glow { position: absolute; pointer-events: none; border-radius: 50%; will-change: transform; }
+        /* Sized against the container, never in fixed pixels: a 720px circle
+           offset by -12% pushed the document 202px wider than a 320px phone.
+           The gradient's own falloff still gives the soft bleed. The drift no
+           longer scales either — growing the box 7% put its edge back outside
+           whatever width it starts from. */
         .gk-glow-a {
-          top: -25%; right: -12%; width: 720px; height: 720px;
+          top: -25%; right: 0; width: min(720px, 100%); aspect-ratio: 1;
           background: radial-gradient(circle, rgba(37,99,235,0.22) 0%, transparent 68%);
           animation: gk-drift 18s ease-in-out infinite;
         }
         .gk-glow-b {
-          bottom: -30%; left: -12%; width: 560px; height: 560px;
+          bottom: -30%; left: 0; width: min(560px, 100%); aspect-ratio: 1;
           background: radial-gradient(circle, rgba(147,197,253,0.12) 0%, transparent 70%);
           animation: gk-drift 22s ease-in-out infinite reverse;
         }
         @keyframes gk-drift {
-          0%,100% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
-          50%     { transform: translate3d(-26px,22px,0) scale(1.07); opacity: 0.78; }
+          0%,100% { transform: translate3d(0,0,0); opacity: 1; }
+          50%     { transform: translate3d(-26px,22px,0); opacity: 0.78; }
         }
         .gk-grid-overlay {
           position: absolute; inset: 0; pointer-events: none; opacity: 0.45;
@@ -321,13 +326,20 @@ export default function Home() {
 
         /* ── All card grids: 2 columns on mobile ── */
         @media (max-width: 640px) {
+          /* minmax(0, 1fr), not 1fr: a bare 1fr is minmax(auto, 1fr), so a long
+             word inside a card sets the track's minimum and the grid grows
+             past its container. */
           .gk-why-grid,
           .gk-how-grid,
           .gk-stats-grid,
           .gk-testimonials-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             gap: 0.75rem !important;
           }
+          .gk-why-grid > *,
+          .gk-how-grid > *,
+          .gk-stats-grid > *,
+          .gk-testimonials-grid > * { min-width: 0; }
           .gk-why-grid > div,
           .gk-how-grid > div {
             padding: 1rem 0.85rem !important;
@@ -565,9 +577,13 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Loading State: 5 Skeleton cards */}
+          {/* Loading State: 5 skeleton cards. aria-busy + a live region so a
+              screen reader is told the shelf is loading rather than empty. */}
           {partsLoading ? (
-            <div className="gk-parts-grid">
+            <div className="gk-parts-grid" aria-busy="true" aria-live="polite">
+              <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
+                Loading products…
+              </span>
               {[...Array(HOME_PART_COUNT)].map((_, i) => (
                 <PartCardSkeleton key={i} />
               ))}
@@ -696,7 +712,7 @@ export default function Home() {
             <div style={{ width: 50, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
           </div>
 
-          <div className="gk-testimonials-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
+          <div className="gk-testimonials-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1.5rem' }}>
             {TESTIMONIALS.map((item, i) => (
               <div
                 key={i}
