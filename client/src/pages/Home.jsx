@@ -3,21 +3,18 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight, Wrench, Sparkles, Zap, PaintBucket, Droplets, CircleDot, Battery,
   Disc, Settings, Shield, Award, Car, CheckCircle, Clock, Star, Phone,
-  Calendar, Users, MapPin
+  Calendar, Users, MapPin, AlertCircle, RefreshCw
 } from 'lucide-react';
 import { getServiceCategories, getCategories } from '../api/serviceApi';
 import { getFeaturedParts, getRecentParts } from '../api/storeApi';
-import PartCard from '../components/parts/PartCard';
+import PartCard, { PartCardSkeleton } from '../components/parts/PartCard';
 import ServiceCategoryGrid from '../components/service/ServiceCategoryGrid';
 import heroCar from '../assets/hero-gt3-silver.png';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SERVICE CATEGORIES — fallback only
    The live list comes from GET /api/service-categories, so categories the admin
-   adds show up here without a code change. This array is what renders before
-   that request resolves (and if it fails), and it also supplies the lucide icon
-   for the twelve built-in categories, which the API does not carry.
-   Keyed by categoryId — the same join key the packages use.
+   adds show up here without a code change. Keyed by categoryId.
    ═══════════════════════════════════════════════════════════════════════════ */
 const FALLBACK_CATEGORIES = [
   { id: 1,  slug: 'car-service',          label: 'Car Service',           icon: Wrench,     desc: 'Periodic maintenance & oil change',   fromPrice: 2999 },
@@ -25,8 +22,8 @@ const FALLBACK_CATEGORIES = [
   { id: 3,  slug: 'batteries',            label: 'Batteries',             icon: Battery,    desc: 'Battery replacement & testing',       fromPrice: 299 },
   { id: 4,  slug: 'tyres-wheel-care',     label: 'Tyre & Wheel Care',     icon: CircleDot,  desc: 'Tyre rotation, alignment, balancing', fromPrice: 799 },
   { id: 5,  slug: 'denting-painting',     label: 'Denting & Painting',    icon: PaintBucket,desc: 'Dent removal & premium painting',    fromPrice: 2499 },
-  { id: 12, slug: 'insurance-claims',     label: 'Insurance Claims',      icon: Shield,     desc: 'Insurance claim assistance',          fromPrice: 999 },
-  { id: 6,  slug: 'detailing-service',    label: 'Detailing Service',     icon: Award,      desc: 'Interior & exterior deep cleaning',    fromPrice: 2999 },
+  { id: 12, slug: 'insurance-claims',     label: 'Insurance Claims',     icon: Shield,     desc: 'Insurance claim assistance',          fromPrice: 999 },
+  { id: 6,  slug: 'detailing-service',    label: 'Detailing Service',    icon: Award,      desc: 'Interior & exterior deep cleaning',    fromPrice: 2999 },
   { id: 7,  slug: 'car-spa-cleaning',     label: 'Car Spa & Cleaning',    icon: Droplets,   desc: 'Washing, waxing & polishing',        fromPrice: 499 },
   { id: 8,  slug: 'car-inspections',      label: 'Car Inspection',        icon: CheckCircle,desc: 'Comprehensive vehicle checkup',      fromPrice: 999 },
   { id: 9,  slug: 'windshields-lights',   label: 'Windshield & Light',    icon: Sparkles,   desc: 'Glass repair & headlight restoration', fromPrice: 899 },
@@ -34,63 +31,53 @@ const FALLBACK_CATEGORIES = [
   { id: 11, slug: 'clutch-body-parts',    label: 'Clutch & Body Parts',   icon: Disc,       desc: 'Clutch replacement & body repair',     fromPrice: 2499 },
 ];
 
-const TRUST_INDICATORS = [
-  { icon: Shield,      title: 'Certified Mechanics', desc: 'Factory-trained, background-verified technicians' },
-  { icon: CheckCircle, title: 'Genuine Parts',       desc: 'OEM and OES parts with authenticity guaranteed' },
-  { icon: Clock,       title: '12-Month Warranty',   desc: 'On every service and part we fit, no questions' },
-  { icon: Phone,       title: '24/7 Support',        desc: 'Roadside assistance and helpline round the clock' },
+const TRUST_TAGS = [
+  { icon: Shield,      title: 'Certified Mechanics' },
+  { icon: CheckCircle, title: 'Genuine Parts' },
+  { icon: Clock,       title: 'Affordable Pricing' },
+];
+
+const WHY_CHOOSE_US = [
+  { icon: CheckCircle, title: '100% Genuine Parts',    desc: 'OEM & OES certified parts with guaranteed authenticity.' },
+  { icon: Users,       title: 'Trained Technicians',    desc: 'Skilled, background-verified expert mechanics.' },
+  { icon: MapPin,      title: 'Doorstep Service',       desc: 'Free doorstep pickup & drop across our network.' },
+  { icon: Clock,       title: 'Transparent Pricing',    desc: 'Upfront fixed quotes with zero hidden charges.' },
+  { icon: Shield,      title: '12-Month Warranty',      desc: 'Comprehensive service & parts warranty, no questions.' },
 ];
 
 const STATS = [
-  { value: '10,000+', label: 'Cars Serviced',    icon: Car },
-  { value: '4.8/5',   label: 'Customer Rating',  icon: Star },
-  { value: '500+',    label: 'Expert Mechanics', icon: Users },
-  { value: '12 Mo',   label: 'Service Warranty', icon: Shield },
+  { value: '10,000+', label: 'Happy Customers',   icon: Car },
+  { value: '4.8/5',   label: 'Customer Ratings', icon: Star },
+  { value: '50+',     label: 'Expert Technicians',icon: Users },
+  { value: '100%',    label: 'Genuine Parts',    icon: Shield },
 ];
 
 const HOW_IT_WORKS = [
-  { step: '01', icon: Wrench,   title: 'Pick a Service',    desc: 'Browse every service category with upfront, transparent pricing.' },
-  { step: '02', icon: Calendar, title: 'Book Your Slot',    desc: 'Select a date, time and address that suits you.' },
-  { step: '03', icon: MapPin,   title: 'Free Pickup',       desc: 'We collect your car from your doorstep at no cost.' },
-  { step: '04', icon: CheckCircle, title: 'Service & Return',   desc: 'Track progress live and get your car back, ready to drive.' },
+  { step: '01', icon: Wrench,     title: 'Pick a Service',    desc: 'Select a service category with upfront, transparent pricing.' },
+  { step: '02', icon: Calendar,   title: 'Book Your Slot',    desc: 'Pick a convenient date, time and address that suits you.' },
+  { step: '03', icon: MapPin,     title: 'We Pickup',         desc: 'We collect your car from your doorstep at no extra cost.' },
+  { step: '04', icon: CheckCircle, title: 'Service & Return', desc: 'We service your car and deliver it back, ready to drive.' },
 ];
 
-/**
- * Placeholder testimonials — replace with real, attributable customer reviews
- * before this counts as social proof.
- *
- * The avatars are illustrations in client/public/testimonials/, deliberately not
- * photographs: a stock photo of a real person attached to a review they never
- * wrote presents a stranger as a GK Motors customer.
- */
-/**
- * How many service categories the home page shows before handing off to
- * /services. Every card is the same size, so this is a straight cap on the
- * grid — a thirteenth category added by an admin surfaces the "view all" link
- * rather than silently disappearing.
- */
 const HOME_CATEGORY_COUNT = 12;
-
-/** Products on the home shop strip — five across on a wide screen. */
 const HOME_PART_COUNT = 5;
 
 const TESTIMONIALS = [
-  { name: 'Rahul Sharma',  role: 'BMW 3 Series Owner',     review: 'Booked a periodic service and the pickup arrived exactly on time. Detailed report on WhatsApp, transparent bill, no upselling. Genuinely professional.', color: '#1E3A8A', img: '/testimonials/rahul-sharma.jpg' },
-  { name: 'Priya Patel',   role: 'Honda City Owner',       review: 'The doorstep car service is a life saver. Dedicated mechanic, genuine parts, and zero hassle. My car feels brand new again.', color: '#0F172A', img: '/testimonials/priya-patel.jpg' },
-  { name: 'Aman Singh',    role: 'Mercedes C-Class Owner', review: 'Denting and painting came back looking factory fresh. They matched the metallic finish perfectly and delivered a day early.', color: '#1E3A8A', img: '/testimonials/aman-singh.jpg' },
-  { name: 'Suresh Kumar',  role: 'Toyota Fortuner Owner',  review: 'AC stopped cooling right before a road trip. Got a same-day slot, gas recharge plus filter clean, sorted in three hours.', color: '#0F172A', img: '/testimonials/suresh-kumar.jpg' },
-  { name: 'Anjali Mehta',  role: 'Audi A4 Owner',          review: 'Booked my 50k km service online. Pickup and drop were exactly on time. Very professional automotive experience end to end.', color: '#1E3A8A', img: '/testimonials/anjali-mehta.jpg' },
+  { name: 'Rohit Sharma',  role: 'BMW 3 Series Owner',     review: 'Excellent service! They picked up my car on time and delivered after service. Highly professional team.', color: '#1E3A8A', img: '/testimonials/rahul-sharma.jpg' },
+  { name: 'Priya Mehta',   role: 'Honda City Owner',       review: 'AC service was done perfectly. My car is now cooling like new. Highly recommended!', color: '#0F172A', img: '/testimonials/priya-patel.jpg' },
+  { name: 'Arun Verma',    role: 'Audi A4 Owner',          review: 'Genuine parts and transparent pricing. Finally found a service center I can trust.', color: '#1E3A8A', img: '/testimonials/aman-singh.jpg' },
+  { name: 'Suresh Kumar',  role: 'Toyota Fortuner Owner',  review: 'Doorstep pickup and drop saved my day. Quick turn-around and great communication.', color: '#0F172A', img: '/testimonials/suresh-kumar.jpg' },
 ];
 
 export default function Home() {
   const [packages, setPackages] = useState([]);
   const [serviceCategories, setServiceCategories] = useState(FALLBACK_CATEGORIES);
   const [parts, setParts] = useState([]);
+  const [partsLoading, setPartsLoading] = useState(true);
+  const [partsError, setPartsError] = useState(false);
 
+  // Fetch service categories
   useEffect(() => {
-    // Packages (for the "from" price) and the category list itself. The list is
-    // admin-managed, so a newly created category has to appear here too — the
-    // hardcoded array above is only the pre-load / offline fallback.
     Promise.all([
       getServiceCategories(),
       getCategories().catch(() => ({ data: { categories: [] } })),
@@ -115,11 +102,12 @@ export default function Home() {
         }
       })
       .catch((err) => console.error('[Home.getServiceCategories]', err));
+  }, []);
 
-    // Shop strip. Featured products first; if the admin has not flagged any,
-    // fall back to the newest real products rather than rendering nothing —
-    // both come from the database, neither is a placeholder. If the store is
-    // genuinely empty the section does not render at all.
+  // Fetch parts independently (non-blocking for the rest of the homepage)
+  const fetchParts = () => {
+    setPartsLoading(true);
+    setPartsError(false);
     getFeaturedParts()
       .then(({ data }) => {
         const featured = data.parts || [];
@@ -134,13 +122,23 @@ export default function Home() {
           })
           .catch(() => featured);
       })
-      .then((list) => setParts(list.slice(0, HOME_PART_COUNT)))
-      .catch((err) => console.error('[Home.loadShopStrip]', err));
+      .then((list) => {
+        setParts(list.slice(0, HOME_PART_COUNT));
+      })
+      .catch((err) => {
+        console.error('[Home.loadShopStrip]', err);
+        setPartsError(true);
+      })
+      .finally(() => {
+        setPartsLoading(false);
+      });
+  };
 
+  useEffect(() => {
+    fetchParts();
   }, []);
 
-  // Show each category's cheapest live package as its "from" price.
-  // Falls back to cat.fromPrice so cards always display clean pricing.
+  // Compute category "from" price
   const categories = serviceCategories.map((cat) => {
     const inCategory = packages.filter((p) => p.categoryId === cat.id);
     const image = cat.apiImage;
@@ -149,32 +147,29 @@ export default function Home() {
     return { ...cat, image, price: `From ₹${Number(cheapest).toLocaleString('en-IN')}` };
   });
 
-  // How many categories the home page actually renders. Used to decide
-  // whether the "view all" link still has anything left to show.
   const shownCount = Math.min(categories.length, HOME_CATEGORY_COUNT);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF', width: '100%', maxWidth: '100%', overflowX: 'hidden', position: 'relative' }}>
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', width: '100%', maxWidth: '100%', position: 'relative' }}>
       <style>{`
-        /* ── Hero: ambient depth ─────────────────────────────────────────── */
+        /* ── Hero & Automotive Styling ─────────────────────────────────────── */
         .gk-glow { position: absolute; pointer-events: none; border-radius: 50%; }
         .gk-glow-a {
           top: -25%; right: -12%; width: 720px; height: 720px;
-          background: radial-gradient(circle, rgba(59,130,246,0.20) 0%, transparent 68%);
+          background: radial-gradient(circle, rgba(37,99,235,0.22) 0%, transparent 68%);
           animation: gk-drift 18s ease-in-out infinite;
         }
         .gk-glow-b {
           bottom: -30%; left: -12%; width: 560px; height: 560px;
-          background: radial-gradient(circle, rgba(147,197,253,0.10) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(147,197,253,0.12) 0%, transparent 70%);
           animation: gk-drift 22s ease-in-out infinite reverse;
         }
         @keyframes gk-drift {
           0%,100% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
           50%     { transform: translate3d(-26px,22px,0) scale(1.07); opacity: 0.78; }
         }
-        /* Faint engineering grid — masked so it fades out before the edges. */
         .gk-grid-overlay {
-          position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+          position: absolute; inset: 0; pointer-events: none; opacity: 0.45;
           background-image:
             linear-gradient(rgba(148,163,184,0.055) 1px, transparent 1px),
             linear-gradient(90deg, rgba(148,163,184,0.055) 1px, transparent 1px);
@@ -183,478 +178,517 @@ export default function Home() {
                   mask-image: radial-gradient(ellipse 75% 65% at 50% 42%, #000 35%, transparent 100%);
         }
 
-        /* ── Entrance: one keyframe, staggered by class ──────────────────── */
-        .gk-rise { opacity: 0; animation: gk-rise-in 0.72s cubic-bezier(0.22,0.8,0.28,1) forwards; }
-        .gk-d1 { animation-delay: 0.05s; }
-        .gk-d2 { animation-delay: 0.16s; }
-        .gk-d3 { animation-delay: 0.27s; }
-        .gk-d4 { animation-delay: 0.38s; }
-        .gk-d5 { animation-delay: 0.52s; }
-        @keyframes gk-rise-in {
-          from { opacity: 0; transform: translate3d(0,20px,0); }
-          to   { opacity: 1; transform: none; }
-        }
-
-        /* Sweep across the accent word, then rest. */
+        /* Hero Text Shimmer */
         .gk-shimmer {
-          background: linear-gradient(100deg, #93C5FD 0%, #E0EDFF 42%, #93C5FD 76%);
+          background: linear-gradient(100deg, #60A5FA 0%, #E0EDFF 45%, #3B82F6 80%);
           background-size: 220% 100%;
           -webkit-background-clip: text; background-clip: text;
           -webkit-text-fill-color: transparent; color: transparent;
-          animation: gk-sweep 6.5s ease-in-out 1.1s infinite;
+          animation: gk-sweep 6.5s ease-in-out infinite;
         }
         @keyframes gk-sweep {
           0%,72%,100% { background-position: 130% 0; }
           22%         { background-position: -30% 0; }
         }
 
-        /* ── Hero car: slides in, then breathes ──────────────────────────── */
+        /* Hero Car Animation */
         .gk-car {
           opacity: 0;
-          filter: drop-shadow(0 34px 58px rgba(0,0,0,0.6));
+          filter: drop-shadow(0 30px 50px rgba(0,0,0,0.55));
           animation:
-            gk-car-in 1s cubic-bezier(0.2,0.75,0.3,1) 0.3s forwards,
-            gk-float 7s ease-in-out 1.4s infinite;
+            gk-car-in 1s cubic-bezier(0.2,0.75,0.3,1) 0.2s forwards,
+            gk-float 7s ease-in-out 1.2s infinite;
         }
         @keyframes gk-car-in {
-          from { opacity: 0; transform: translate3d(46px,0,0) scale(0.965); }
+          from { opacity: 0; transform: translate3d(40px,0,0) scale(0.97); }
           to   { opacity: 1; transform: none; }
         }
         @keyframes gk-float {
           0%,100% { transform: translate3d(0,0,0); }
-          50%     { transform: translate3d(0,-11px,0); }
-        }
-        /* Soft pool of light the car sits on. */
-        .gk-car-pad {
-          position: absolute; width: 74%; height: 58%; border-radius: 50%;
-          background: radial-gradient(ellipse, rgba(59,130,246,0.19) 0%, transparent 68%);
-          filter: blur(26px);
-          animation: gk-pulse 7s ease-in-out infinite;
-        }
-        @keyframes gk-pulse {
-          0%,100% { opacity: 0.75; transform: scale(1); }
-          50%     { opacity: 1;    transform: scale(1.06); }
+          50%     { transform: translate3d(0,-10px,0); }
         }
 
-        .gk-cta-primary, .gk-cta-ghost { transition: transform .25s, box-shadow .25s, background .25s, border-color .25s; }
-        .gk-cta-primary { box-shadow: 0 4px 20px rgba(0,0,0,0.28); }
-        .gk-cta-primary:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.38); }
-        .gk-cta-ghost:hover { border-color: #FFF; background: rgba(255,255,255,0.09); transform: translateY(-2px); }
-
-        /* Motion is decoration here — hold the final frame for anyone who
-           has asked their system to reduce it. */
-        @media (prefers-reduced-motion: reduce) {
-          .gk-rise, .gk-car { opacity: 1 !important; animation: none !important; transform: none !important; }
-          .gk-glow-a, .gk-glow-b, .gk-car-pad { animation: none !important; }
-          .gk-shimmer {
-            animation: none !important; -webkit-text-fill-color: #93C5FD !important; color: #93C5FD !important;
-          }
+        /* Booking Card responsive layout */
+        .gk-booking-card {
+          background: #FFFFFF;
+          border: 1px solid #E2E8F0;
+          border-radius: 18px;
+          box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+          padding: 1.5rem 2rem;
+          margin-top: -2.5rem;
+          position: relative;
+          z-index: 10;
         }
 
-        @media (max-width: 900px) {
-          .gk-glow-a, .gk-glow-b { display: none !important; }
-          .gk-svc-car, .gk-svc-streaks { display: none !important; }
+        .gk-parts-grid {
+          display: grid; width: 100%;
+          grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+          gap: 1.1rem; align-items: stretch;
+        }
+        @media (max-width: 640px) {
+          .gk-parts-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
         }
 
-        @media (max-width: 768px) {
-          .gk-hero { padding: 2.25rem 0 2.5rem !important; min-height: auto !important; display: block !important; overflow: hidden !important; width: 100% !important; max-width: 100% !important; }
-          .gk-hero h1 { font-size: 1.75rem !important; }
-          .gk-hero-sub { font-size: 0.85rem !important; }
-          .gk-hero-img { display: none !important; }
-          .gk-hero-grid { grid-template-columns: 1fr !important; gap: 1.75rem !important; width: 100% !important; }
-          .gk-cta-row { flex-direction: column !important; align-items: stretch !important; gap: 0.75rem !important; }
-          .gk-cta-row > a { justify-content: center !important; }
-          .gk-trust-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
-          .gk-section { padding: 2.25rem 0 !important; width: 100% !important; max-width: 100% !important; overflow: hidden !important; }
-          .gk-section h2 { font-size: 1.65rem !important; }
-          .gk-sec-head { margin-bottom: 1.3rem !important; }
-          .gk-steps-grid { grid-template-columns: 1fr !important; }
-          .gk-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .testimonial-section { padding: 2.5rem 0 !important; width: 100% !important; max-width: 100% !important; overflow: hidden !important; }
-          .testimonial-section h2 { font-size: 1.65rem !important; }
-          .testimonial-track { gap: 2rem; padding: 1.5rem 0; }
-        }
         .gk-svc-all {
           display: inline-flex; align-items: center; gap: .5rem;
-          margin: 2.1rem auto 0; padding: .85rem 1.9rem;
-          background: #1D4ED8; color: #FFFFFF; border-radius: 10px;
+          margin: 2.2rem auto 0; padding: .85rem 2rem;
+          background: #1D4ED8; color: #FFFFFF; border-radius: 999px;
           text-decoration: none; font-weight: 800; font-size: .88rem;
           letter-spacing: .02em; white-space: nowrap;
           box-shadow: 0 10px 24px rgba(29, 78, 216, .24);
           transition: transform .25s, box-shadow .25s;
         }
-        .gk-svc-all:hover { transform: translateY(-3px); box-shadow: 0 16px 30px rgba(29,78,216,.3); }
+        .gk-svc-all:hover { transform: translateY(-3px); box-shadow: 0 16px 30px rgba(29,78,216,.32); }
 
-        /* ── Shop Car Essentials ──────────────────────────────────────────
-           auto-fill with a min() floor: the track can never demand more than
-           the container's own width, which is what stops a five-across strip
-           from forcing a horizontal scrollbar on a 320px phone. */
-        .gk-parts-grid {
-          display: grid; width: 100%;
-          grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
-          gap: 0.9rem; align-items: stretch;
-        }
-        .gk-shop-head {
-          display: flex; flex-wrap: wrap; gap: 1rem;
-          align-items: flex-end; justify-content: space-between; margin-bottom: 1.6rem;
-        }
         .gk-shop-all {
           display: inline-flex; align-items: center; gap: .45rem;
-          background: #1E3A8A; color: #FFFFFF; padding: .7rem 1.4rem; min-height: 44px;
+          background: #1E3A8A; color: #FFFFFF; padding: .65rem 1.4rem; min-height: 42px;
           border-radius: 10px; text-decoration: none; font-weight: 800; font-size: .82rem;
           white-space: nowrap; box-shadow: 0 8px 20px rgba(30,58,138,.22);
           transition: transform .2s, box-shadow .2s;
         }
         .gk-shop-all:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(30,58,138,.28); }
 
-        /* Decoration: diagonal light streaks behind the heading, fading left. */
-        .gk-svc-streaks {
-          position: absolute; top: -10%; right: -6%; width: 58%; height: 120%;
-          pointer-events: none; opacity: 0.9;
-          background: repeating-linear-gradient(115deg,
-            rgba(255,255,255,0) 0px, rgba(255,255,255,0) 26px,
-            rgba(255,255,255,0.85) 26px, rgba(255,255,255,0.85) 62px);
-          -webkit-mask-image: linear-gradient(to left, #000 20%, transparent 95%);
-          mask-image: linear-gradient(to left, #000 20%, transparent 95%);
-        }
-        .gk-svc-car {
-          position: absolute; top: -14%; right: 1%; width: 430px;
-          pointer-events: none; opacity: 0.20;
-          filter: grayscale(1) brightness(1.55) contrast(0.55);
-          -webkit-mask-image: linear-gradient(to bottom, #000 48%, transparent 86%);
-          mask-image: linear-gradient(to bottom, #000 48%, transparent 86%);
+        @media (max-width: 900px) {
+          .gk-hero-img { display: none !important; }
         }
 
-        @media (max-width: 900px)  { .gk-svc-car { width: 300px; opacity: 0.13; } }
-        @media (max-width: 640px)  { .gk-svc-car, .gk-svc-streaks { display: none; } }
-        @media (max-width: 640px) {
-          /* Two product cards across on a phone — readable, and eight of them
-             cost less scrolling than five full-width ones. */
-          .gk-parts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
-          .gk-shop { padding: 2.5rem 0 !important; }
-          .gk-shop-head { margin-bottom: 1.1rem; }
-          .gk-shop-head h2 { font-size: 1.65rem !important; }
-          .gk-shop-all { width: 100%; justify-content: center; }
-        }
-        @media (max-width: 520px) {
-          .gk-svc-all { width: 100%; justify-content: center; }
+        @media (max-width: 768px) {
+          .gk-hero { padding: 3rem 0 3.5rem !important; min-height: auto !important; }
+          .gk-hero h1 { font-size: 2rem !important; }
+          .gk-booking-card { margin-top: 1.5rem !important; padding: 1.25rem !important; }
+          .gk-parts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.75rem !important; }
         }
 
+        @media (max-width: 375px) {
+          .gk-parts-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
-      {/* ════════════════════ HERO ════════════════════ */}
+      {/* ════════════════════ 1. HERO SECTION ════════════════════ */}
       <section
         className="gk-hero"
         style={{
           position: 'relative', overflow: 'hidden',
-          background: '#131B31',
-          padding: '4.5rem 0 3rem',
-          minHeight: '94vh',
+          background: 'linear-gradient(180deg, #0F172A 0%, #131B31 100%)',
+          padding: '4.5rem 0 5.5rem',
+          minHeight: '85vh',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
         }}
       >
-        {/* Depth: a broad cool wash top-right, a cooler one bottom-left, and a
-            fine grid — all behind the content and non-interactive. */}
         <div className="gk-glow gk-glow-a" />
         <div className="gk-glow gk-glow-b" />
         <div className="gk-grid-overlay" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2, width: '100%' }}>
-          <div className="gk-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', alignItems: 'center', width: '100%' }}>
-            {/* LEFT */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '2.5rem', alignItems: 'center', width: '100%' }}>
+            {/* LEFT TEXT CONTENT */}
             <div>
-              <h1 className="gk-rise gk-d1" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(2.1rem, 4.8vw, 3.7rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.06, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
-                Professional Car<br />Service &amp; <span className="gk-shimmer">Repair</span>
-              </h1>
-
-              <p className="gk-hero-sub gk-rise gk-d2" style={{ color: '#94A3B8', fontSize: '0.95rem', fontWeight: 500, lineHeight: 1.7, maxWidth: '450px', marginBottom: '1.8rem' }}>
-                Expert technicians, genuine parts, doorstep service. Book online in under two
-                minutes and track your car every step of the way.
+              <p style={{ color: '#93C5FD', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '0.8rem' }}>
+                PREMIUM CAR CARE
               </p>
 
-              <div className="gk-cta-row gk-rise gk-d3" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '2rem' }}>
-                <Link to="/services" className="gk-cta-primary"
+              <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.08, letterSpacing: '-0.02em', marginBottom: '1.1rem' }}>
+                Professional<br />
+                <span className="gk-shimmer">Car Service &amp; Repair</span>
+              </h1>
+
+              <p style={{ color: '#94A3B8', fontSize: '0.96rem', fontWeight: 500, lineHeight: 1.7, maxWidth: '480px', marginBottom: '2rem' }}>
+                Expert technicians, genuine parts, doorstep service. We ensure a safe ride for you
+                and your loved ones. Book online in under 2 minutes.
+              </p>
+
+              {/* CTAs */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.85rem', marginBottom: '2.2rem' }}>
+                <Link
+                  to="/services"
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-                    background: '#FFFFFF', color: '#0F172A',
-                    padding: '0.75rem 1.9rem', borderRadius: '8px', textDecoration: 'none',
-                    fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.85rem',
+                    background: '#2563EB', color: '#FFFFFF',
+                    padding: '0.85rem 2.1rem', borderRadius: '10px', textDecoration: 'none',
+                    fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.9rem',
                     letterSpacing: '0.06em', textTransform: 'uppercase',
-                  }}>
+                    boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)', transition: 'all 0.25s',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.background = '#1D4ED8'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#2563EB'; }}
+                >
                   <Wrench size={16} /> Book Service Now
                 </Link>
 
-                <a href="#services" className="gk-cta-ghost"
+                <a
+                  href="#services"
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-                    background: 'transparent', color: '#FFFFFF',
-                    padding: '0.75rem 1.9rem', borderRadius: '8px', textDecoration: 'none',
-                    border: '1.5px solid rgba(255,255,255,0.2)',
-                    fontFamily: 'Rajdhani, sans-serif', fontWeight: 700, fontSize: '0.85rem',
-                    letterSpacing: '0.06em', textTransform: 'uppercase',
-                  }}>
-                  View Services <ArrowRight size={16} />
+                    background: 'rgba(255,255,255,0.05)', color: '#FFFFFF',
+                    padding: '0.85rem 2.1rem', borderRadius: '10px', textDecoration: 'none',
+                    border: '1.5px solid rgba(255,255,255,0.25)',
+                    fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: '0.9rem',
+                    letterSpacing: '0.06em', textTransform: 'uppercase', transition: 'all 0.25s',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#FFFFFF'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                >
+                  View All Services <ArrowRight size={16} />
                 </a>
               </div>
 
-              {/* Trust indicators */}
-              <div className="gk-trust-grid gk-rise gk-d4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-                {TRUST_INDICATORS.map(({ icon: Icon, title }) => (
-                  <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <div style={{ width: 28, height: 28, borderRadius: '8px', background: 'rgba(147, 197, 253, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {/* Trust Tags */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.2rem', alignItems: 'center', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                {TRUST_TAGS.map(({ icon: Icon, title }) => (
+                  <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                    <div style={{ width: 24, height: 24, borderRadius: '6px', background: 'rgba(147, 197, 253, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Icon size={13} style={{ color: '#93C5FD' }} />
                     </div>
-                    <span style={{ color: '#E2E8F0', fontSize: '0.72rem', fontWeight: 700, lineHeight: 1.25 }}>{title}</span>
+                    <span style={{ color: '#E2E8F0', fontSize: '0.78rem', fontWeight: 700 }}>{title}</span>
                   </div>
                 ))}
               </div>
+
+              {/* Social Proof */}
+              <div style={{ marginTop: '1.4rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <span style={{ color: '#94A3B8', fontSize: '0.8rem', fontWeight: 600 }}>Trusted by 10,000+ Car Owners</span>
+                <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                  {[...Array(5)].map((_, i) => <Star key={i} size={13} fill="#F59E0B" color="#F59E0B" />)}
+                  <span style={{ color: '#FFFFFF', fontSize: '0.8rem', fontWeight: 800, marginLeft: '0.3rem' }}>4.8/5 Rating</span>
+                </div>
+              </div>
             </div>
 
-            {/* RIGHT — hero car */}
+            {/* RIGHT — GT3 HERO CAR */}
             <div className="gk-hero-img" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div className="gk-car-pad" />
+              <div style={{ position: 'absolute', width: '80%', height: '60%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(37,99,235,0.24) 0%, transparent 70%)', filter: 'blur(30px)' }} />
               <img
                 className="gk-car"
                 src={heroCar}
                 alt="Car undergoing professional service at GK Motors"
-                style={{ width: '100%', maxWidth: '700px', objectFit: 'contain', position: 'relative', zIndex: 1 }}
+                style={{ width: '100%', maxWidth: '680px', objectFit: 'contain', position: 'relative', zIndex: 1 }}
               />
             </div>
           </div>
-
         </div>
       </section>
 
-      {/* ════════════════════ SERVICE CATEGORIES ════════════════════ */}
-      <section
-        id="services"
-        className="gk-section"
-        style={{
-          position: 'relative', overflow: 'hidden', padding: '3.5rem 0 4rem',
-          background: 'linear-gradient(135deg, #EEF3FF 0%, #F5F8FF 42%, #FFFFFF 100%)',
-        }}
-      >
-        {/* Decoration only — aria-hidden so a screen reader skips straight to
-            the heading rather than announcing a stray image. */}
-        <div className="gk-svc-streaks" aria-hidden="true" />
-        <img className="gk-svc-car" src="/car.png" alt="" aria-hidden="true" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative' }}>
-          <div className="gk-sec-head" style={{ marginBottom: '2.4rem' }}>
-            <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>What We Do</p>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.5rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.02, letterSpacing: '-0.01em', margin: 0 }}>
-              Our <span style={{ color: '#2563EB' }}>Services</span>
-            </h2>
-            <p style={{ color: '#64748B', fontSize: '0.87rem', fontWeight: 500, lineHeight: 1.6, maxWidth: '390px', margin: '0.7rem 0 0' }}>
-              {categories.length} categories covering everything your car needs — each with upfront pricing and free pickup and drop.
-            </p>
-            <div style={{ width: 56, height: 4, background: '#2563EB', margin: '1.1rem 0 0', borderRadius: '3px' }} />
+      {/* ════════════════════ 2. BOOKING STEPS BAR ════════════════════ */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="gk-booking-card">
+          <div style={{ marginBottom: '1.2rem' }}>
+            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.35rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+              Book Your Service in 3 Easy Steps
+            </h3>
           </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', alignItems: 'center' }}>
+            {/* Step 1 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', background: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Wrench size={20} style={{ color: '#2563EB' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>STEP 1</div>
+                <div style={{ fontSize: '0.9rem', color: '#0F172A', fontWeight: 800 }}>Select Service</div>
+                <div style={{ fontSize: '0.76rem', color: '#64748B' }}>Choose your service</div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', background: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Calendar size={20} style={{ color: '#2563EB' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>STEP 2</div>
+                <div style={{ fontSize: '0.9rem', color: '#0F172A', fontWeight: 800 }}>Select Date &amp; Time</div>
+                <div style={{ fontSize: '0.76rem', color: '#64748B' }}>Pick convenient slot</div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', background: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <CheckCircle size={20} style={{ color: '#2563EB' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>STEP 3</div>
+                <div style={{ fontSize: '0.9rem', color: '#0F172A', fontWeight: 800 }}>Confirm Booking</div>
+                <div style={{ fontSize: '0.76rem', color: '#64748B' }}>We'll take care of the rest</div>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div>
+              <Link
+                to="/services"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                  background: '#2563EB', color: '#FFFFFF', padding: '0.9rem 1.4rem', borderRadius: '12px',
+                  textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.88rem',
+                  letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
+                  boxShadow: '0 6px 18px rgba(37, 99, 235, 0.3)'
+                }}
+              >
+                Book Service Now <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════════════ 3. SERVICES SECTION ════════════════════ */}
+      <section
+        id="services"
+        style={{ position: 'relative', overflow: 'hidden', padding: '4rem 0 4.5rem', background: '#FFFFFF' }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
+              WHAT WE OFFER
+            </p>
+            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.5rem', fontWeight: 900, color: '#0F172A', lineHeight: 1, margin: 0 }}>
+              Our <span style={{ color: '#2563EB' }}>Services</span>
+            </h2>
+            <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: 500, lineHeight: 1.6, maxWidth: '480px', margin: '0.7rem auto 0' }}>
+              Tailored car care solutions — everything your car needs with upfront pricing and doorstep pickup.
+            </p>
+            <div style={{ width: 56, height: 4, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '3px' }} />
+          </div>
+
+          {/* Strict Equal-Sized Cards Grid */}
           <ServiceCategoryGrid categories={categories} limit={HOME_CATEGORY_COUNT} />
 
           {categories.length > shownCount && (
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Link to="/services" className="gk-svc-all">
-                View all {categories.length} services <ArrowRight size={16} />
+                View All Services <ArrowRight size={16} />
               </Link>
             </div>
           )}
         </div>
       </section>
 
-      {/* ════════════════════ SHOP CAR ESSENTIALS ════════════════════ */}
-      {parts.length > 0 && (
-        <section className="gk-section gk-shop" style={{ background: '#F8FAFC', padding: '3.5rem 0' }}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="gk-shop-head">
-              <div style={{ minWidth: 0 }}>
-                <p style={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>GK Motors Spares</p>
-                <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.05, margin: 0 }}>
-                  Shop Car <span style={{ color: '#1E3A8A' }}>Essentials</span>
-                </h2>
-                <p style={{ color: '#64748B', fontSize: '0.85rem', fontWeight: 500, margin: '0.55rem 0 0', maxWidth: '420px' }}>
-                  Genuine oils, filters, batteries and accessories — delivered, or fitted at your service.
-                </p>
-              </div>
-              <Link to="/parts" className="gk-shop-all">
+      {/* ════════════════════ 4. SHOP CAR ESSENTIALS (moved here, after Services) ════════════════════ */}
+      <section style={{ background: '#F8FAFC', padding: '4rem 0', borderTop: '1px solid #E2E8F0' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem' }}>
+            <div>
+              <p style={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
+                GENUINE SPARES
+              </p>
+              <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+                Shop Car <span style={{ color: '#1E3A8A' }}>Essentials</span>
+              </h2>
+              <p style={{ color: '#64748B', fontSize: '0.88rem', fontWeight: 500, margin: '0.4rem 0 0', maxWidth: '440px' }}>
+                Genuine oils, filters, batteries and accessories — delivered or fitted during your service.
+              </p>
+            </div>
+            <Link to="/parts" className="gk-shop-all">
+              View All Products <ArrowRight size={15} />
+            </Link>
+          </div>
+
+          {/* Loading State: 5 Skeleton cards */}
+          {partsLoading ? (
+            <div className="gk-parts-grid">
+              {[...Array(HOME_PART_COUNT)].map((_, i) => (
+                <PartCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : partsError ? (
+            /* Error State */
+            <div style={{ background: '#FFF', border: '1px solid #FEE2E2', borderRadius: '16px', padding: '2.5rem', textAlign: 'center' }}>
+              <AlertCircle size={36} style={{ color: '#EF4444', margin: '0 auto 0.75rem' }} />
+              <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>Unable to load products</h3>
+              <p style={{ color: '#64748B', fontSize: '0.85rem', margin: '0.4rem 0 1.2rem' }}>Something went wrong while fetching car essentials.</p>
+              <button
+                onClick={fetchParts}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+                  background: '#1E3A8A', color: 'white', border: 'none', borderRadius: '8px',
+                  padding: '0.6rem 1.4rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem',
+                  fontFamily: 'Rajdhani, sans-serif'
+                }}
+              >
+                <RefreshCw size={14} /> Try Again
+              </button>
+            </div>
+          ) : parts.length === 0 ? (
+            /* Empty State */
+            <div style={{ background: '#FFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '2.5rem', textAlign: 'center' }}>
+              <p style={{ fontSize: '2.5rem', margin: '0 0 0.5rem' }}>📦</p>
+              <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>No products available</h3>
+              <p style={{ color: '#64748B', fontSize: '0.85rem', margin: '0.4rem 0 1.2rem' }}>Check back soon for new genuine car spares and accessories.</p>
+              <Link to="/parts" className="gk-shop-all" style={{ margin: '0 auto' }}>
                 View All Products <ArrowRight size={15} />
               </Link>
             </div>
-
+          ) : (
+            /* Success State */
             <div className="gk-parts-grid">
-              {parts.map((part) => <PartCard key={part._id} part={part} />)}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ════════════════════ HOW IT WORKS ════════════════════ */}
-      <section className="gk-section" style={{ background: '#FFFFFF', padding: '4rem 0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div style={{ textAlign: 'center', marginBottom: '2.25rem' }}>
-            <p style={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.7rem' }}>Simple Process</p>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.05 }}>
-              How It <span style={{ color: '#1E3A8A' }}>Works</span>
-            </h2>
-            <div style={{ width: 50, height: 3, background: '#1E3A8A', margin: '1.1rem auto 0', borderRadius: '2px' }} />
-          </div>
-
-          <div className="gk-steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(185px, 1fr))', gap: '0.85rem' }}>
-            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
-              <div key={step} style={{ position: 'relative', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '1.3rem 1.1rem', overflow: 'hidden' }}>
-                <span style={{ position: 'absolute', top: '0.35rem', right: '0.7rem', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.6rem', fontWeight: 950, color: 'rgba(30, 58, 138, 0.06)', lineHeight: 1 }}>{step}</span>
-                <div style={{ width: 40, height: 40, borderRadius: '11px', background: '#FFFFFF', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.75rem', position: 'relative' }}>
-                  <Icon size={18} style={{ color: '#1E3A8A' }} />
-                </div>
-                <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.35rem' }}>{title}</h3>
-                <p style={{ color: '#64748B', fontSize: '0.76rem', lineHeight: 1.55, fontWeight: 500 }}>{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════ STATS ════════════════════ */}
-      <section style={{ background: '#131B31', borderTop: '1px solid rgba(148,163,184,0.10)', borderBottom: '1px solid rgba(148,163,184,0.10)', padding: '2.75rem 0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="gk-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.2rem' }}>
-            {STATS.map(({ value, label, icon: Icon }) => (
-              <div key={label} style={{ textAlign: 'center' }}>
-                <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(147, 197, 253, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.6rem' }}>
-                  <Icon size={16} style={{ color: '#93C5FD' }} />
-                </div>
-                <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.75rem', fontWeight: 900, color: '#FFFFFF', lineHeight: 1, letterSpacing: '-0.02em' }}>{value}</div>
-                <div style={{ color: '#94A3B8', fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.35rem' }}>{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════ WHY GK MOTORS ════════════════════ */}
-      <section className="gk-section" style={{ background: '#FFFFFF', padding: '4rem 0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div style={{ textAlign: 'center', marginBottom: '2.25rem' }}>
-            <p style={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.7rem' }}>Why Us</p>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.05 }}>
-              Why <span style={{ color: '#1E3A8A' }}>GK Motors?</span>
-            </h2>
-            <div style={{ width: 50, height: 3, background: '#1E3A8A', margin: '1.1rem auto 0', borderRadius: '2px' }} />
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(185px, 1fr))', gap: '0.85rem' }}>
-            {TRUST_INDICATORS.map(({ icon: Icon, title, desc }) => (
-              <div key={title} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '1.3rem 1.1rem', textAlign: 'center' }}>
-                <div style={{ width: 42, height: 42, borderRadius: '12px', background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.8rem' }}>
-                  <Icon size={19} style={{ color: '#FFFFFF' }} />
-                </div>
-                <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.4rem' }}>{title}</h3>
-                <p style={{ color: '#64748B', fontSize: '0.76rem', lineHeight: 1.55, fontWeight: 500 }}>{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════ TESTIMONIALS ════════════════════ */}
-      <section className="testimonial-section" style={{ background: '#F8FAFC', padding: '4rem 0', overflow: 'hidden' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <p style={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.7rem' }}>Testimonials</p>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1 }}>
-              What Our <span style={{ color: '#1E3A8A' }}>Clients</span> Say
-            </h2>
-            <div style={{ width: 50, height: 3, background: '#1E3A8A', margin: '1.1rem auto 0', borderRadius: '2px' }} />
-          </div>
-
-          <style>{`
-            .testimonial-track {
-              display: flex;
-              gap: 4rem;
-              width: max-content;
-              animation: slide-testimonials 35s linear infinite;
-              padding: 2.5rem 0;
-            }
-            .testimonial-track:hover { animation-play-state: paused; }
-            @keyframes slide-testimonials {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(calc(-380px * 5 - 20rem)); }
-            }
-          `}</style>
-
-          <div style={{ overflow: 'hidden', width: '100%', maxWidth: '100%', position: 'relative' }}>
-            <div className="testimonial-track">
-              {[...TESTIMONIALS, ...TESTIMONIALS.slice(0, 2)].map((item, i) => (
-                <div key={i} style={{ position: 'relative', width: '380px', flexShrink: 0 }}>
-                  <div style={{
-                    position: 'absolute', left: '-45px', top: '50%', transform: 'translateY(-50%)',
-                    width: '90px', height: '90px', borderRadius: '50%',
-                    border: `4px solid ${item.color}`, overflow: 'hidden', background: '#fff',
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.15)', zIndex: 2
-                  }}>
-                    <img src={item.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={item.name} />
-                  </div>
-                  <div style={{
-                    background: '#fff', padding: '2.5rem 2rem 2.5rem 3.5rem', borderRadius: '24px',
-                    border: '1px solid #E2E8F0', boxShadow: '0 15px 35px rgba(0,0,0,0.05)', position: 'relative'
-                  }}>
-                    <div style={{ position: 'absolute', top: '15px', right: '25px', color: '#E2E8F0', fontSize: '4rem', fontFamily: 'serif', lineHeight: 1, opacity: 0.6 }}>"</div>
-                    <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: '1.4rem', color: '#0F172A', marginBottom: '0.2rem' }}>{item.name}</h3>
-                    <p style={{ fontSize: '0.8rem', color: '#1E3A8A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.2rem' }}>{item.role}</p>
-                    <div style={{ display: 'flex', gap: '2px', marginBottom: '1.2rem' }}>
-                      {[...Array(5)].map((_, j) => <Star key={j} size={12} fill="#FFB400" color="#FFB400" />)}
-                    </div>
-                    <p style={{ color: '#475569', fontSize: '0.92rem', lineHeight: 1.6, fontStyle: 'italic' }}>"{item.review}"</p>
-                  </div>
-                </div>
+              {parts.map((part) => (
+                <PartCard key={part._id} part={part} />
               ))}
             </div>
+          )}
+        </div>
+      </section>
+
+      {/* ════════════════════ 5. WHY CHOOSE GK MOTORS ════════════════════ */}
+      <section style={{ background: '#F8FAFC', padding: '4rem 0', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
+              WHY CHOOSE US
+            </p>
+            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+              Why Choose <span style={{ color: '#2563EB' }}>GK Motors?</span>
+            </h2>
+            <div style={{ width: 52, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.1rem' }}>
+            {WHY_CHOOSE_US.map(({ icon: Icon, title, desc }) => (
+              <div key={title} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1.5rem 1.25rem', textAlign: 'center', boxShadow: '0 6px 18px rgba(15, 23, 42, 0.04)' }}>
+                <div style={{ width: 46, height: 46, borderRadius: '14px', background: 'linear-gradient(135deg, #2563EB 0%, #1E3A8A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.9rem', boxShadow: '0 6px 16px rgba(37, 99, 235, 0.25)' }}>
+                  <Icon size={21} style={{ color: '#FFFFFF' }} />
+                </div>
+                <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.45rem' }}>{title}</h3>
+                <p style={{ color: '#64748B', fontSize: '0.78rem', lineHeight: 1.55, fontWeight: 500, margin: 0 }}>{desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ════════════════════ CTA BANNER ════════════════════ */}
-      <section style={{ position: 'relative', background: '#131B31', padding: '3.5rem 0', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '-40%', right: '5%', width: '480px', height: '480px', background: 'radial-gradient(circle, rgba(147,197,253,0.16) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      {/* ════════════════════ 6. HOW IT WORKS ════════════════════ */}
+      <section id="how-it-works" style={{ background: '#FFFFFF', padding: '4.5rem 0' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
+              SIMPLE PROCESS
+            </p>
+            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+              How It <span style={{ color: '#2563EB' }}>Works</span>
+            </h2>
+            <div style={{ width: 50, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.1rem' }}>
+            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
+              <div key={step} style={{ position: 'relative', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1.5rem 1.25rem', overflow: 'hidden' }}>
+                <span style={{ position: 'absolute', top: '0.3rem', right: '0.8rem', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.8rem', fontWeight: 950, color: 'rgba(37, 99, 235, 0.08)', lineHeight: 1 }}>{step}</span>
+                <div style={{ width: 44, height: 44, borderRadius: '12px', background: '#FFFFFF', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.9rem', position: 'relative' }}>
+                  <Icon size={20} style={{ color: '#2563EB' }} />
+                </div>
+                <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.4rem' }}>{title}</h3>
+                <p style={{ color: '#64748B', fontSize: '0.78rem', lineHeight: 1.55, fontWeight: 500, margin: 0 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════ 7. STATS & TRUST SECTION ════════════════════ */}
+      <section style={{ background: 'linear-gradient(180deg, #0F172A 0%, #131B31 100%)', borderTop: '1px solid rgba(148,163,184,0.12)', borderBottom: '1px solid rgba(148,163,184,0.12)', padding: '3rem 0' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem' }}>
+            {STATS.map(({ value, label, icon: Icon }) => (
+              <div key={label} style={{ textAlign: 'center' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'rgba(147, 197, 253, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem' }}>
+                  <Icon size={18} style={{ color: '#93C5FD' }} />
+                </div>
+                <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.9rem', fontWeight: 900, color: '#FFFFFF', lineHeight: 1, letterSpacing: '-0.02em' }}>{value}</div>
+                <div style={{ color: '#94A3B8', fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.4rem' }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════ 8. TESTIMONIALS ════════════════════ */}
+      <section style={{ background: '#FFFFFF', padding: '4.5rem 0', overflow: 'hidden' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
+              WHAT OUR CUSTOMERS SAY
+            </p>
+            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+              Trusted by <span style={{ color: '#2563EB' }}>Thousands</span>
+            </h2>
+            <div style={{ width: 50, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
+            {TESTIMONIALS.map((item, i) => (
+              <div
+                key={i}
+                style={{
+                  background: '#F8FAFC', padding: '1.75rem 1.5rem', borderRadius: '18px',
+                  border: '1px solid #E2E8F0', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.03)',
+                  display: 'flex', flexDirection: 'column', position: 'relative'
+                }}
+              >
+                <div style={{ color: '#CBD5E1', fontSize: '3rem', fontFamily: 'serif', lineHeight: 0.8, marginBottom: '0.4rem' }}>"</div>
+                <p style={{ color: '#334155', fontSize: '0.88rem', lineHeight: 1.6, fontStyle: 'italic', flex: 1, marginBottom: '1.2rem' }}>
+                  "{item.review}"
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
+                  <img src={item.img} alt={item.name} style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${item.color}` }} />
+                  <div>
+                    <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: '1rem', color: '#0F172A', margin: 0 }}>{item.name}</h4>
+                    <p style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700, margin: '2px 0 0' }}>{item.role}</p>
+                  </div>
+                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px' }}>
+                    {[...Array(5)].map((_, j) => <Star key={j} size={11} fill="#F59E0B" color="#F59E0B" />)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════ 9. FINAL CTA BANNER ════════════════════ */}
+      <section style={{ position: 'relative', background: 'linear-gradient(180deg, #0F172A 0%, #131B31 100%)', padding: '4rem 0', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-40%', right: '5%', width: '480px', height: '480px', background: 'radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2, textAlign: 'center' }}>
-          <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(1.6rem, 4vw, 2.4rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.1, marginBottom: '0.8rem' }}>
-            Your car deserves better care
+          <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(1.8rem, 4.5vw, 2.7rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.1, marginBottom: '0.8rem' }}>
+            Give Your Car The Care It Deserves
           </h2>
-          <p style={{ color: '#94A3B8', fontSize: '0.9rem', fontWeight: 500, maxWidth: '520px', margin: '0 auto 1.6rem', lineHeight: 1.7 }}>
-            Book a service in under two minutes. Free pickup and drop, transparent pricing,
-            and a 12-month warranty on everything we touch.
+          <p style={{ color: '#94A3B8', fontSize: '0.92rem', fontWeight: 500, maxWidth: '540px', margin: '0 auto 1.8rem', lineHeight: 1.7 }}>
+            Book your service today and experience hassle-free car care at your doorstep. Transparent pricing, genuine parts, and a 12-month warranty.
           </p>
-          <div className="gk-cta-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
             <Link
               to="/services"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-                background: '#FFFFFF', color: '#0F172A', padding: '0.7rem 1.8rem',
-                borderRadius: '8px', textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif',
-                fontWeight: 900, fontSize: '0.85rem', letterSpacing: '0.06em', textTransform: 'uppercase',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.25)', transition: 'all 0.25s',
+                background: '#2563EB', color: '#FFFFFF', padding: '0.8rem 2rem',
+                borderRadius: '10px', textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif',
+                fontWeight: 900, fontSize: '0.88rem', letterSpacing: '0.06em', textTransform: 'uppercase',
+                boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)', transition: 'all 0.25s',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.background = '#1D4ED8'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#2563EB'; }}
             >
-              <Wrench size={16} /> Book Service Now
+              <Wrench size={16} /> Book Service Now <ArrowRight size={16} />
             </Link>
+
             <a
               href="tel:+919253625099"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-                background: 'transparent', color: '#FFFFFF', padding: '0.7rem 1.8rem',
-                borderRadius: '8px', textDecoration: 'none', border: '1.5px solid rgba(255,255,255,0.2)',
-                fontFamily: 'Rajdhani, sans-serif', fontWeight: 700, fontSize: '0.85rem',
+                background: 'rgba(255,255,255,0.06)', color: '#FFFFFF', padding: '0.8rem 2rem',
+                borderRadius: '10px', textDecoration: 'none', border: '1.5px solid rgba(255,255,255,0.25)',
+                fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: '0.88rem',
                 letterSpacing: '0.06em', textTransform: 'uppercase', transition: 'all 0.25s',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#FFFFFF'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.background = 'transparent'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#FFFFFF'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
             >
-              <Phone size={16} /> Call Us
+              <Phone size={16} /> Call Us: +91 92536 25099
             </a>
           </div>
         </div>

@@ -264,10 +264,62 @@ export default function PartCard({ part }) {
   );
 }
 
+
+export function PartCardSkeleton() {
+  return (
+    <>
+      <style>{PART_CARD_STYLES}</style>
+      <div
+        style={{
+          position: 'relative',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          background: '#FFF',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
+          height: '100%',
+          border: '1px solid #F1F5F9'
+        }}
+      >
+        {/* Media Placeholder */}
+        <div className="gk-pc-media gk-skel" style={{ aspectRatio: '4 / 3', background: '#F8FAFC' }} />
+
+        {/* Content Placeholder */}
+        <div style={{ padding: '0.85rem', flex: 1, display: 'flex', flexDirection: 'column', background: '#FFFFFF', gap: '0.5rem' }}>
+          {/* Category */}
+          <div className="gk-skel" style={{ height: '10px', width: '35%', borderRadius: '4px' }} />
+
+          {/* Title */}
+          <div className="gk-skel" style={{ height: '16px', width: '85%', borderRadius: '4px', marginTop: '2px' }} />
+
+          {/* Sub/Brand/Rating */}
+          <div className="gk-skel" style={{ height: '12px', width: '55%', borderRadius: '4px' }} />
+
+          {/* Price & CTA Row */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.6rem' }}>
+            <div className="gk-skel" style={{ height: '22px', width: '70px', borderRadius: '4px' }} />
+            <div className="gk-skel" style={{ height: '32px', width: '64px', borderRadius: '8px' }} />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* Sized in ratios, not pixels: the media band follows the column width so the
    same card works in a five-across desktop strip and a two-across phone grid
    without a fixed height stretching it or a fixed width overflowing it. */
 const PART_CARD_STYLES = `
+  @keyframes gk-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .gk-skel {
+    background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%) !important;
+    background-size: 200% 100% !important;
+    animation: gk-shimmer 1.5s infinite linear !important;
+  }
   .gk-pc-media { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #F5F5F5; overflow: hidden; }
   .gk-pc-name {
     color: #111; font-weight: 900; font-size: 0.86rem; line-height: 1.25;
@@ -291,4 +343,5 @@ const PART_CARD_STYLES = `
     .gk-pc-addlabel { display: none; }
   }
 `;
+
 

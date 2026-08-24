@@ -117,14 +117,18 @@ const SERVICE_CARD_STYLES = `
   .gk-sc-grid {
     display: grid;
     width: 100%;
-    /* Two per row is the floor, held all the way down to 320px. */
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-auto-rows: 1fr;          /* identical height across every row */
     gap: 1rem;
     align-items: stretch;
   }
-  @media (min-width: 680px)  { .gk-sc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  @media (min-width: 1100px) { .gk-sc-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 768px)  { .gk-sc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; } }
+  @media (min-width: 1024px) { .gk-sc-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; } }
+
+  /* Below 376px, drop to 1 column so text & pricing remain clean without clipping */
+  @media (max-width: 375px) {
+    .gk-sc-grid { grid-template-columns: 1fr !important; gap: 0.85rem !important; }
+  }
 
   .gk-sc {
     display: flex;
@@ -200,25 +204,12 @@ const SERVICE_CARD_STYLES = `
   }
   .gk-sc:hover .gk-sc-arrow { background: #1D4ED8; border-color: #1D4ED8; color: #FFFFFF; }
 
-  /* Cards shrink proportionally rather than changing shape or dropping to a
-     single column. Type and chrome step down together so the ratio holds. */
   @media (max-width: 640px) {
-    .gk-sc-grid { gap: 0.7rem; }
     .gk-sc { min-height: 190px; padding: 1rem 0.85rem 0.9rem; border-radius: 14px; }
     .gk-sc-name { font-size: 0.9rem; }
     .gk-sc-desc { font-size: 0.75rem; }
     .gk-sc-price { font-size: 0.76rem; }
     .gk-sc-arrow { width: 28px; height: 28px; }
-  }
-  @media (max-width: 400px) {
-    .gk-sc-grid { gap: 0.55rem; }
-    .gk-sc { min-height: 178px; padding: 0.85rem 0.7rem 0.75rem; }
-    .gk-sc-icon { margin-bottom: 0.65rem; }
-    .gk-sc-name { font-size: 0.84rem; }
-    .gk-sc-desc { font-size: 0.71rem; }
-    .gk-sc-price { font-size: 0.71rem; }
-    .gk-sc-arrow { width: 26px; height: 26px; }
-    .gk-sc-foot { gap: 0.35rem; padding-top: 0.7rem; }
   }
 
   /* The lift is decoration; hold still for anyone who asked for less motion. */
@@ -226,3 +217,4 @@ const SERVICE_CARD_STYLES = `
     .gk-sc, .gk-sc:hover { transition: none; transform: none; }
   }
 `;
+

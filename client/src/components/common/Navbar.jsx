@@ -8,8 +8,8 @@ import { useCart, useServiceCart } from '../../context/CartContext';
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Services', href: '/services' },
-  { label: 'Parts', href: '/parts' },
-  { label: 'My Bookings', href: '/my-bookings' },
+  { label: 'Shop', href: '/parts' },
+  { label: 'How It Works', href: '/#how-it-works' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
