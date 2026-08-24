@@ -13,7 +13,6 @@
 html {
   scroll-behavior: smooth;
   overflow-x: clip;
-  overflow-x: hidden !important;
   max-width: 100% !important;
   width: 100% !important;
   position: relative;
@@ -29,7 +28,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: clip;
-  overflow-x: hidden !important;
   max-width: 100% !important;
   width: 100% !important;
   position: relative;
@@ -44,7 +42,6 @@ body {
    ═══════════════════════════════════════════════════════════════════════════ */
 #root, main {
   overflow-x: clip;
-  overflow-x: hidden !important;
   max-width: 100% !important;
   width: 100% !important;
   position: relative;
