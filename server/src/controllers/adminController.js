@@ -27,17 +27,55 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   const pendingServices = await ServiceBooking.countDocuments({ status: 'requested' });
   const pendingSells = await SellRequest.countDocuments({ status: 'pending' });
   const pendingRentals = await RentalBooking.countDocuments({ status: 'requested' });
-  const revenue = await Order.aggregate([
-    { $match: { 'payment.status': 'paid' } },
+
+  // 1. Spare parts orders revenue
+  const partsRevenue = await Order.aggregate([
+    { $match: { status: { $ne: 'cancelled' } } },
     { $group: { _id: null, total: { $sum: '$total' } } },
   ]);
+
+  // 2. Service bookings revenue (sum finalCost, totalAmount, or estimatedCost for non-cancelled service bookings)
+  const serviceRevenue = await ServiceBooking.aggregate([
+    { $match: { status: { $ne: 'cancelled' } } },
+    {
+      $group: {
+        _id: null,
+        total: {
+          $sum: {
+            $cond: [
+              { $gt: ['$finalCost', 0] },
+              '$finalCost',
+              {
+                $cond: [
+                  { $gt: ['$totalAmount', 0] },
+                  '$totalAmount',
+                  { $ifNull: ['$estimatedCost', 0] }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]);
+
+  // 3. Rental bookings revenue (non-cancelled)
+  const rentalRevenue = await RentalBooking.aggregate([
+    { $match: { status: { $ne: 'cancelled' } } },
+    { $group: { _id: null, total: { $sum: { $ifNull: ['$totalAmount', 0] } } } },
+  ]);
+
+  const totalRevenue =
+    (partsRevenue[0]?.total || 0) +
+    (serviceRevenue[0]?.total || 0) +
+    (rentalRevenue[0]?.total || 0);
 
   res.json({
     success: true,
     stats: {
       users, bikes, services, sells, orders, rentalCars, rentalBookings,
       pendingServices, pendingSells, pendingRentals,
-      revenue: revenue[0]?.total || 0,
+      revenue: totalRevenue,
     },
   });
 });

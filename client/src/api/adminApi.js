@@ -14,7 +14,8 @@ export const approveBike = (id) => API.put(`/admin/bikes/${id}/approve`);
 export const deleteBike = (id) => API.delete(`/bikes/${id}`);
 export const getBikeBrands = () => API.get('/bikes/brands');
 
-export const getServices = (page = 1) => API.get(`/services?page=${page}&limit=20`);
+export const getServices = (page = 1, limit = 50, status = '') =>
+  API.get(`/services?page=${page}&limit=${limit}${status && status !== 'all' ? `&status=${status}` : ''}`);
 export const updateServiceStatus = (id, data) => API.put(`/services/${id}/status`, data);
 
 export const getSells = (page = 1) => API.get(`/sell?page=${page}&limit=20`);

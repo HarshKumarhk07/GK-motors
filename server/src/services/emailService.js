@@ -388,10 +388,124 @@ const sendBookingConfirmationEmail = async (user, booking, serviceCenter = {}) =
   });
 };
 
+/**
+ * Booking status update email, sent whenever the admin/mechanic changes booking status.
+ */
+const sendBookingStatusUpdateEmail = async (user, booking, previousStatus, newStatus, note = '') => {
+  if (!user?.email) return;
+
+  const STATUS_DETAILS = {
+    requested: {
+      label: 'Requested',
+      color: '#FB8C00',
+      title: 'Booking Received',
+      message: 'Your service request has been received and is currently under review by our service team.',
+    },
+    accepted: {
+      label: 'Accepted & Confirmed',
+      color: '#2563EB',
+      title: 'Booking Accepted',
+      message: 'Your car service booking has been confirmed! Our team is preparing for your scheduled slot.',
+    },
+    in_progress: {
+      label: 'In Progress',
+      color: '#0284C7',
+      title: 'Service in Progress',
+      message: 'Your car is currently in our service bay and being worked on by our certified technicians.',
+    },
+    completed: {
+      label: 'Completed',
+      color: '#16A34A',
+      title: 'Service Completed',
+      message: 'Great news! Your car servicing has been completed and your vehicle is ready.',
+    },
+    cancelled: {
+      label: 'Cancelled',
+      color: '#DC2626',
+      title: 'Booking Cancelled',
+      message: 'Your service booking has been cancelled. Please contact us if you have any questions.',
+    },
+  };
+
+  const info = STATUS_DETAILS[newStatus] || {
+    label: newStatus?.replace(/_/g, ' ')?.toUpperCase() || 'Updated',
+    color: '#1E3A8A',
+    title: 'Booking Status Updated',
+    message: `Your booking status has been updated to ${newStatus}.`,
+  };
+
+  const clientUrl = (process.env.CLIENT_URL || '').replace(/\/+$/, '');
+  const car = booking.selectedCar || {};
+  const services = Array.isArray(booking.services) ? booking.services : [];
+  const carName = [car.brand, car.model].filter(Boolean).join(' ')
+    || [booking.bikeBrand, booking.bikeModel].filter(Boolean).join(' ')
+    || 'Your car';
+
+  const when = booking.scheduledDate
+    ? new Date(booking.scheduledDate).toLocaleDateString('en-IN', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      })
+    : '—';
+
+  const mechanicInfo = booking.mechanic
+    ? card('Assigned Technician', `
+        ${row('Technician', esc(booking.mechanic.name || 'Assigned'))}
+        ${booking.mechanic.phone ? row('Contact', esc(booking.mechanic.phone)) : ''}
+      `)
+    : '';
+
+  const noteBlock = note
+    ? highlight('Update Note', esc(note))
+    : '';
+
+  const serviceSummary = services.length
+    ? services.map((s) => s.name).join(', ')
+    : (booking.serviceLabel || 'Vehicle Service');
+
+  const cta = clientUrl
+    ? `<div style="text-align:center;margin-top:24px;">
+        <a href="${clientUrl}/my-bookings?tab=services" style="display:inline-block;background:#1E3A8A;color:#FFFFFF;padding:13px 26px;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;">View Booking in Dashboard</a>
+       </div>`
+    : '';
+
+  await sendEmail({
+    to: user.email,
+    subject: `Status Update: ${info.title} — ${carName}`,
+    html: shell(info.title, `Booking Ref: ${String(booking._id).slice(-8).toUpperCase()}`, `
+      <p style="margin:0 0 14px;color:#0F172A;font-size:15px;">Hello <strong>${esc(user.name)}</strong>,</p>
+      <p style="margin:0 0 18px;color:#475569;font-size:14px;line-height:1.65;">
+        ${info.message}
+      </p>
+
+      <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:18px;margin-bottom:16px;text-align:center;">
+        <span style="display:inline-block;background:${info.color};color:#FFFFFF;font-weight:800;font-size:13px;padding:6px 16px;border-radius:20px;letter-spacing:0.04em;text-transform:uppercase;">
+          Status: ${info.label}
+        </span>
+      </div>
+
+      ${noteBlock}
+
+      ${card('Booking Details', `
+        ${row('Vehicle', esc(carName))}
+        ${row('Service', esc(serviceSummary))}
+        ${row('Scheduled Date', esc(when))}
+        ${row('Scheduled Time', esc(booking.scheduledTime || '—'))}
+        ${booking.totalAmount ? row('Total Amount', inr(booking.totalAmount)) : ''}
+      `)}
+
+      ${mechanicInfo}
+
+      ${cta}
+    `),
+    text: `Hello ${user.name}, your GK Motors booking (${String(booking._id).slice(-8).toUpperCase()}) for ${carName} is now: ${info.label}. ${info.message}. View at ${clientUrl}/my-bookings`,
+  });
+};
+
 module.exports = {
   sendEmail,
   sendOTPEmail,
   sendWelcomeEmail,
   sendBookingConfirmationEmail,
+  sendBookingStatusUpdateEmail,
   resolveProvider,
 };

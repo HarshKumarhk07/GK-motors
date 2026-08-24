@@ -3,7 +3,7 @@ const ServiceBooking = require('../models/ServiceBooking');
 const ServiceType = require('../models/ServiceType');
 const ServiceCar = require('../models/ServiceCar');
 const { createOrder, verifyPayment } = require('../services/paymentService');
-const { sendBookingConfirmationEmail } = require('../services/emailService');
+const { sendBookingConfirmationEmail, sendBookingStatusUpdateEmail } = require('../services/emailService');
 const { istNow, slotMinutes } = require('../utils/istTime');
 
 const TIME_SLOTS = [
@@ -400,6 +400,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
   const booking = await ServiceBooking.findById(req.params.id);
   if (!booking) { res.status(404); throw new Error('Booking not found'); }
 
+  const oldStatus = booking.status;
   const mechanicProvided = Object.prototype.hasOwnProperty.call(req.body, 'mechanic');
   const previousMechanic = booking.mechanic ? String(booking.mechanic) : null;
 
@@ -413,7 +414,9 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     effectiveStatus = 'accepted';
   }
 
-  if (effectiveStatus !== booking.status) {
+  const statusChanged = effectiveStatus !== oldStatus;
+
+  if (statusChanged) {
     booking.status = effectiveStatus;
     booking.statusHistory.push({ status: effectiveStatus, note: note || '' });
   } else if (mechanicProvided && previousMechanic !== (mechanic || null)) {
@@ -430,18 +433,25 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
   const populated = await ServiceBooking.findById(booking._id)
     .populate('user', 'name phone email')
     .populate('mechanic', 'name phone email');
+
+  // Trigger email notification to customer if status changed
+  if (statusChanged && populated.user?.email) {
+    sendBookingStatusUpdateEmail(populated.user, populated, oldStatus, effectiveStatus, note)
+      .catch((err) => console.error('[updateBookingStatus.emailNotification]', err.message));
+  }
+
   res.json({ success: true, booking: populated });
 });
 
 // @desc  All bookings (admin)
 // @route GET /api/services
 const getAllBookings = asyncHandler(async (req, res) => {
-  const { status, page = 1, limit = 10 } = req.query;
-  const query = status ? { status } : {};
+  const { status, page = 1, limit = 50 } = req.query;
+  const query = status && status !== 'all' ? { status } : {};
   const total = await ServiceBooking.countDocuments(query);
   const bookings = await ServiceBooking.find(query)
-    .populate('user', 'name phone')
-    .populate('mechanic', 'name')
+    .populate('user', 'name phone email')
+    .populate('mechanic', 'name phone email')
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(Number(limit));

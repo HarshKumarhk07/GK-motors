@@ -6,7 +6,7 @@ import * as adminApi from '../../api/adminApi';
 import * as rentalApi from '../../api/rentalApi';
 import * as svcApi from '../../api/serviceApi';
 import toast from 'react-hot-toast';
-import { Users, Car, Wrench, TrendingUp, Package, Clock, Check, CheckCircle, AlertCircle, BarChart3, Settings, LogOut, Home, ShoppingBag, List, Loader, Plus, Edit2, Trash2, Menu, X, Calendar, MapPin, Search, ChevronUp, ChevronDown, Wind, Battery, CircleDot, Paintbrush, Sparkles, Droplets, Sun, Cog, Shield, Layers, Filter, Tag } from 'lucide-react';
+import { Users, Car, Wrench, TrendingUp, Package, Clock, Check, CheckCircle, AlertCircle, BarChart3, Settings, LogOut, Home, ShoppingBag, List, Loader, Plus, Edit2, Trash2, Menu, X, Calendar, MapPin, Search, ChevronUp, ChevronDown, Wind, Battery, CircleDot, Paintbrush, Sparkles, Droplets, Sun, Cog, Shield, Layers, Filter, Tag, RefreshCw, CreditCard } from 'lucide-react';
 import { io } from 'socket.io-client';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
@@ -216,6 +216,511 @@ const getCategoryForService = (st) => {
   if (v.startsWith('insurance_') || l.includes('insurance') || l.includes('claim')) return SERVICE_CATEGORIES[11];
   
   return UNCATEGORIZED_CAT;
+};
+
+// ── DEDICATED BOOKINGS TAB ──────────────────────────────────────────
+const BookingsTab = () => {
+  const [data, setData] = useState([]);
+  const [mechanics, setMechanics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [filterMode, setFilterMode] = useState('all');
+  const [filterDay, setFilterDay] = useState(() => new Date().toISOString().split('T')[0]);
+  const [filterMonth, setFilterMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [filterYear, setFilterYear] = useState(() => String(new Date().getFullYear()));
+  const [filterFrom, setFilterFrom] = useState('');
+  const [filterTo, setFilterTo] = useState('');
+  const [search, setSearch] = useState('');
+  const [updatingId, setUpdatingId] = useState(null);
+
+  // Status Note Modal State
+  const [noteModal, setNoteModal] = useState(null); // { bookingId, status, mechanicId, note: '' }
+  const [expandedHistory, setExpandedHistory] = useState({});
+
+  const loadBookings = () => {
+    setLoading(true);
+    Promise.all([adminApi.getServices(1, 100), adminApi.getMechanics()])
+      .then(([srvRes, mechRes]) => {
+        setData(srvRes.data.bookings || []);
+        setMechanics(mechRes.data.mechanics || []);
+      })
+      .catch((err) => {
+        console.error('[BookingsTab]', err);
+        toast.error('Could not load bookings');
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadBookings();
+  }, []);
+
+  const handleUpdateStatusSubmit = async (e) => {
+    e.preventDefault();
+    if (!noteModal) return;
+    const { bookingId, status, mechanicId, note } = noteModal;
+    setUpdatingId(bookingId);
+    try {
+      const payload = { status };
+      if (mechanicId !== undefined) payload.mechanic = mechanicId || null;
+      if (note?.trim()) payload.note = note.trim();
+
+      const { data: res } = await adminApi.updateServiceStatus(bookingId, payload);
+      toast.success(`Booking status updated to ${status.replace('_', ' ').toUpperCase()}! Customer notified via email.`);
+      setData(prev => prev.map(d => d._id === bookingId ? (res.booking || d) : d));
+      setNoteModal(null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error updating service status');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleQuickStatusChange = (booking, newStatus) => {
+    if (newStatus === booking.status) return;
+    setNoteModal({
+      bookingId: booking._id,
+      status: newStatus,
+      mechanicId: booking.mechanic?._id || '',
+      note: '',
+      customerEmail: booking.user?.email,
+      customerName: booking.user?.name,
+    });
+  };
+
+  const handleAssignMechanic = async (bookingId, mechanicId, currentStatus) => {
+    setUpdatingId(bookingId);
+    try {
+      const payload = { status: currentStatus, mechanic: mechanicId || null };
+      const { data: res } = await adminApi.updateServiceStatus(bookingId, payload);
+      toast.success(mechanicId ? 'Mechanic assigned successfully!' : 'Mechanic unassigned');
+      setData(prev => prev.map(d => d._id === bookingId ? (res.booking || d) : d));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error assigning mechanic');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const toggleHistory = (id) => {
+    setExpandedHistory(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const getCarTitle = (item) => {
+    const c = item.selectedCar;
+    if (c?.brand || c?.model) {
+      return [c.brand, c.model, c.year].filter(Boolean).join(' ');
+    }
+    return [item.bikeBrand, item.bikeModel, item.bikeYear].filter(Boolean).join(' ') || 'Car';
+  };
+
+  const getServiceNames = (item) => {
+    if (Array.isArray(item.services) && item.services.length > 0) {
+      return item.services.map(s => s.name).join(', ');
+    }
+    return item.serviceLabel || item.serviceType || 'Service Package';
+  };
+
+  const filtered = data.filter(item => {
+    if (statusFilter !== 'all' && item.status !== statusFilter) return false;
+
+    if (search.trim()) {
+      const q = search.toLowerCase().trim();
+      const uName = (item.user?.name || '').toLowerCase();
+      const uPhone = (item.user?.phone || '').toLowerCase();
+      const uEmail = (item.user?.email || '').toLowerCase();
+      const carName = getCarTitle(item).toLowerCase();
+      const srvName = getServiceNames(item).toLowerCase();
+      const bId = (item._id || '').toLowerCase();
+      if (!uName.includes(q) && !uPhone.includes(q) && !uEmail.includes(q) && !carName.includes(q) && !srvName.includes(q) && !bId.includes(q)) {
+        return false;
+      }
+    }
+
+    if (filterMode === 'all') return true;
+    const created = new Date(item.createdAt || item.scheduledDate);
+    if (filterMode === 'day') return created.toISOString().split('T')[0] === filterDay;
+    if (filterMode === 'month') return created.toISOString().slice(0, 7) === filterMonth;
+    if (filterMode === 'year') return String(created.getFullYear()) === filterYear;
+    if (filterMode === 'custom') {
+      if (filterFrom && created < new Date(filterFrom)) return false;
+      if (filterTo) {
+        const end = new Date(filterTo); end.setHours(23, 59, 59, 999);
+        if (created > end) return false;
+      }
+      return true;
+    }
+    return true;
+  });
+
+  const statsCounts = {
+    total: data.length,
+    requested: data.filter(d => d.status === 'requested').length,
+    accepted: data.filter(d => d.status === 'accepted').length,
+    in_progress: data.filter(d => d.status === 'in_progress').length,
+    completed: data.filter(d => d.status === 'completed').length,
+    cancelled: data.filter(d => d.status === 'cancelled').length,
+  };
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '4rem', color: '#888' }}><Loader style={{ animation: 'spin 1s linear infinite' }} size={28} /></div>;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      {/* Stat Badges bar */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.8rem' }}>
+        {[
+          { key: 'all', label: 'Total Bookings', count: statsCounts.total, color: '#1E3A8A' },
+          { key: 'requested', label: 'Requested', count: statsCounts.requested, color: '#FB8C00' },
+          { key: 'accepted', label: 'Accepted', count: statsCounts.accepted, color: '#2563EB' },
+          { key: 'in_progress', label: 'In Progress', count: statsCounts.in_progress, color: '#0284C7' },
+          { key: 'completed', label: 'Completed', count: statsCounts.completed, color: '#16A34A' },
+          { key: 'cancelled', label: 'Cancelled', count: statsCounts.cancelled, color: '#DC2626' },
+        ].map(s => (
+          <div key={s.key} onClick={() => setStatusFilter(s.key)}
+            style={{
+              background: statusFilter === s.key ? s.color : '#FFFFFF',
+              color: statusFilter === s.key ? '#FFFFFF' : '#0F172A',
+              border: `1.5px solid ${statusFilter === s.key ? s.color : '#E2E8F0'}`,
+              borderRadius: '16px', padding: '1rem', cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.02)', transition: 'all 0.2s',
+            }}>
+            <div style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', opacity: 0.85, letterSpacing: '0.05em' }}>{s.label}</div>
+            <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.8rem', fontWeight: 950, marginTop: '0.2rem' }}>{s.count}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Main Container */}
+      <div style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '24px', padding: '1.8rem', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
+        
+        {/* Header & Search */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(30, 58, 138, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1E3A8A' }}>
+                <Calendar size={20} />
+              </div>
+              <h3 style={{ color: '#0F172A', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.6rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                USER SERVICE <span style={{ color: '#E53935' }}>BOOKINGS</span>
+              </h3>
+            </div>
+            <p style={{ margin: '0.3rem 0 0 0', color: '#64748B', fontSize: '0.82rem', fontWeight: 500 }}>
+              Manage all customer service requests, update statuses, assign technicians & trigger automatic email notifications.
+            </p>
+          </div>
+
+          <button onClick={loadBookings}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              background: '#F8FAFC', color: '#1E3A8A', border: '1.5px solid #CBD5E1',
+              borderRadius: '12px', padding: '0.6rem 1.1rem', cursor: 'pointer',
+              fontWeight: 800, fontSize: '0.82rem', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase'
+            }}>
+            <RefreshCw size={14} /> Refresh List
+          </button>
+        </div>
+
+        {/* Filters bar */}
+        <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '16px', padding: '1rem', marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.8rem', alignItems: 'center' }}>
+          {/* Search box */}
+          <div style={{ position: 'relative', flex: '1 1 240px', minWidth: 220 }}>
+            <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+            <input
+              type="text"
+              placeholder="Search by customer, phone, car or booking ID..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{
+                width: '100%', height: 40, background: '#FFF', border: '1.5px solid #CBD5E1',
+                borderRadius: '10px', padding: '0 0.8rem 0 2.2rem', fontSize: '0.82rem', fontWeight: 600, outline: 'none'
+              }}
+            />
+          </div>
+
+          {/* Date Mode Selectors */}
+          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 800, textTransform: 'uppercase', marginRight: '0.2rem' }}>Date:</span>
+            {[
+              ['all', 'All Time'],
+              ['day', 'Day'],
+              ['month', 'Month'],
+              ['year', 'Year'],
+              ['custom', 'Custom'],
+            ].map(([k, lbl]) => (
+              <button key={k} type="button" onClick={() => setFilterMode(k)}
+                style={{
+                  padding: '0.4rem 0.8rem', borderRadius: '8px', cursor: 'pointer',
+                  background: filterMode === k ? '#1E3A8A' : '#FFF',
+                  color: filterMode === k ? '#FFF' : '#475569',
+                  fontWeight: 800, fontSize: '0.75rem',
+                  border: filterMode === k ? 'none' : '1px solid #CBD5E1',
+                  fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '0.04em',
+                }}>{lbl}</button>
+            ))}
+
+            {filterMode === 'day' && (
+              <input type="date" value={filterDay} onChange={e => setFilterDay(e.target.value)}
+                style={{ height: 36, padding: '0 0.6rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+            )}
+            {filterMode === 'month' && (
+              <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)}
+                style={{ height: 36, padding: '0 0.6rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+            )}
+            {filterMode === 'year' && (
+              <input type="number" min="2020" max="2099" value={filterYear} onChange={e => setFilterYear(e.target.value)}
+                style={{ height: 36, padding: '0 0.6rem', fontSize: '0.8rem', fontWeight: 700, width: 90, borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+            )}
+            {filterMode === 'custom' && (
+              <>
+                <input type="date" value={filterFrom} onChange={e => setFilterFrom(e.target.value)}
+                  style={{ height: 36, padding: '0 0.6rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+                <span style={{ color: '#94A3B8', fontWeight: 700 }}>→</span>
+                <input type="date" value={filterTo} onChange={e => setFilterTo(e.target.value)}
+                  style={{ height: 36, padding: '0 0.6rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Bookings Card List */}
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#FAFAFA', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
+            <Calendar size={40} style={{ color: '#94A3B8', marginBottom: '1rem' }} />
+            <h4 style={{ color: '#0F172A', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.2rem', margin: '0 0 0.4rem 0' }}>
+              NO BOOKINGS FOUND
+            </h4>
+            <p style={{ color: '#64748B', fontSize: '0.85rem', margin: 0 }}>
+              {search ? `No service bookings matching "${search}"` : 'No bookings available under current filters.'}
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+            {filtered.map((item) => {
+              const carName = getCarTitle(item);
+              const servicesText = getServiceNames(item);
+              const isDoorstep = item.pickupDrop?.enabled || item.isPickupDrop;
+              const hasHistory = Array.isArray(item.statusHistory) && item.statusHistory.length > 0;
+              const isHistExpanded = expandedHistory[item._id];
+
+              return (
+                <div key={item._id} style={{
+                  background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '20px', padding: '1.4rem',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.02)', transition: 'all 0.2s'
+                }}>
+                  {/* Item Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '1rem', marginBottom: '1rem' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.85rem', color: '#1E3A8A', background: '#EFF6FF', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>
+                          REF: {String(item._id).slice(-8).toUpperCase()}
+                        </span>
+                        <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600 }}>
+                          Booked on: {new Date(item.createdAt || item.scheduledDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <h4 style={{ color: '#0F172A', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.35rem', margin: '0.4rem 0 0 0' }}>
+                        {carName} <span style={{ color: '#64748B', fontWeight: 600, fontSize: '0.9rem' }}>— {servicesText}</span>
+                      </h4>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                      <span className={`badge ${
+                        item.status === 'requested' ? 'badge-orange' :
+                        item.status === 'accepted' || item.status === 'in_progress' ? 'badge-blue' :
+                        item.status === 'completed' ? 'badge-green' : 'badge-red'
+                      }`} style={{ fontSize: '0.8rem', padding: '0.35rem 0.8rem' }}>
+                        {item.status?.replace('_', ' ')?.toUpperCase()}
+                      </span>
+
+                      <span style={{
+                        fontSize: '0.75rem', fontWeight: 800, padding: '0.3rem 0.7rem', borderRadius: '8px',
+                        background: item.payment?.status === 'paid' ? '#DCFCE7' : '#FEF3C7',
+                        color: item.payment?.status === 'paid' ? '#16A34A' : '#D97706',
+                        display: 'flex', alignItems: 'center', gap: '0.3rem'
+                      }}>
+                        <CreditCard size={12} />
+                        {item.payment?.status === 'paid' ? 'PAID ONLINE' : 'PAYMENT PENDING'}
+                        ({`₹${(item.totalAmount || item.finalCost || item.estimatedCost || 0).toLocaleString('en-IN')}`})
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Grid details */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem', marginBottom: '1.2rem' }}>
+                    
+                    {/* Customer Info */}
+                    <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '0.9rem', border: '1px solid #E2E8F0' }}>
+                      <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
+                        CUSTOMER INFORMATION
+                      </div>
+                      <div style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.95rem' }}>{item.user?.name || 'Customer'}</div>
+                      <div style={{ color: '#475569', fontSize: '0.82rem', fontWeight: 600, marginTop: '0.2rem' }}>
+                        📞 <a href={`tel:${item.user?.phone}`} style={{ color: '#1E3A8A', textDecoration: 'none' }}>{item.user?.phone || 'No phone'}</a>
+                      </div>
+                      {item.user?.email && (
+                        <div style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 600, marginTop: '0.15rem' }}>
+                          ✉️ <a href={`mailto:${item.user?.email}`} style={{ color: '#1E3A8A', textDecoration: 'none' }}>{item.user?.email}</a>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Schedule & Logistics */}
+                    <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '0.9rem', border: '1px solid #E2E8F0' }}>
+                      <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
+                        SCHEDULE & SERVICE MODE
+                      </div>
+                      <div style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <Clock size={14} style={{ color: '#1E3A8A' }} />
+                        {new Date(item.scheduledDate).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                        {item.scheduledTime ? ` at ${item.scheduledTime}` : ''}
+                      </div>
+                      <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', fontWeight: 700, color: isDoorstep ? '#1E3A8A' : '#059669' }}>
+                        {isDoorstep ? '🚗 Doorstep Pickup & Drop' : '🏭 Self Drop at Workshop'}
+                      </div>
+                      {isDoorstep && item.pickupDrop?.pickupAddress && (
+                        <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.2rem', lineHeight: 1.3 }}>
+                          Pickup: {[item.pickupDrop.pickupAddress.street, item.pickupDrop.pickupAddress.city].filter(Boolean).join(', ')}
+                        </div>
+                      )}
+                    </div>
+
+
+
+                  </div>
+
+                  {/* Customer problem notes if any */}
+                  {item.problemDescription && (
+                    <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '0.7rem 0.9rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#92400E' }}>
+                      <strong>Customer Note:</strong> "{item.problemDescription}"
+                    </div>
+                  )}
+
+                  {/* Actions & Status Dropdown Bar */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.8rem', background: '#F1F5F9', borderRadius: '12px', padding: '0.8rem 1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Update Status:
+                      </span>
+                      <select
+                        disabled={updatingId === item._id}
+                        style={{
+                          height: 38, padding: '0 0.8rem', fontSize: '0.82rem', fontWeight: 800,
+                          borderRadius: '8px', border: '1.5px solid #1E3A8A', background: '#FFF', color: '#1E3A8A', cursor: 'pointer'
+                        }}
+                        value={item.status}
+                        onChange={(e) => handleQuickStatusChange(item, e.target.value)}
+                      >
+                        <option value="requested">Requested (Pending Review)</option>
+                        <option value="accepted">Accepted & Confirmed</option>
+                        <option value="in_progress">In Progress (Servicing)</option>
+                        <option value="completed">Completed (Ready)</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                      <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600 }}>
+                        (Triggers instant status email to customer)
+                      </span>
+                    </div>
+
+                    {hasHistory && (
+                      <button
+                        onClick={() => toggleHistory(item._id)}
+                        style={{ background: 'none', border: 'none', color: '#1E3A8A', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                      >
+                        {isHistExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        {isHistExpanded ? 'Hide Status History' : 'View Status History'}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Expandable History Log */}
+                  {isHistExpanded && hasHistory && (
+                    <div style={{ marginTop: '0.9rem', paddingTop: '0.8rem', borderTop: '1px solid #E2E8F0' }}>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+                        STATUS AUDIT TRAIL
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                        {item.statusHistory.map((h, idx) => (
+                          <div key={idx} style={{ fontSize: '0.78rem', color: '#475569', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <span style={{ fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', width: 90 }}>
+                              {h.status?.replace('_', ' ')}
+                            </span>
+                            <span style={{ color: '#94A3B8' }}>•</span>
+                            <span>{new Date(h.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                            {h.note && <span style={{ fontStyle: 'italic', color: '#64748B' }}>("{h.note}")</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Status Change Modal with Note */}
+      {noteModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ background: '#FFF', borderRadius: '20px', width: '100%', maxWidth: 480, padding: '1.8rem', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.8rem' }}>
+              <h4 style={{ margin: 0, fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, fontSize: '1.3rem', color: '#0F172A', textTransform: 'uppercase' }}>
+                UPDATE BOOKING STATUS
+              </h4>
+              <button onClick={() => setNoteModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateStatusSubmit}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>NEW STATUS</label>
+                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', padding: '0.75rem 1rem', fontWeight: 900, color: '#1E3A8A', textTransform: 'uppercase', fontSize: '0.95rem' }}>
+                  {noteModal.status?.replace('_', ' ')}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>CUSTOMER EMAIL NOTIFICATION</label>
+                <div style={{ fontSize: '0.82rem', color: '#334155', fontWeight: 600, background: '#F8FAFC', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  An automated update email will be sent to: <strong>{noteModal.customerEmail || 'Customer Email'}</strong>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.4rem' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>STATUS NOTE / MESSAGE FOR CUSTOMER (OPTIONAL)</label>
+                <textarea
+                  rows={3}
+                  placeholder="e.g. Technician assigned and oil replacement is underway. Expected completion by 4:00 PM."
+                  value={noteModal.note}
+                  onChange={e => setNoteModal({ ...noteModal, note: e.target.value })}
+                  style={{ width: '100%', padding: '0.7rem', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '0.85rem', outline: 'none', resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setNoteModal(null)}
+                  style={{ background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '10px', padding: '0.7rem 1.2rem', fontWeight: 800, cursor: 'pointer', fontSize: '0.85rem' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingId === noteModal.bookingId}
+                  style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', color: '#FFF', border: 'none', borderRadius: '10px', padding: '0.7rem 1.4rem', fontWeight: 800, cursor: 'pointer', fontSize: '0.85rem' }}
+                >
+                  {updatingId === noteModal.bookingId ? 'Updating & Sending Mail...' : 'Confirm & Notify Customer'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const ServicesTab = () => {
@@ -5190,8 +5695,9 @@ export default function AdminDashboard() {
 
   const sidebarLinks = [
     { id: 'dashboard', icon: BarChart3, label: 'Dashboard' },
+    { id: 'bookings', icon: Calendar, label: 'Bookings' },
     { id: 'car-services', icon: Wrench, label: 'Services' },
-    { id: 'services', icon: Calendar, label: 'Service Types' },
+    { id: 'services', icon: Layers, label: 'Service Types' },
     { id: 'users', icon: Users, label: 'Users' },
     // Parts stays: the storefront is live on the site.
     { id: 'parts', icon: Package, label: 'Parts' },
@@ -5322,7 +5828,7 @@ export default function AdminDashboard() {
                 <StatCard icon={Users} label="Total Users" value={stats.users?.toLocaleString()} color="#2196F3" />
                 <StatCard icon={Car} label="Car Listings" value={stats.bikes?.toLocaleString()} color="#E53935" />
                 <StatCard icon={Wrench} label="Services" value={stats.services?.toLocaleString()} color="#FB8C00" />
-                <StatCard icon={TrendingUp} label="Revenue" value={`₹${(stats.revenue / 1000).toFixed(1)}K`} color="#2E7D32" />
+                <StatCard icon={TrendingUp} label="Revenue" value={stats.revenue >= 1000 ? `₹${(stats.revenue / 1000).toFixed(1)}K` : `₹${Number(stats.revenue || 0).toLocaleString('en-IN')}`} color="#2E7D32" />
                 <StatCard icon={Clock} label="Pending Services" value={stats.pendingServices} color="#FB8C00" />
                 {/* [GK MOTORS] Pending Sells / Rental Cars / Rental Bookings removed —
                     the sell and rental verticals are not part of the service business.
@@ -5361,6 +5867,7 @@ export default function AdminDashboard() {
             </>
           )}
 
+          {activeTab === 'bookings' && <BookingsTab />}
           {activeTab === 'car-services' && <CarServicesTab />}
           {activeTab === 'users' && <UsersTab />}
           {activeTab === 'services' && <ServicesTab />}
