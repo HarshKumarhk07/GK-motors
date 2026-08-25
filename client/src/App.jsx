@@ -122,7 +122,10 @@ const ScrollToTop = () => {
  * footer, it read as extra page rather than as a gap.
  */
 const Layout = ({ hideNav = false }) => (
-  <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100%', position: 'relative' }}>
+  /* No minHeight here: #root already guarantees one viewport (in dvh, which
+     is the mobile-correct unit). This just fills it, so there is exactly one
+     viewport-height declaration in the whole chain rather than four. */
+  <div style={{ flex: '1 0 auto', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100%', position: 'relative' }}>
     {!hideNav && <Navbar />}
     {/* flex: 1 0 auto — absorbs all remaining height so footer stays pinned to bottom */}
     <main style={{ width: '100%', maxWidth: '100%', position: 'relative', flex: '1 0 auto', display: 'flex', flexDirection: 'column' }}>

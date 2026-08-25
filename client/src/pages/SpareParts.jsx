@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getParts, getPartCategories, getFeaturedParts } from '../api/storeApi';
+import { reportApiError } from '../api/apiError';
 import PartCard from '../components/parts/PartCard';
 import { SkeletonCard } from '../components/common/LoadingSpinner';
 import { ShoppingCart, Search, SlidersHorizontal, Star } from 'lucide-react';
@@ -19,6 +20,8 @@ export default function SpareParts() {
   const [pincode, setPincode] = useState(() => localStorage.getItem('selectedPincode') || '');
   const [categories, setCategories] = useState([]);
   const [featured, setFeatured] = useState([]);
+  const [loadError, setLoadError] = useState('');
+  const [reloadToken, setReloadToken] = useState(0);
   const { itemCount } = useCart();
 
   // Featured parts are whatever the admin has ticked as featured. They are
@@ -45,21 +48,56 @@ export default function SpareParts() {
     return () => window.removeEventListener('pincode-updated', handlePincodeUpdate);
   }, []);
 
+  /* One request per filter change, and only the newest one may write.
+   *
+   * Two ways this effect used to leave the grid disagreeing with the filter:
+   *
+   * 1. `.catch(() => {})` swallowed the failure, so `setParts` never ran and
+   *    the PREVIOUS filter's products stayed on screen with loading already
+   *    false. Tapping a category while the API was unreachable therefore
+   *    looked exactly like "the filter did nothing" -- unrelated categories
+   *    kept sitting there, with no error and no empty state.
+   * 2. Nothing tied a response to the request that asked for it. Tapping A
+   *    then B resolved in arrival order, so a slow A could land after B and
+   *    repaint A's products under B's highlighted tab.
+   *
+   * `cancelled` fixes both: React runs the cleanup before re-running the
+   * effect, so a superseded request can no longer write, and the failure path
+   * now clears the grid and surfaces the error instead of leaving stale rows.
+   */
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
+    setLoadError('');
     const params = { category, search, page, limit: 12 };
     if (pincode.length === 6) params.pincode = pincode;
     getParts(params)
-      .then(({ data }) => { setParts(data.parts); setTotal(data.total); setPages(Math.ceil(data.total / 12)); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [category, search, page, pincode]);
+      .then(({ data }) => {
+        if (cancelled) return;
+        const list = Array.isArray(data?.parts) ? data.parts : [];
+        const count = Number(data?.total) || 0;
+        setParts(list);
+        setTotal(count);
+        setPages(Math.max(1, Math.ceil(count / 12)));
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        // Never keep the old filter's products: an empty grid plus an error is
+        // honest, stale rows under a new filter are not.
+        setParts([]);
+        setTotal(0);
+        setPages(1);
+        setLoadError(reportApiError('SpareParts.getParts', err, 'Could not load products'));
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [category, search, page, pincode, reloadToken]);
 
   const activeCatLabel = category ? formatCategoryLabel(category) : 'All Parts';
 
   // The shelf only appears on the unfiltered first page — anywhere else it would
   // compete with the search or filter the customer is actually running.
-  const showFeatured = featured.length > 0 && !category && !search && page === 1;
+  const showFeatured = featured.length > 0 && !category && !search && page === 1 && !loadError;
   // A featured part is still an ordinary part, so it comes back in the paged
   // list too. Show it once: on the shelf, not again directly underneath.
   const featuredIds = new Set(showFeatured ? featured.map((f) => f._id) : []);
@@ -246,6 +284,22 @@ export default function SpareParts() {
          {loading ? (
            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
              {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
+           </div>
+         ) : loadError ? (
+           /* A failed request is not an empty result. Saying "no spares match
+              your filters" when the call never returned would be a lie, and
+              would hide the fact that a retry is what is needed. */
+           <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
+             <div style={{ fontSize: '3rem', marginBottom: '1.25rem' }}>⚠️</div>
+             <h3 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>
+               COULDN'T LOAD PRODUCTS
+             </h3>
+             <p style={{ color: '#64748B', fontSize: '0.95rem', fontWeight: 600 }}>{loadError}</p>
+             <button
+               onClick={() => setReloadToken((t) => t + 1)}
+               style={{ marginTop: '2rem', minHeight: 48, background: '#1E3A8A', color: 'white', border: 'none', borderRadius: '12px', padding: '1rem 2.5rem', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', boxShadow: '0 8px 25px rgba(30, 58, 138, 0.3)', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em' }}>
+               Retry
+             </button>
            </div>
          ) : parts.length > 0 ? (
            <>

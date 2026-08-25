@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import * as authApi from '../api/authApi';
 
 const AuthContext = createContext();
@@ -27,16 +27,112 @@ const authReducer = (state, action) => {
   }
 };
 
+/* ── Per-identity wishlist storage ───────────────────────────────────────
+   The wishlist used to live under one global 'moto_wishlist' key, so every
+   profile on a browser shared one list: sign in as someone else and their
+   saved items were yours. Same defect the carts had, same shape of fix.
+
+   The key is suffixed with the authenticated user's stable _id -- the same id
+   the login response returns and orders are owned by -- never the email.
+
+   NOTE: `scopeOf` is deliberately duplicated from CartContext rather than
+   imported. CartContext imports THIS module, so importing it back would form
+   a cycle. The two must derive identical scopes; a test asserts they do. */
+const WISHLIST_KEY_BASE = 'moto_wishlist';
+
+const scopeOf = (user) => (user && user._id ? `u:${String(user._id)}` : 'guest');
+const wishlistKeyFor = (scope) => `${WISHLIST_KEY_BASE}:${scope}`;
+
+/* Reading used to be `JSON.parse(localStorage.getItem(...) || '[]')` inline in
+   the render body: it ran on every render, and one corrupt entry threw out of
+   AuthProvider -- the root provider -- taking the whole app down. Now it is a
+   lazy initialiser that degrades to an empty list, and only a flat array of
+   non-empty id strings is trusted. */
+const readStoredWishlist = (key) => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === 'string' && id) : [];
+  } catch (err) {
+    console.error('Wishlist: could not read stored wishlist ->', err.message);
+    return [];
+  }
+};
+
+/* One-time adoption of a pre-isolation wishlist, so the change does not
+   silently empty the saved items of an existing customer. Moves once, into
+   whichever identity is active on the first load after the update, and the
+   legacy key is removed so it can never be adopted twice. */
+const adoptLegacyWishlist = (scopedKey) => {
+  try {
+    if (localStorage.getItem(scopedKey) !== null) return;
+    const legacy = localStorage.getItem(WISHLIST_KEY_BASE);
+    if (legacy === null) return;
+    localStorage.setItem(scopedKey, legacy);
+    localStorage.removeItem(WISHLIST_KEY_BASE);
+  } catch (err) {
+    console.error('Wishlist: legacy adoption skipped ->', err.message);
+  }
+};
+
+/* Pure -- the persistence that used to happen inside the reducer now lives in
+   an effect, so a write can be withheld on the render where the identity has
+   changed but the rehydrating dispatch has not landed yet. */
+const wishlistReducer = (prev, action) => {
+  switch (action.type) {
+    case 'HYDRATE':
+      return action.payload;
+    case 'TOGGLE': {
+      const id = action.payload;
+      return prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+    }
+    default:
+      return prev;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  const [wishlist, setWishlist] = useReducer((prev, id) => {
-    const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-    localStorage.setItem('moto_wishlist', JSON.stringify(next));
-    return next;
-  }, JSON.parse(localStorage.getItem('moto_wishlist') || '[]'));
+  /* state.user is rehydrated synchronously in initialState, so the identity is
+     already known on the first render -- there is no signed-out frame that
+     could persist an empty list over a stored one. */
+  const wishlistKey = wishlistKeyFor(scopeOf(state.user));
 
-  const toggleWishlist = (id) => setWishlist(id);
+  const [wishlist, wishlistDispatch] = useReducer(wishlistReducer, wishlistKey, (k) => {
+    adoptLegacyWishlist(k);
+    return readStoredWishlist(k);
+  });
+
+  /* Which identity the list in hand belongs to, and which identity a hydration
+     has been dispatched for but not yet applied. */
+  const wishlistScopeRef = useRef(wishlistKey);
+  const wishlistPendingRef = useRef(null);
+
+  // Identity changed -> load that user's own list. Declared BEFORE the persist
+  // effect below, which is what makes the ordering guarantee hold.
+  useEffect(() => {
+    if (wishlistScopeRef.current === wishlistKey) return;
+    wishlistScopeRef.current = wishlistKey;
+    wishlistPendingRef.current = wishlistKey;
+    adoptLegacyWishlist(wishlistKey);
+    wishlistDispatch({ type: 'HYDRATE', payload: readStoredWishlist(wishlistKey) });
+  }, [wishlistKey]);
+
+  useEffect(() => {
+    // The hydration for this key has not been applied yet, so `wishlist` still
+    // belongs to the previous identity -- writing now would copy it into the
+    // new user's bucket. Skip exactly this run.
+    if (wishlistPendingRef.current === wishlistKey) { wishlistPendingRef.current = null; return; }
+    try {
+      localStorage.setItem(wishlistKey, JSON.stringify(wishlist));
+    } catch (err) {
+      console.error('Wishlist: could not persist wishlist ->', err.message);
+    }
+  }, [wishlist, wishlistKey]);
+
+  const toggleWishlist = (id) => wishlistDispatch({ type: 'TOGGLE', payload: id });
 
   // Sync latest user details (including saved addresses) on load/token change
   useEffect(() => {

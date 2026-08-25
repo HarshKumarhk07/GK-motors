@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { useAuth } from './AuthContext';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    This module exposes TWO carts:
@@ -14,12 +15,64 @@ import toast from 'react-hot-toast';
                         synchronised across browser tabs.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const CART_STORAGE_KEY = 'gkmotors_service_cart';
+/* ── Per-identity storage ────────────────────────────────────────────────
+   Both carts used to live under a single global key, so every profile on a
+   browser shared one basket: sign in as someone else and their cart was
+   yours. There is no server-side cart in this project (no Cart model, route
+   or controller), so localStorage IS the cart, and the isolation has to
+   happen here.
+
+   The key is suffixed with the authenticated user's stable _id -- the same
+   id the login response returns and orders are owned by -- never the email.
+   Signed out, the bucket is 'guest'. Each identity therefore keeps its own
+   basket across sessions instead of the carts being wiped on switch. */
+const CART_KEY_BASE = 'gkmotors_service_cart';
+
+const scopeOf = (user) => (user && user._id ? `u:${String(user._id)}` : 'guest');
+const serviceKeyFor = (scope) => `${CART_KEY_BASE}:${scope}`;
+
+/* One-time adoption of a pre-isolation cart. Before this fix everything sat
+   under the bare base key; without this the change would silently empty the
+   basket of every customer mid-shop. It moves once, into whichever identity
+   is active on the first load after the update, and the legacy key is then
+   removed so it can never be adopted twice. */
+const adoptLegacy = (baseKey, scopedKey) => {
+  try {
+    if (localStorage.getItem(scopedKey) !== null) return;
+    const legacy = localStorage.getItem(baseKey);
+    if (legacy === null) return;
+    localStorage.setItem(scopedKey, legacy);
+    localStorage.removeItem(baseKey);
+  } catch (err) {
+    console.error('Cart: legacy adoption skipped ->', err.message);
+  }
+};
+
+/* Guest basket carried into the account the shopper signs into, and only
+   when that account's own basket is empty -- so nothing an authenticated
+   user owns is ever overwritten, and data never moves between two accounts.
+   This preserves the pre-existing "add while signed out, then log in to pay"
+   flow, which a straight scope switch would otherwise break. */
+const adoptGuest = (guestKey, scopedKey, isEmpty) => {
+  try {
+    const guest = localStorage.getItem(guestKey);
+    if (guest === null) return null;
+    const existing = localStorage.getItem(scopedKey);
+    if (existing !== null && !isEmpty(existing)) return null;
+    localStorage.setItem(scopedKey, guest);
+    localStorage.removeItem(guestKey);
+    return guest;
+  } catch (err) {
+    console.error('Cart: guest adoption skipped ->', err.message);
+    return null;
+  }
+};
 // The parts cart used to live in memory only, so a refresh or a full page
 // navigation emptied it and the customer lost their basket. It is persisted
 // under its own key (the service cart above is a different shape and must not
 // be mixed into it) and synchronised across tabs the same way.
-const PARTS_CART_STORAGE_KEY = 'gkmotors_parts_cart';
+const PARTS_CART_KEY_BASE = 'gkmotors_parts_cart';
+const partsKeyFor = (scope) => `${PARTS_CART_KEY_BASE}:${scope}`;
 
 /** Only the fields the cart and checkout actually read are kept. Storing the
  *  whole product document would blow the 5MB localStorage budget and would
@@ -52,13 +105,13 @@ const isValidPartsCart = (data) =>
       Number(i.quantity) > 0
   );
 
-const readStoredPartsCart = () => {
+const readStoredPartsCart = (key) => {
   try {
-    const raw = localStorage.getItem(PARTS_CART_STORAGE_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return { items: [] };
     const parsed = JSON.parse(raw);
     if (!isValidPartsCart(parsed)) {
-      localStorage.removeItem(PARTS_CART_STORAGE_KEY);
+      localStorage.removeItem(key);
       return { items: [] };
     }
     return { items: parsed.map(slimPart) };
@@ -126,14 +179,14 @@ const isValidServiceCart = (data) => {
   );
 };
 
-const readStoredCart = () => {
+const readStoredCart = (key) => {
   try {
-    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return emptyServiceCart;
     const parsed = JSON.parse(raw);
     if (!isValidServiceCart(parsed)) {
       console.error('ServiceCart: stored cart failed validation, resetting');
-      localStorage.removeItem(CART_STORAGE_KEY);
+      localStorage.removeItem(key);
       return emptyServiceCart;
     }
     return { car: parsed.car ?? null, services: parsed.services };
@@ -196,8 +249,63 @@ const serviceReducer = (state, action) => {
 const ServiceCartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(cartReducer, { items: [] }, readStoredPartsCart);
-  const [service, serviceDispatch] = useReducer(serviceReducer, emptyServiceCart, readStoredCart);
+  /* AuthProvider wraps CartProvider in App.jsx, and its user is rehydrated
+     synchronously from localStorage in the reducer's initial state -- so the
+     identity is already known on the very first render and there is no
+     "logged out for one frame" window that could persist an empty cart over
+     a stored one. */
+  const { user } = useAuth();
+  const scope = scopeOf(user);
+  const partsKey = partsKeyFor(scope);
+  const serviceKey = serviceKeyFor(scope);
+
+  const [state, dispatch] = useReducer(cartReducer, partsKey, (k) => {
+    adoptLegacy(PARTS_CART_KEY_BASE, k);
+    return readStoredPartsCart(k);
+  });
+  const [service, serviceDispatch] = useReducer(serviceReducer, serviceKey, (k) => {
+    adoptLegacy(CART_KEY_BASE, k);
+    return readStoredCart(k);
+  });
+
+  /* Which identity the state in hand belongs to, and which identity a
+     hydration has been dispatched for but not yet applied. The pending ref is
+     what stops the persist effects below writing the OUTGOING user's items
+     into the INCOMING user's key on the render where the key has changed but
+     the hydrating dispatch has not landed yet. */
+  const partsScopeRef = useRef(partsKey);
+  const serviceScopeRef = useRef(serviceKey);
+  const partsPendingRef = useRef(null);
+  const servicePendingRef = useRef(null);
+
+  // Identity changed: rehydrate both carts from the new owner's buckets.
+  useEffect(() => {
+    if (partsScopeRef.current === partsKey) return;
+    partsScopeRef.current = partsKey;
+    partsPendingRef.current = partsKey;
+    adoptLegacy(PARTS_CART_KEY_BASE, partsKey);
+    if (scope !== 'guest') {
+      adoptGuest(partsKeyFor('guest'), partsKey, (raw) => {
+        try { const p = JSON.parse(raw); return !Array.isArray(p) || p.length === 0; }
+        catch { return true; }
+      });
+    }
+    dispatch({ type: 'HYDRATE_ITEMS', payload: readStoredPartsCart(partsKey).items });
+  }, [partsKey, scope]);
+
+  useEffect(() => {
+    if (serviceScopeRef.current === serviceKey) return;
+    serviceScopeRef.current = serviceKey;
+    servicePendingRef.current = serviceKey;
+    adoptLegacy(CART_KEY_BASE, serviceKey);
+    if (scope !== 'guest') {
+      adoptGuest(serviceKeyFor('guest'), serviceKey, (raw) => {
+        try { const p = JSON.parse(raw); return !p || (!p.car && (!p.services || p.services.length === 0)); }
+        catch { return true; }
+      });
+    }
+    serviceDispatch({ type: 'HYDRATE', payload: readStoredCart(serviceKey) });
+  }, [serviceKey, scope]);
 
   // Marks writes this tab made, so the storage listener can ignore its own echo.
   const writingRef = useRef(false);
@@ -206,20 +314,24 @@ export const CartProvider = ({ children }) => {
   // Persist the parts cart on every change, so a refresh or a navigation that
   // remounts the provider does not empty the basket.
   useEffect(() => {
+    // The hydration for this key has not been applied yet, so `state.items`
+    // still belongs to the previous identity -- writing now would copy it
+    // into the new user's bucket. Skip exactly this run.
+    if (partsPendingRef.current === partsKey) { partsPendingRef.current = null; return; }
     try {
       partsWritingRef.current = true;
-      localStorage.setItem(PARTS_CART_STORAGE_KEY, JSON.stringify(state.items));
+      localStorage.setItem(partsKey, JSON.stringify(state.items));
     } catch (err) {
       console.error('PartsCart: could not persist cart ->', err.message);
     } finally {
       setTimeout(() => { partsWritingRef.current = false; }, 0);
     }
-  }, [state.items]);
+  }, [state.items, partsKey]);
 
   // Keep other tabs in step with the parts cart too.
   useEffect(() => {
     const onStorage = (e) => {
-      if (e.key !== PARTS_CART_STORAGE_KEY || partsWritingRef.current) return;
+      if (e.key !== partsKey || partsWritingRef.current) return;
       if (e.newValue === null) {
         dispatch({ type: 'HYDRATE_ITEMS', payload: [] });
         return;
@@ -235,26 +347,27 @@ export const CartProvider = ({ children }) => {
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, []);
+  }, [partsKey]);
 
   // Persist on every change. A failure here is non-fatal: the cart keeps
   // working in memory for the rest of the session.
   useEffect(() => {
+    if (servicePendingRef.current === serviceKey) { servicePendingRef.current = null; return; }
     try {
       writingRef.current = true;
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(service));
+      localStorage.setItem(serviceKey, JSON.stringify(service));
     } catch (err) {
       console.error('ServiceCart: could not persist cart ->', err.message);
     } finally {
       // Release on the next tick — the storage event fires asynchronously.
       setTimeout(() => { writingRef.current = false; }, 0);
     }
-  }, [service]);
+  }, [service, serviceKey]);
 
   // Keep other tabs in step.
   useEffect(() => {
     const onStorage = (e) => {
-      if (e.key !== CART_STORAGE_KEY || writingRef.current) return;
+      if (e.key !== serviceKey || writingRef.current) return;
       if (e.newValue === null) {
         serviceDispatch({ type: 'HYDRATE', payload: emptyServiceCart });
         return;
@@ -270,7 +383,7 @@ export const CartProvider = ({ children }) => {
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, []);
+  }, [serviceKey]);
 
   // ── legacy parts cart api ──
   const addToCart = (item, quantity = 1) => {
@@ -288,7 +401,7 @@ export const CartProvider = ({ children }) => {
   const clearCart = () => {
     dispatch({ type: 'CLEAR_CART' });
     try {
-      localStorage.removeItem(PARTS_CART_STORAGE_KEY);
+      localStorage.removeItem(partsKey);
     } catch (err) {
       console.error('PartsCart: could not clear stored cart ->', err.message);
     }
@@ -358,11 +471,11 @@ export const CartProvider = ({ children }) => {
   const clearServiceCart = useCallback(() => {
     serviceDispatch({ type: 'CLEAR_ALL' });
     try {
-      localStorage.removeItem(CART_STORAGE_KEY);
+      localStorage.removeItem(serviceKey);
     } catch (err) {
       console.error('ServiceCart: could not clear stored cart ->', err.message);
     }
-  }, []);
+  }, [serviceKey]);
 
   const serviceTotal = sumServices(service.services);
   const getCartTotal = useCallback(() => sumServices(service.services), [service.services]);
@@ -402,4 +515,7 @@ export const useServiceCart = () => {
   return ctx;
 };
 
-export { CART_STORAGE_KEY, PARTS_CART_STORAGE_KEY };
+/* The bare bases are no longer usable as storage keys on their own -- a cart
+   only exists inside an identity's bucket. The builders are exported so any
+   future caller derives the same scoped key rather than reinventing it. */
+export { CART_KEY_BASE, PARTS_CART_KEY_BASE, scopeOf, serviceKeyFor, partsKeyFor };

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Wrench, Wind, Battery, CircleDot, Paintbrush, Sparkles, Droplets,
   Search, Sun, Settings, Cog, Shield, ChevronLeft, AlertCircle,
-  Car as CarIcon,
+  Car as CarIcon, Pencil,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -74,7 +74,18 @@ export default function Services() {
      screen is derived from the vehicle. This is the state change, not a
      relabelling: `stage` gates which screen renders, and every entry point
      below routes through 'car' first when the cart has no vehicle. */
-  const [stage, setStage] = useState(() => (car ? 'categories' : 'car'));
+  /* A saved car and a car chosen for THIS booking are two different facts.
+     `car` (from the persisted service cart) is the former: it survives leaving
+     the page, and treating it as the latter is what let a new booking start
+     already past the vehicle decision. `carConfirmed` is the latter -- it is
+     component state with no persistence, so every fresh mount is a fresh
+     booking that has to be confirmed. `stage` therefore always starts at
+     'car'; what differs is which of the two vehicle screens renders. */
+  const [stage, setStage] = useState('car');
+  const [carConfirmed, setCarConfirmed] = useState(false);
+  /* Within the 'car' stage: false = confirm the saved car, true = CarSelector.
+     With no saved car there is nothing to confirm, so CarSelector shows. */
+  const [changingCar, setChangingCar] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showCheckout, setShowCheckout] = useState(false);
 
@@ -144,16 +155,16 @@ export default function Services() {
   /* Deep link from the home page: /services?category=3
      The category is remembered, but it does NOT jump past the car step — with
      no vehicle chosen there is nothing to price the packages against, so the
-     customer lands on 'car' and is carried through to the packages once they
-     have picked one (see handleCarSelect). */
+     customer lands on 'car' and is carried through to the packages once the
+     vehicle is confirmed -- by Continue, or by picking one in CarSelector. */
   useEffect(() => {
     const id = Number(searchParams.get('category'));
     if (!id) return;
     const match = categories.find((c) => c.id === id);
     if (!match) return;
     setSelectedCategory(match);
-    setStage(car ? 'packages' : 'car');
-  }, [searchParams, categories, car]);
+    setStage(carConfirmed ? 'packages' : 'car');
+  }, [searchParams, categories, carConfirmed]);
 
   // Deep link directly to checkout modal: /services?checkout=true
   useEffect(() => {
@@ -181,7 +192,7 @@ export default function Services() {
     setSelectedCategory(category);
     setSearchParams({ category: String(category.id) }, { replace: true });
     // Car first, always — even arriving straight at a category.
-    setStage(car ? 'packages' : 'car');
+    setStage(carConfirmed ? 'packages' : 'car');
   };
 
   const backToCategories = () => {
@@ -217,13 +228,34 @@ export default function Services() {
       toast.success(`${carData.brand} ${carData.model} selected`);
     }
 
-    // Carry on to whatever they were heading for.
+    // Choosing a car in the selector IS the explicit choice for this booking.
+    setChangingCar(false);
+    setCarConfirmed(true);
     setStage(selectedCategory ? 'packages' : 'categories');
   };
 
   /* Changing the car keeps the surrounding layout mounted — see the render
-     below, where the cart column no longer disappears. */
-  const changeCar = () => setStage('car');
+     below, where the cart column no longer disappears. Reachable from any
+     stage, so it has to pull the funnel back to 'car' as well as open the
+     selector. */
+  const changeCar = () => { setChangingCar(true); setStage('car'); };
+
+  /* Backing out of the selector. Where that lands depends on whether a
+     vehicle has already been confirmed for this booking: if it has, return to
+     the funnel; if it has not, fall back to the confirm screen rather than
+     leaking the customer into the categories with an unconfirmed car. */
+  const cancelChangeCar = () => {
+    setChangingCar(false);
+    if (carConfirmed) setStage(selectedCategory ? 'packages' : 'categories');
+  };
+
+  /* Accepting the saved car as-is. This is the only other way to set
+     carConfirmed, and it changes no vehicle state -- the saved car is already
+     the right one, it just had not been chosen for this booking yet. */
+  const continueWithCar = () => {
+    setCarConfirmed(true);
+    setStage(selectedCategory ? 'packages' : 'categories');
+  };
 
   const handleCheckout = () => {
     if (!user) {
@@ -314,6 +346,79 @@ export default function Services() {
         }
         .gk-svc-back:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
 
+        /* Selected-car strip. Sits at the top of the main column in every
+           stage so the vehicle is always changeable before a service is
+           picked, on any width. */
+        .gk-svc-carbar {
+          display: flex; align-items: center; gap: 0.8rem;
+          background: #FFF; border: 1.5px solid #E2E8F0; border-radius: 14px;
+          padding: 0.7rem 0.85rem; margin-bottom: 1.1rem;
+          box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+        }
+        .gk-svc-carbar-thumb {
+          width: 42px; height: 42px; border-radius: 10px; background: #EBF0FF;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0; overflow: hidden;
+        }
+        .gk-svc-carbar-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .gk-svc-carbar-text { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+        .gk-svc-carbar-label {
+          font-size: 0.62rem; font-weight: 900; color: #94A3B8;
+          text-transform: uppercase; letter-spacing: 0.1em;
+        }
+        .gk-svc-carbar-name {
+          font-size: 0.92rem; font-weight: 800; color: #0F172A; line-height: 1.25;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .gk-svc-carbar-meta {
+          font-size: 0.7rem; font-weight: 700; color: #64748B;
+          text-transform: uppercase; letter-spacing: 0.05em;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .gk-svc-carbar-btn {
+          display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
+          flex-shrink: 0; min-height: 44px; padding: 0.6rem 0.95rem;
+          background: #EFF6FF; border: 1.5px solid #BFDBFE; border-radius: 10px;
+          color: #1E3A8A; font-family: inherit; font-weight: 800; font-size: 0.76rem;
+          cursor: pointer; white-space: nowrap;
+          transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .gk-svc-carbar-btn:hover { background: #DBEAFE; border-color: #93C5FD; }
+        .gk-svc-carbar-btn:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+
+        /* Confirm-the-saved-car screen. The vehicle itself is already shown in
+           the strip directly above, which also carries the Change car control,
+           so this panel only has to own the Continue action. */
+        .gk-svc-confirm {
+          background: #FFF; border: 1.5px solid #E2E8F0; border-radius: 14px;
+          padding: 1.35rem 1.25rem; box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+        }
+        .gk-svc-confirm-title {
+          font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; font-weight: 900;
+          color: #0F172A; letter-spacing: -0.01em; margin-bottom: 0.3rem;
+        }
+        .gk-svc-confirm-copy {
+          color: #64748B; font-size: 0.82rem; font-weight: 500;
+          line-height: 1.6; margin-bottom: 1.15rem; max-width: 46ch;
+        }
+        .gk-svc-confirm-cta {
+          display: inline-flex; align-items: center; justify-content: center;
+          min-height: 48px; padding: 0.8rem 2.2rem;
+          background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%);
+          color: #FFF; border: none; border-radius: 10px;
+          font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 0.85rem;
+          letter-spacing: 0.09em; text-transform: uppercase; cursor: pointer;
+        }
+        .gk-svc-confirm-cta:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+        @media (max-width: 640px) {
+          .gk-svc-confirm-cta { width: 100%; }
+        }
+        @media (max-width: 420px) {
+          .gk-svc-carbar { gap: 0.6rem; padding: 0.65rem 0.7rem; }
+          .gk-svc-carbar-thumb { width: 36px; height: 36px; }
+          .gk-svc-carbar-btn { padding: 0.6rem 0.7rem; font-size: 0.72rem; }
+        }
+
         /* Skeletons at the real grid's shape, so the column keeps its height
            while the catalogue loads instead of collapsing to a spinner. */
         .gk-svc-grid-skel {
@@ -350,18 +455,71 @@ export default function Services() {
         <div className="gk-svc-layout" style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
           {/* ── main column ── */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {stage === 'car' ? (
-              /* Step 1 — always. CarSelector holds its own height while it
-                 loads, so entering this stage from the cart's "Change car"
-                 no longer collapses the document and throws scroll position. */
-              <>
-                {car && (
-                  <button onClick={() => setStage(selectedCategory ? 'packages' : 'categories')} className="gk-svc-back">
-                    <ChevronLeft size={13} /> Back
+            {/* -- Selected car strip -------------------------------------
+                The vehicle lives in the service cart, which persists to
+                localStorage, so returning to /services restores it and the
+                `stage` initialiser starts at 'categories' rather than 'car'.
+                That is intended: a saved car is a convenience. The defect was
+                that the ONLY control bound to changeCar lived inside
+                <ServiceCart>, and at <=900px .gk-svc-layout becomes a column,
+                so that sidebar is laid out AFTER the main column -- below the
+                entire category grid. A returning customer saw their old car
+                and had no reachable way to change it.
+
+                The strip renders in every stage at a constant height (only the
+                button's label changes), so entering the 'car' stage neither
+                adds nor removes layout. That is what holds scroll position
+                while CarSelector loads -- no window.scrollTo() involved. */}
+            {car && (
+              <div className="gk-svc-carbar">
+                <div className="gk-svc-carbar-thumb">
+                  {car.image
+                    ? <img src={car.image} alt="" />
+                    : <CarIcon size={18} style={{ color: '#1E3A8A' }} />}
+                </div>
+                <div className="gk-svc-carbar-text">
+                  <span className="gk-svc-carbar-label">Selected car</span>
+                  <strong className="gk-svc-carbar-name">{car.brand} {car.model}</strong>
+                  {/* Legacy rows may carry no fuelType, or an older value the
+                      current CarSelector no longer offers. Render whatever is
+                      actually present rather than assuming the full triple. */}
+                  <span className="gk-svc-carbar-meta">
+                    {[car.year, car.fuelType, car.isManualEntry ? 'manual entry' : null]
+                      .filter(Boolean).join(' \u00b7 ')}
+                  </span>
+                </div>
+                {changingCar ? (
+                  <button type="button" onClick={cancelChangeCar} className="gk-svc-carbar-btn">
+                    <ChevronLeft size={13} /> Cancel
+                  </button>
+                ) : (
+                  <button type="button" onClick={changeCar} className="gk-svc-carbar-btn">
+                    <Pencil size={13} /> Change car
                   </button>
                 )}
+              </div>
+            )}
+
+            {stage === 'car' ? (
+              /* Two screens share this stage. With a saved car that has not
+                 been confirmed for this booking, the customer gets the choice
+                 FIRST -- before any service exists to be mispriced. With no
+                 saved car there is nothing to confirm and CarSelector is the
+                 first screen, exactly as before. */
+              car && !changingCar ? (
+                <div className="gk-svc-confirm">
+                  <h2 className="gk-svc-confirm-title">Your car</h2>
+                  <p className="gk-svc-confirm-copy">
+                    Every price on the next screen is worked out for this vehicle.
+                    Continue with it, or change it first.
+                  </p>
+                  <button type="button" onClick={continueWithCar} className="gk-svc-confirm-cta">
+                    Continue
+                  </button>
+                </div>
+              ) : (
                 <CarSelector onSelect={handleCarSelect} selectedCar={car} />
-              </>
+              )
             ) : stage === 'categories' ? (
               <>
                 <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.4rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.25rem' }}>

@@ -10,8 +10,15 @@
   padding: 0;
 }
 
+/* No min-height here on purpose.
+   `min-height: 100%` on html, body AND #root chained three percentages against
+   parents whose own height is `auto`. A percentage height against an auto
+   containing block is one of the genuinely browser-dependent corners of CSS --
+   it can resolve to zero, or to the parent's used height -- and stacking three
+   of them under a fourth declaration (100vh on the layout shell) made the
+   page's total height something no single rule owned. #root below is now the
+   only element that declares a viewport height. */
 html, body, #root {
-  min-height: 100%;
   width: 100% !important;
   max-width: 100% !important;
   margin: 0;
@@ -50,10 +57,18 @@ body {
   position: relative;
 }
 
+/* The single owner of page height.
+   100dvh, not 100vh: on mobile `vh` is measured with the browser's URL bar
+   hidden, so it is TALLER than the visible viewport and leaves a strip of dead
+   scroll below the footer -- which is exactly the white band that appeared on
+   mobile but never on desktop, where the two are the same. The 100vh line
+   above it is the fallback for browsers without dvh. */
 #root {
   display: flex;
   flex-direction: column;
   flex: 1 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 html {
@@ -865,9 +880,16 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
     padding-right: 0.75rem !important;
   }
 
-  section {
-    position: static !important;
-  }
+  /* Do NOT reinstate `section { position: static !important }` here.
+     It overrode the inline `position: relative` on every <section>, so a
+     section stopped being the containing block for its own absolutely
+     positioned children -- and its `overflow: hidden` then could not clip
+     them, because overflow only clips descendants whose containing block
+     is inside it. Home's .gk-glow-b (bottom: -30%) escaped .gk-hero,
+     resolved its percentage against <body> instead, and landed ~450px
+     below the footer: that was the phantom white strip under the footer
+     on phones only (the rule was scoped to <=640px, so desktop was fine).
+     Nothing used it -- no <section> is sticky; the sticky element is <nav>. */
 
   .cart-item-row {
     flex-direction: column !important;
