@@ -41,10 +41,15 @@ export default function ServiceCart({ onCheckout, onChangeCar, checkoutDisabled 
           </div>
           <button
             onClick={onChangeCar}
-            title="Change car"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1E3A8A', display: 'flex', padding: '0.25rem' }}
+            aria-label="Change the selected car"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0,
+              background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '8px',
+              color: '#1E3A8A', cursor: 'pointer', padding: '0.4rem 0.6rem',
+              minHeight: 36, fontWeight: 800, fontSize: '0.7rem', fontFamily: 'inherit',
+            }}
           >
-            <Pencil size={14} />
+            <Pencil size={12} /> Change
           </button>
         </div>
       </div>
@@ -94,6 +99,7 @@ export default function ServiceCart({ onCheckout, onChangeCar, checkoutDisabled 
       <button
         onClick={onCheckout}
         disabled={empty || checkoutDisabled}
+        className="gk-cart-cta"
         style={{
           width: '100%',
           background: empty || checkoutDisabled ? '#E2E8F0' : 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',

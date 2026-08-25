@@ -149,7 +149,7 @@ export default function Profile() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF', padding: '2.5rem 0' }}>
+    <div style={{ flex: '1 0 auto', width: '100%', background: '#FFFFFF', padding: '2.5rem 0' }}>
       <style>{`
         @media (max-width: 640px) {
           .profile-header { flex-direction: column; text-align: center; padding: 1.2rem !important; gap: 0.8rem !important; }

@@ -444,7 +444,7 @@ export default function Cart() {
   const grandTotal = total + shippingCharge;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+    <div style={{ flex: '1 0 auto', width: '100%', background: '#FFFFFF' }}>
       <style>{`
         /* The summary column was a fixed 520px next to a flexible one, which
            overflowed everything between the tablet breakpoint and ~1100px.

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const SparePart = require('../models/SparePart');
 const Order = require('../models/Order');
 const { createOrder: createRazorpayOrder, verifyPayment } = require('../services/paymentService');
+const { cleanText, cleanMultiline, cleanNumber, cleanInt, cleanPincode, cleanUrl, cleanBool, pick } = require('../utils/sanitize');
 
 // Helper: pincode filter that also includes products with no pincodePricing (available everywhere)
 const pincodeFilter = (pincode) => ({
@@ -47,11 +48,25 @@ const getAllParts = asyncHandler(async (req, res) => {
 
 // @desc  Get featured parts
 // @route GET /api/store/parts/featured
+/**
+ * `limit` is optional and unset by default, so /featured keeps receiving the
+ * full list exactly as before.
+ *
+ * The home page's shop strip renders five cards and now asks for five. It was
+ * previously pulling every featured part in the catalogue — whole documents,
+ * `pincodePricing` arrays and image lists included — and throwing all but the
+ * first five away on the client, on the landing page's critical path.
+ */
 const getFeaturedParts = asyncHandler(async (req, res) => {
-  const { pincode } = req.query;
+  const { pincode, limit } = req.query;
   const query = { isFeatured: true, isActive: true };
   if (pincode) Object.assign(query, pincodeFilter(pincode));
-  const parts = await SparePart.find(query).sort({ createdAt: -1 });
+
+  let cursor = SparePart.find(query).sort({ createdAt: -1 });
+  const max = Number(limit);
+  if (Number.isFinite(max) && max > 0) cursor = cursor.limit(Math.min(max, 100));
+
+  const parts = await cursor;
   res.json({ success: true, parts });
 });
 
@@ -118,16 +133,66 @@ const getPart = asyncHandler(async (req, res) => {
 
 const toUrl = (f) => f.path.includes('uploads') ? '/uploads' + f.path.split('uploads')[1].replace(/\\/g, '/') : f.path;
 
+/**
+ * Parse a JSON field arriving through multipart, without letting bad JSON 500.
+ *
+ * These three fields were parsed with a bare JSON.parse, so a malformed string
+ * threw a SyntaxError straight out of the handler -- reported to the admin as
+ * a server fault rather than as a bad field.
+ */
+const parseMaybeJSON = (value, fallback) => {
+  if (value === undefined || value === null) return fallback;
+  if (typeof value !== 'string') return value;
+  try {
+    return JSON.parse(value);
+  } catch (err) {
+    console.error('partController: could not parse JSON field ->', err.message);
+    return fallback;
+  }
+};
+
+/**
+ * The customer-visible text on a part.
+ *
+ * Admin-authored, but rendered on the public storefront and in order emails,
+ * so it is cleaned on the way in like any other stored text. Only keys present
+ * on the body are returned, so update semantics are unchanged.
+ */
+const cleanPartText = (body) => {
+  const out = {};
+  const rules = {
+    name: { field: 'Name', max: 200 },
+    brand: { field: 'Brand', max: 80 },
+    category: { field: 'Category', max: 80 },
+    subCategory: { field: 'Sub-category', max: 80 },
+  };
+  for (const [key, opts] of Object.entries(rules)) {
+    if (body[key] !== undefined) out[key] = cleanText(body[key], opts);
+  }
+  if (body.description !== undefined) {
+    out.description = cleanMultiline(body.description, { field: 'Description', max: 4000 });
+  }
+  for (const key of ['price', 'discountedPrice']) {
+    if (body[key] !== undefined && body[key] !== '') {
+      out[key] = cleanNumber(body[key], { field: 'Price', min: 0, max: 100000000 });
+    }
+  }
+  if (body.stock !== undefined && body.stock !== '') {
+    out.stock = cleanInt(body.stock, { field: 'Stock', min: 0, max: 1000000 });
+  }
+  return out;
+};
+
 // @desc  Create part (admin)
 const createPart = asyncHandler(async (req, res) => {
   const images = (req.files || []).map(toUrl);
 
   const body = { ...req.body };
-  if (typeof body.farmerDetails === 'string') body.farmerDetails = JSON.parse(body.farmerDetails);
-  if (typeof body.pincodePricing === 'string') body.pincodePricing = JSON.parse(body.pincodePricing);
-  if (typeof body.compatibleBikes === 'string') body.compatibleBikes = JSON.parse(body.compatibleBikes);
+  body.farmerDetails = parseMaybeJSON(body.farmerDetails, body.farmerDetails);
+  body.pincodePricing = parseMaybeJSON(body.pincodePricing, []);
+  body.compatibleBikes = parseMaybeJSON(body.compatibleBikes, []);
 
-  const part = await SparePart.create({ ...body, images });
+  const part = await SparePart.create({ ...body, ...cleanPartText(req.body), images });
   res.status(201).json({ success: true, part });
 });
 
@@ -136,11 +201,11 @@ const updatePart = asyncHandler(async (req, res) => {
   const existingPart = await SparePart.findById(req.params.id);
   if (!existingPart) { res.status(404); throw new Error('Part not found'); }
 
-  const body = { ...req.body };
+  const body = { ...req.body, ...cleanPartText(req.body) };
 
-  if (typeof body.farmerDetails === 'string') body.farmerDetails = JSON.parse(body.farmerDetails);
-  if (typeof body.pincodePricing === 'string') body.pincodePricing = JSON.parse(body.pincodePricing);
-  if (typeof body.compatibleBikes === 'string') body.compatibleBikes = JSON.parse(body.compatibleBikes);
+  body.farmerDetails = parseMaybeJSON(body.farmerDetails, body.farmerDetails);
+  body.pincodePricing = parseMaybeJSON(body.pincodePricing, body.pincodePricing);
+  body.compatibleBikes = parseMaybeJSON(body.compatibleBikes, body.compatibleBikes);
 
   // Merge with existing valid data if body field is empty or not provided
   for (const key of Object.keys(existingPart.toObject())) {
@@ -228,6 +293,13 @@ const placeOrder = asyncHandler(async (req, res) => {
   const { items, deliveryAddress, payment } = req.body;
 
   if (!items || !items.length) { res.status(400); throw new Error('No items in order'); }
+  if (!Array.isArray(items)) { res.status(400); throw new Error('Invalid basket'); }
+  // A basket is a basket. Without a ceiling one request can hold thousands of
+  // conditional stock updates open.
+  if (items.length > 50) {
+    res.status(400);
+    throw new Error('A single order can contain at most 50 different items');
+  }
 
   // Address is schema-required; failing here gives a readable message instead
   // of a raw Mongoose ValidationError after stock has already been reserved.
@@ -239,9 +311,20 @@ const placeOrder = asyncHandler(async (req, res) => {
   }
   // `state` is schema-required but rarely collected separately in the UI;
   // falling back to the city keeps a valid document instead of a 500.
+  /* Built field by field rather than spread, so the stored address holds only
+     what the schema defines -- and each part is length-capped and stripped of
+     markup, since this text is re-rendered in the admin order view. */
+  const city = cleanText(deliveryAddress.city, { field: 'City', max: 80, required: true });
   const address = {
-    ...deliveryAddress,
-    state: String(deliveryAddress.state || '').trim() || deliveryAddress.city,
+    label: cleanText(deliveryAddress.label, { field: 'Label', max: 40 }) || 'Address',
+    street: cleanText(deliveryAddress.street, { field: 'Street address', max: 200, required: true }),
+    city,
+    // `state` is schema-required but rarely collected separately in the UI;
+    // falling back to the city keeps a valid document instead of a 500.
+    state: cleanText(deliveryAddress.state, { field: 'State', max: 80 }) || city,
+    pincode: cleanPincode(deliveryAddress.pincode),
+    lat: cleanNumber(deliveryAddress.lat, { field: 'Latitude', min: -90, max: 90 }),
+    lng: cleanNumber(deliveryAddress.lng, { field: 'Longitude', min: -180, max: 180 }),
   };
 
   // Cash on delivery has been withdrawn. Anything that is not an online

@@ -72,10 +72,18 @@ export default function PartCard({ part }) {
       <Link to={`/parts/${part._id}`} style={{ textDecoration: 'none', height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Top Image Section (Light background, rounded corners) */}
         <div className="gk-pc-media">
+          {/* .gk-pc-media already reserves the box via aspect-ratio: 4/3, so
+              there is no layout shift to fix here. What these two attributes
+              buy is scroll smoothness: five of these sit below the fold on the
+              home page (and a full grid of them on /parts), and decoding a
+              remote product photo synchronously while the user is scrolling is
+              exactly the kind of main-thread stall that reads as a freeze. */}
           <img
             src={part.images?.[0] || PART_PLACEHOLDER}
             onError={(e) => { if (e.currentTarget.src.indexOf(PART_PLACEHOLDER) === -1) e.currentTarget.src = PART_PLACEHOLDER; }}
             alt={part.name}
+            loading="lazy"
+            decoding="async"
             style={{
               width: '100%', height: '100%', objectFit: 'contain', padding: '1.2rem',
               transform: hovered ? 'scale(1.1)' : 'scale(1)',
@@ -114,13 +122,14 @@ export default function PartCard({ part }) {
               toggleWishlist(part._id);
               toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
             }}
+            className="gk-pc-wish"
             style={{
               position: 'absolute', top: 12, right: 12,
               width: 34, height: 34, borderRadius: '50%',
               background: isWishlisted ? '#EF4444' : 'rgba(15, 23, 42, 0.8)',
               border: 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', backdropFilter: 'blur(10px)',
+              cursor: 'pointer',
               transform: isWishlisted ? 'scale(1.1)' : 'scale(1)',
               transition: 'all 0.25s',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
@@ -326,6 +335,15 @@ export function PartCardSkeleton() {
    same card works in a five-across desktop strip and a two-across phone grid
    without a fixed height stretching it or a fixed width overflowing it. */
 const PART_CARD_STYLES = `
+  /* The wishlist button's frosted background. Five of these scroll past on the
+     home page, each one its own compositing layer that the GPU re-blurs as it
+     moves. Cheap on a desktop, not free on a phone — so the blur is desktop
+     only and mobile gets a slightly more opaque solid instead, which over a
+     product photo reads the same. */
+  @media (min-width: 1024px) {
+    .gk-pc-wish { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  }
+
   /* Skeleton mirrors of the real card's body/category boxes, so the two stay
      the same height. Kept beside the card's own rules for exactly that reason. */
   .gk-pc-body-skel { padding: 0.85rem; flex: 1; display: flex; flex-direction: column; background: #FFFFFF; border-top: 1px solid #EEE; min-width: 0; }

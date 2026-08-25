@@ -63,3 +63,10 @@ export const updateBookingStatus = (id, data) => API.put(`/services/${id}/status
 
 export const createServicePayment = (id, data) => API.post(`/services/${id}/payment`, data);
 export const verifyServicePayment = (id, data) => API.post(`/services/${id}/verify-payment`, data);
+
+// Tell the server a payment attempt ended without success, so the booking
+// stops holding its slot. `cancelled: true` means the customer closed the
+// Razorpay sheet (booking stays payable); otherwise the payment itself failed.
+// Best-effort — the Razorpay webhook is the authoritative source.
+export const reportServicePaymentFailed = (id, data) =>
+  API.post(`/services/${id}/payment-failed`, data);

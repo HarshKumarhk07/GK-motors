@@ -11,6 +11,14 @@ const errorHandler = (err, req, res, next) => { // eslint-disable-line no-unused
   let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   let message = err.message || 'Internal Server Error';
 
+  /* Validation helpers throw rather than calling res.status(), because they
+     have no response object. They carry the status on the error instead; a
+     plain `throw new Error()` is unaffected and still falls through to the
+     res.statusCode logic above. */
+  if (err.status && Number.isInteger(err.status) && err.status >= 400 && err.status < 600) {
+    statusCode = err.status;
+  }
+
   // Mongoose bad ObjectId
   if (err.name === 'CastError' && err.kind === 'ObjectId') {
     statusCode = 404;

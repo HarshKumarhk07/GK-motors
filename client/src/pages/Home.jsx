@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Wrench, Sparkles, Zap, PaintBucket, Droplets, CircleDot, Battery,
@@ -9,7 +9,11 @@ import { getServiceCategories, getCategories } from '../api/serviceApi';
 import { getFeaturedParts, getRecentParts } from '../api/storeApi';
 import PartCard, { PartCardSkeleton } from '../components/parts/PartCard';
 import ServiceCategoryGrid from '../components/service/ServiceCategoryGrid';
-import heroCar from '../assets/hero-gt3-silver.png';
+import SectionBoundary from '../components/common/SectionBoundary';
+// WebP of the same 554x241 artwork with its alpha preserved exactly: 192 KB of
+// PNG for a photographic image became 29 KB. The .png is left in place as a
+// rollback, unreferenced, so Vite does not bundle it.
+import heroCar from '../assets/hero-gt3-silver.webp';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SERVICE CATEGORIES — fallback only
@@ -76,39 +80,82 @@ export default function Home() {
   const [partsLoading, setPartsLoading] = useState(true);
   const [partsError, setPartsError] = useState(false);
 
-  // Fetch service categories
+  /* ── Service categories ─────────────────────────────────────────────────
+     One request on the normal path, not two.
+
+     This used to Promise.all over BOTH /services/categories (a flat package
+     list, used only to work out each category's cheapest price) and
+     /service-categories (the admin-managed taxonomy). The second already
+     returns every category *with* its packages attached — see
+     serviceCategoryController.getServiceCategories — so on the happy path the
+     first request was pure duplication: the same package documents fetched
+     twice, on the landing page's critical path.
+
+     The old arrangement also had a real fault. Promise.all rejects as a whole,
+     and only /service-categories carried its own .catch — so if
+     /services/categories failed, the successful taxonomy response was thrown
+     away with it and the page fell all the way back to hardcoded categories.
+
+     The degraded path is deliberately preserved, not dropped: if the taxonomy
+     request fails or returns nothing, the flat package endpoint is still
+     called, so live prices continue to appear against the hardcoded fallback
+     category list exactly as they did before. Two requests then — but only
+     then. */
   useEffect(() => {
-    Promise.all([
-      getServiceCategories(),
-      getCategories().catch(() => ({ data: { categories: [] } })),
-    ])
-      .then(([pkgRes, catRes]) => {
-        setPackages(pkgRes.data.categories || []);
-        const live = catRes.data.categories || [];
-        if (live.length) {
-          setServiceCategories(
-            live.map((c) => {
-              const known = FALLBACK_CATEGORIES.find((f) => f.id === c.categoryId);
-              return {
-                id: c.categoryId,
-                slug: c.slug || known?.slug,
-                label: c.name || known?.label,
-                desc: c.description || known?.desc || '',
-                icon: known?.icon || Wrench,
-                apiImage: c.image || null,
-              };
-            })
-          );
-        }
+    let cancelled = false;
+
+    getCategories()
+      .then(({ data }) => {
+        const live = data.categories || [];
+        if (!live.length) return false;
+        if (cancelled) return true;
+
+        setServiceCategories(
+          live.map((c) => {
+            const known = FALLBACK_CATEGORIES.find((f) => f.id === c.categoryId);
+            return {
+              id: c.categoryId,
+              slug: c.slug || known?.slug,
+              label: c.name || known?.label,
+              desc: c.description || known?.desc || '',
+              icon: known?.icon || Wrench,
+              apiImage: c.image || null,
+            };
+          })
+        );
+
+        // Prices come from the packages already embedded in this response.
+        // Only `categoryId` and `basePrice` are read (see the `categories`
+        // memo below), and both are present on these documents.
+        setPackages(live.flatMap((c) => c.packages || []));
+        return true;
       })
-      .catch((err) => console.error('[Home.getServiceCategories]', err));
+      .catch((err) => {
+        console.error('[Home.getCategories]', err);
+        return false;
+      })
+      .then((served) => {
+        if (served || cancelled) return undefined;
+        // Degraded path only.
+        return getServiceCategories()
+          .then(({ data }) => { if (!cancelled) setPackages(data.categories || []); })
+          .catch((err) => console.error('[Home.getServiceCategories fallback]', err));
+      });
+
+    return () => { cancelled = true; };
   }, []);
 
-  // Fetch parts independently (non-blocking for the rest of the homepage)
-  const fetchParts = () => {
+  // Fetch parts independently (non-blocking for the rest of the homepage).
+  // useCallback with no dependencies: it only ever calls setState, so one
+  // stable identity is correct — and it lets the effect below declare it as a
+  // dependency honestly instead of relying on an empty array.
+  const fetchParts = useCallback(() => {
     setPartsLoading(true);
     setPartsError(false);
-    getFeaturedParts()
+    // Only HOME_PART_COUNT cards are rendered, so only that many are asked
+    // for. This endpoint was previously unbounded and returned every featured
+    // part in the catalogue, with the client throwing all but five away.
+    getFeaturedParts({ limit: HOME_PART_COUNT })
       .then(({ data }) => {
         const featured = data.parts || [];
         if (featured.length >= HOME_PART_COUNT) return featured;
@@ -132,25 +179,85 @@ export default function Home() {
       .finally(() => {
         setPartsLoading(false);
       });
-  };
-
-  useEffect(() => {
-    fetchParts();
   }, []);
 
-  // Compute category "from" price
-  const categories = serviceCategories.map((cat) => {
-    const inCategory = packages.filter((p) => p.categoryId === cat.id);
-    const image = cat.apiImage;
-    const priced = inCategory.filter((p) => p.basePrice > 0);
-    const cheapest = priced.length ? Math.min(...priced.map((p) => p.basePrice)) : (cat.fromPrice || 499);
-    return { ...cat, image, price: `From ₹${Number(cheapest).toLocaleString('en-IN')}` };
-  });
+  /* ── Defer the shop strip's requests until it is nearly in view ──────────
+     The parts strip is the fourth section down — roughly two screens below
+     the fold on a phone — yet its one-or-two requests used to fire in the
+     same burst as everything else the page needs at first paint, competing
+     for connections with content the visitor can actually see.
+
+     A single IntersectionObserver on the section, disconnected the moment it
+     fires, with 600px of rootMargin so the fetch still starts well before the
+     strip scrolls into view. Deliberately NOT a scroll listener and not one
+     observer per card — Phase 2B's whole point was to keep the scroll path
+     free of per-frame work, and this adds none.
+
+     `partsLoading` still starts true, so the skeletons render exactly as
+     before; only the moment the request leaves changes. Browsers without
+     IntersectionObserver, and the case where the node is somehow missing,
+     fall through to fetching immediately. */
+  const shopRef = useRef(null);
+  const partsStarted = useRef(false);
+
+  useEffect(() => {
+    const start = () => {
+      if (partsStarted.current) return;
+      partsStarted.current = true;
+      fetchParts();
+    };
+
+    const el = shopRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      start();
+      return undefined;
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          start();
+        }
+      },
+      { rootMargin: '600px 0px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [fetchParts]);
+
+  /* Category "from" prices.
+     This ran on every render and, worse, produced a brand-new array of brand-
+     new objects each time — so the twelve service cards below could never be
+     skipped by React, no matter what had actually changed. The parts strip
+     alone flips partsLoading twice and sets parts once, and each of those
+     re-rendered the whole page's card tree.
+
+     Memoised on the two inputs it actually derives from, so the reference is
+     stable and <ServiceCategoryGrid> (now React.memo) can bail out entirely
+     while the parts strip settles. */
+  const categories = useMemo(
+    () => serviceCategories.map((cat) => {
+      const inCategory = packages.filter((p) => p.categoryId === cat.id);
+      const priced = inCategory.filter((p) => p.basePrice > 0);
+      const cheapest = priced.length
+        ? Math.min(...priced.map((p) => p.basePrice))
+        : (cat.fromPrice || 499);
+      return { ...cat, image: cat.apiImage, price: `From ₹${Number(cheapest).toLocaleString('en-IN')}` };
+    }),
+    [serviceCategories, packages]
+  );
 
   const shownCount = Math.min(categories.length, HOME_CATEGORY_COUNT);
 
+  /* No viewport min-height on the root any more. The Layout shell in App.jsx
+     is already at least one viewport tall with <main> growing to fill it, so
+     it was redundant — and on mobile `100vh` is measured with the URL bar
+     hidden, making it taller than the visible viewport and adding a strip of
+     dead scroll at the bottom. The background matches <body>, so dropping it
+     changes nothing visually. */
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF', width: '100%', maxWidth: '100%', position: 'relative' }}>
+    <div style={{ background: '#FFFFFF', width: '100%', maxWidth: '100%', position: 'relative' }}>
       <style>{`
         /* ── Skeleton shimmer (always available, even before PartCard mounts) ── */
         @keyframes gk-shimmer {
@@ -225,11 +332,35 @@ export default function Home() {
           50%     { transform: translate3d(0,-10px,0); }
         }
 
-        /* On mobile: kill the heavy drift/float animations — they're invisible
-           anyway (glow blobs overflow outside the viewport) and cause scroll jank */
+        /* ── Mobile: nothing decorative may run continuously ──────────────────
+           Smooth scrolling beats decoration on a phone. The drift/float
+           animations were already stopped here; two more costs were not.
+
+           .gk-shimmer animates background-position on a background-clip:text
+           element, which repaints the H1 on every frame for as long as the
+           page is open — the most expensive thing still running on mobile.
+           The gradient itself is kept, frozen at its resting position, so the
+           heading looks the same and simply stops moving.
+
+           .gk-grid-overlay does not animate, but a mask-image on a full-bleed
+           layer forces its own compositing layer that has to be maintained
+           while the hero scrolls. The mask is dropped and the opacity halved
+           instead: the texture survives, the extra layer does not. */
         @media (max-width: 900px) {
           .gk-glow-a, .gk-glow-b { animation: none !important; }
           .gk-car { animation: gk-car-in 1s cubic-bezier(0.2,0.75,0.3,1) 0.2s forwards !important; }
+
+          .gk-shimmer {
+            animation: none !important;
+            background-size: 100% 100% !important;
+            background-position: 0 0 !important;
+          }
+
+          .gk-grid-overlay {
+            opacity: 0.22;
+            -webkit-mask-image: none !important;
+                    mask-image: none !important;
+          }
         }
 
         /* Respect reduced-motion: strip all decorative animations */
@@ -281,47 +412,93 @@ export default function Home() {
         }
         .gk-shop-all:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(30,58,138,.28); }
 
-        /* ── Mobile hero: collapse two-col grid → single column ── */
+        /* ── Mobile hero ─────────────────────────────────────────────────────
+           The car used to be hidden outright below 900px, which left the
+           mobile hero as a wall of text — the "too plain" report. It is now
+           kept and moved beneath the copy, where it reads as a product shot
+           rather than a squeezed desktop column.
+
+           This is affordable precisely because of Phase 2B: the artwork is a
+           29 KB WebP, not the 192 KB PNG it used to be. No animation is
+           reintroduced — the float and drift stay off below 900px (see the
+           block above); only the one-shot fade-in remains. */
         @media (max-width: 900px) {
-          .gk-hero-img { display: none !important; }
-          .gk-hero-grid { grid-template-columns: 1fr !important; }
+          .gk-hero-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1.25rem !important;
+          }
           .gk-hero-grid > div:first-child { width: 100% !important; max-width: 100% !important; }
+          .gk-hero-img {
+            order: 2;
+            margin-top: 0.25rem;
+          }
+          .gk-hero-img img { max-width: 420px !important; margin: 0 auto; }
+          /* The blurred halo behind the car is a filter: blur(30px) on a large
+             box. Cheap enough on a desktop GPU, not worth it on a phone. */
+          .gk-hero-img > div:first-child { display: none !important; }
         }
 
         @media (max-width: 768px) {
           .gk-hero {
-            padding: 2.5rem 0 3rem !important;
+            padding: 2.25rem 0 2.5rem !important;
             min-height: auto !important;
           }
-          .gk-hero h1 { font-size: clamp(1.75rem, 7vw, 2.25rem) !important; }
-          .gk-hero-desc { font-size: 0.88rem !important; margin-bottom: 1.4rem !important; }
+          .gk-hero h1 {
+            font-size: clamp(1.8rem, 8vw, 2.4rem) !important;
+            line-height: 1.12 !important;
+            margin-bottom: 0.75rem !important;
+          }
+          .gk-hero-eyebrow { font-size: 0.68rem !important; margin-bottom: 0.6rem !important; }
+          .gk-hero-desc {
+            font-size: 0.9rem !important;
+            line-height: 1.6 !important;
+            margin-bottom: 1.25rem !important;
+          }
           .gk-hero-ctas {
             flex-direction: column !important;
-            gap: 0.65rem !important;
-            margin-bottom: 1.5rem !important;
+            gap: 0.6rem !important;
+            margin-bottom: 1.25rem !important;
           }
           .gk-hero-ctas a {
             width: 100% !important;
             justify-content: center !important;
-            padding: 0.9rem 1rem !important;
+            padding: 0.95rem 1rem !important;
             white-space: nowrap !important;
             box-sizing: border-box !important;
           }
+          /* A 2x2 chip block reads as deliberate; the old single stacked column
+             left a tall ribbon of near-empty space down the left edge. */
           .gk-trust-row {
-            flex-direction: column !important;
-            gap: 0.6rem !important;
-            align-items: flex-start !important;
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 0.5rem !important;
+            align-items: stretch !important;
           }
           .gk-trust-row > div {
             width: 100% !important;
+            min-width: 0;
+            background: rgba(148, 163, 184, 0.10);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 10px;
+            padding: 0.5rem 0.6rem;
           }
+          .gk-trust-row span { font-size: 0.74rem !important; white-space: normal !important; }
           .gk-social-proof {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 0.45rem !important;
-            margin-top: 1.1rem !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            align-items: center !important;
+            gap: 0.5rem 0.9rem !important;
+            margin-top: 1rem !important;
           }
           .gk-booking-card { margin-top: 1.5rem !important; padding: 1.25rem !important; }
+        }
+
+        /* Smallest phones: the two-up chips would clip, so let them run full
+           width rather than truncating the labels. */
+        @media (max-width: 359px) {
+          .gk-trust-row { grid-template-columns: 1fr !important; }
+          .gk-hero h1 { font-size: 1.6rem !important; }
+          .gk-hero-img img { max-width: 100% !important; }
         }
 
         /* ── All card grids: 2 columns on mobile ── */
@@ -331,8 +508,7 @@ export default function Home() {
              past its container. */
           .gk-why-grid,
           .gk-how-grid,
-          .gk-stats-grid,
-          .gk-testimonials-grid {
+          .gk-stats-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             gap: 0.75rem !important;
           }
@@ -345,11 +521,53 @@ export default function Home() {
             padding: 1rem 0.85rem !important;
             border-radius: 12px !important;
           }
-          .gk-testimonials-grid > div {
-            padding: 1.1rem 1rem !important;
+        }
+
+        /* ── Reviews ─────────────────────────────────────────────────────────
+           Testimonials are deliberately NOT in the two-column block above.
+           A review is a paragraph of prose plus an avatar, a name, a role and
+           five stars; at 640px two columns leaves each card about 150px of
+           usable width, which is what made this section read as cramped. One
+           column below 620px gives the text a full measure, and the card can
+           then lay its author row out horizontally instead of stacking. */
+        .gk-testimonials-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+        @media (max-width: 620px) {
+          .gk-testimonials-grid {
+            grid-template-columns: 1fr !important;
+            gap: 0.85rem !important;
           }
-          .gk-testimonials-grid p { font-size: 0.78rem !important; }
-          .gk-testimonials-grid h4 { font-size: 0.88rem !important; }
+          .gk-testimonials-grid > div { padding: 1.15rem 1.1rem !important; }
+          .gk-testimonials-grid p { font-size: 0.88rem !important; line-height: 1.6 !important; }
+          .gk-testimonials-grid h4 { font-size: 0.95rem !important; }
+        }
+
+        /* ── Mobile: cheaper shadows ──────────────────────────────────────────
+           A blurred shadow costs the rasteriser roughly in proportion to the
+           area its blur covers, and about thirty of them scroll past on this
+           page. The radii below are cut roughly in half and the alpha nudged
+           up to compensate, so the cards keep the same sense of lift for far
+           less paint. Desktop keeps the original values untouched — this only
+           applies below 640px, where the pressure actually is.
+
+           !important because most of these shadows are set as inline styles on
+           the elements, which a plain stylesheet rule cannot override. */
+        @media (max-width: 640px) {
+          .gk-booking-card { box-shadow: 0 8px 18px rgba(15, 23, 42, 0.10) !important; }
+          .gk-why-grid > div,
+          .gk-how-grid > div { box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06) !important; }
+          .gk-testimonials-grid > div { box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05) !important; }
+          .gk-svc-all { box-shadow: 0 5px 12px rgba(29, 78, 216, .26) !important; }
+          .gk-shop-all { box-shadow: 0 4px 10px rgba(30, 58, 138, .24) !important; }
+        }
+
+        /* Hover lifts re-blur a shadow and re-composite the card. A touch
+           screen fires them on tap and can leave them stuck afterwards, so
+           they are reserved for pointers that can actually hover. */
+        @media (hover: none) {
+          .gk-svc-all:hover, .gk-shop-all:hover {
+            transform: none;
+            box-shadow: 0 5px 12px rgba(29, 78, 216, .26);
+          }
         }
       `}</style>
 
@@ -374,7 +592,7 @@ export default function Home() {
           <div className="gk-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '2.5rem', alignItems: 'center', width: '100%' }}>
             {/* LEFT TEXT CONTENT */}
             <div>
-              <p style={{ color: '#93C5FD', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '0.8rem' }}>
+              <p className="gk-hero-eyebrow" style={{ color: '#93C5FD', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '0.8rem' }}>
                 PREMIUM CAR CARE
               </p>
 
@@ -449,82 +667,35 @@ export default function Home() {
             {/* RIGHT — GT3 HERO CAR */}
             <div className="gk-hero-img" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <div style={{ position: 'absolute', width: '80%', height: '60%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(37,99,235,0.24) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+              {/* Intrinsic size given so the browser reserves the right box
+                  before the file arrives — without it the hero column snaps
+                  into place mid-load. Left eager on purpose: on desktop this
+                  is above the fold. (Below 900px .gk-hero-img is display:none,
+                  so this never paints on a phone.) */}
               <img
                 className="gk-car"
                 src={heroCar}
                 alt="Car undergoing professional service at GK Motors"
-                style={{ width: '100%', maxWidth: '680px', objectFit: 'contain', position: 'relative', zIndex: 1 }}
+                width={554}
+                height={241}
+                decoding="async"
+                style={{ width: '100%', maxWidth: '680px', height: 'auto', objectFit: 'contain', position: 'relative', zIndex: 1 }}
               />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ════════════════════ 2. BOOKING STEPS BAR ════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="gk-booking-card">
-          <div style={{ marginBottom: '1.2rem' }}>
-            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.35rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-              Book Your Service in 3 Easy Steps
-            </h3>
-          </div>
+      {/* ── Removed: "Book Your Service in 3 Easy Steps" ──────────────────
+          It restated the How It Works section further down the page — Select
+          Service / Select Date & Time were the same two steps written twice,
+          about two thousand pixels apart, and it carried a fourth "Book
+          Service Now" CTA on a page that already had several. How It Works
+          keeps the process explanation; this block was pure repetition.
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', alignItems: 'center' }}>
-            {/* Step 1 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', background: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
-              <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Wrench size={20} style={{ color: '#2563EB' }} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>STEP 1</div>
-                <div style={{ fontSize: '0.9rem', color: '#0F172A', fontWeight: 800 }}>Select Service</div>
-                <div style={{ fontSize: '0.76rem', color: '#64748B' }}>Choose your service</div>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', background: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
-              <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Calendar size={20} style={{ color: '#2563EB' }} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>STEP 2</div>
-                <div style={{ fontSize: '0.9rem', color: '#0F172A', fontWeight: 800 }}>Select Date &amp; Time</div>
-                <div style={{ fontSize: '0.76rem', color: '#64748B' }}>Pick convenient slot</div>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', background: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
-              <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <CheckCircle size={20} style={{ color: '#2563EB' }} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>STEP 3</div>
-                <div style={{ fontSize: '0.9rem', color: '#0F172A', fontWeight: 800 }}>Confirm Booking</div>
-                <div style={{ fontSize: '0.76rem', color: '#64748B' }}>We'll take care of the rest</div>
-              </div>
-            </div>
-
-            {/* CTA */}
-            <div>
-              <Link
-                to="/services"
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                  background: '#2563EB', color: '#FFFFFF', padding: '0.9rem 1.4rem', borderRadius: '12px',
-                  textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.88rem',
-                  letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
-                  boxShadow: '0 6px 18px rgba(37, 99, 235, 0.3)'
-                }}
-              >
-                Book Service Now <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
+          Deleting it also removes .gk-booking-card's `margin-top: -2.5rem`
+          overlap with the hero, so the hero's own bottom padding now reads
+          correctly on mobile. */}
       {/* ════════════════════ 3. SERVICES SECTION ════════════════════ */}
       <section
         id="services"
@@ -558,7 +729,9 @@ export default function Home() {
       </section>
 
       {/* ════════════════════ 4. SHOP CAR ESSENTIALS (moved here, after Services) ════════════════════ */}
-      <section style={{ background: '#F8FAFC', padding: '4rem 0', borderTop: '1px solid #E2E8F0' }}>
+      {/* ref drives the IntersectionObserver above: this section's requests do
+          not leave until it is within 600px of the viewport. */}
+      <section ref={shopRef} style={{ background: '#F8FAFC', padding: '4rem 0', borderTop: '1px solid #E2E8F0' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem' }}>
             <div>
@@ -579,6 +752,7 @@ export default function Home() {
 
           {/* Loading State: 5 skeleton cards. aria-busy + a live region so a
               screen reader is told the shelf is loading rather than empty. */}
+          <SectionBoundary name="shop strip">
           {partsLoading ? (
             <div className="gk-parts-grid" aria-busy="true" aria-live="polite">
               <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
@@ -624,6 +798,7 @@ export default function Home() {
               ))}
             </div>
           )}
+          </SectionBoundary>
         </div>
       </section>
 
@@ -682,26 +857,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════════════ 7. STATS & TRUST SECTION ════════════════════ */}
-      <section style={{ background: 'linear-gradient(180deg, #0F172A 0%, #131B31 100%)', borderTop: '1px solid rgba(148,163,184,0.12)', borderBottom: '1px solid rgba(148,163,184,0.12)', padding: '3rem 0' }}>
+      {/* ── Merged: the standalone stats band now opens the reviews section ──
+          Two adjacent sections were both doing "trust": a dark stats band
+          (10,000+ Happy Customers, 4.8/5 Customer Ratings) immediately
+          followed by "Trusted by Thousands" and four five-star reviews. The
+          same 4.8/5 figure appeared in both, and in the hero above them.
+          One section now carries the evidence, with the numbers as its
+          header strip. Nothing was deleted — STATS still renders in full. */}
+      {/* ════════════════════ 7. TRUST: NUMBERS + REVIEWS ════════════════════ */}
+      <section style={{ background: '#FFFFFF', padding: '4rem 0 4.5rem', overflow: 'hidden' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="gk-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem' }}>
+
+          {/* Numbers strip — restyled for the light background it now sits on. */}
+          <div className="gk-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '3rem' }}>
             {STATS.map(({ value, label, icon: Icon }) => (
-              <div key={label} style={{ textAlign: 'center' }}>
-                <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'rgba(147, 197, 253, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem' }}>
-                  <Icon size={18} style={{ color: '#93C5FD' }} />
+              <div key={label} style={{ textAlign: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '1.1rem 0.75rem' }}>
+                <div style={{ width: 36, height: 36, borderRadius: '11px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.6rem' }}>
+                  <Icon size={17} style={{ color: '#2563EB' }} />
                 </div>
-                <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.9rem', fontWeight: 900, color: '#FFFFFF', lineHeight: 1, letterSpacing: '-0.02em' }}>{value}</div>
-                <div style={{ color: '#94A3B8', fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.4rem' }}>{label}</div>
+                <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.65rem', fontWeight: 900, color: '#0F172A', lineHeight: 1, letterSpacing: '-0.02em' }}>{value}</div>
+                <div style={{ color: '#64748B', fontSize: '0.64rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.35rem' }}>{label}</div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* ════════════════════ 8. TESTIMONIALS ════════════════════ */}
-      <section style={{ background: '#FFFFFF', padding: '4.5rem 0', overflow: 'hidden' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
             <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
               WHAT OUR CUSTOMERS SAY
@@ -712,7 +891,8 @@ export default function Home() {
             <div style={{ width: 50, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
           </div>
 
-          <div className="gk-testimonials-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1.5rem' }}>
+          <SectionBoundary name="reviews">
+          <div className="gk-testimonials-grid" style={{ display: 'grid', gap: '1.5rem' }}>
             {TESTIMONIALS.map((item, i) => (
               <div
                 key={i}
@@ -727,7 +907,20 @@ export default function Home() {
                   "{item.review}"
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
-                  <img src={item.img} alt={item.name} style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${item.color}` }} />
+                  {/* Below the fold and tiny. Lazy so four avatars are not
+                      fetched during first paint, async-decoded so decoding
+                      one cannot stall the main thread mid-scroll, and sized
+                      so the row does not reflow when they arrive. The files
+                      themselves are now 128x128 rather than up to 736x1104. */}
+                  <img
+                    src={item.img}
+                    alt={item.name}
+                    width={42}
+                    height={42}
+                    loading="lazy"
+                    decoding="async"
+                    style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${item.color}` }}
+                  />
                   <div>
                     <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: '1rem', color: '#0F172A', margin: 0 }}>{item.name}</h4>
                     <p style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700, margin: '2px 0 0' }}>{item.role}</p>
@@ -739,6 +932,7 @@ export default function Home() {
               </div>
             ))}
           </div>
+          </SectionBoundary>
         </div>
       </section>
 
@@ -750,7 +944,7 @@ export default function Home() {
             Give Your Car The Care It Deserves
           </h2>
           <p style={{ color: '#94A3B8', fontSize: '0.92rem', fontWeight: 500, maxWidth: '540px', margin: '0 auto 1.8rem', lineHeight: 1.7 }}>
-            Book your service today and experience hassle-free car care at your doorstep. Transparent pricing, genuine parts, and a 12-month warranty.
+            Book your service today and experience hassle-free car care at your doorstep.
           </p>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>

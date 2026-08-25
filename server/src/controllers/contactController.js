@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const ContactMessage = require('../models/ContactMessage');
 const { sendEmail, resolveProvider } = require('../services/emailService');
+const { cleanText, cleanMultiline, cleanEmail, cleanPhone } = require('../utils/sanitize');
 
 // A visitor may send this many messages per window before being throttled.
 const RATE_LIMIT = Number(process.env.CONTACT_RATE_LIMIT || 3);
@@ -15,27 +16,21 @@ const escapeHtml = (s = '') =>
 // @route POST /api/contact
 // @access Public
 const createContactMessage = asyncHandler(async (req, res) => {
-  const { name, email, phone, serviceType, message } = req.body;
+  /* This form is public and unauthenticated, so it is the most exposed input
+     on the site. The checks it already had are kept; what is added is length
+     ceilings and markup stripping, so an unbounded or script-carrying message
+     cannot be stored and then rendered into the notification email. */
+  const name = cleanText(req.body.name, { field: 'Name', min: 2, max: 80, required: true });
+  const message = cleanMultiline(req.body.message, {
+    field: 'Message', min: 2, max: 4000, required: true,
+  });
+  const email = cleanEmail(req.body.email);
+  const phone = cleanPhone(req.body.phone);
+  const serviceType = cleanText(req.body.serviceType, { field: 'Service', max: 100 });
 
-  if (!name || !String(name).trim()) {
-    res.status(400);
-    throw new Error('Please tell us your name');
-  }
-  if (!message || !String(message).trim()) {
-    res.status(400);
-    throw new Error('Please write a message');
-  }
   if (!email && !phone) {
     res.status(400);
     throw new Error('Please leave an email address or a phone number so we can reply');
-  }
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
-    res.status(400);
-    throw new Error('That email address does not look right');
-  }
-  if (phone && !/^[+]?[\d\s-]{7,15}$/.test(String(phone).trim())) {
-    res.status(400);
-    throw new Error('That phone number does not look right');
   }
 
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress;

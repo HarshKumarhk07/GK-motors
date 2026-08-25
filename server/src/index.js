@@ -12,6 +12,7 @@ const RentalBooking = require('./models/RentalBooking');
 const connectDB = require('./config/db');
 const { bootstrapCatalogue, migrateLegacyPaymentMethods } = require('./seeds/bootstrap');
 const errorHandler = require('./middleware/errorHandler');
+const sanitizeRequest = require('./middleware/sanitizeRequest');
 
 const authRoutes = require('./routes/authRoutes');
 const bikeRoutes = require('./routes/bikeRoutes');
@@ -56,8 +57,35 @@ app.use(cors({
   },
   credentials: true,
 }));
+
+/* ── Razorpay webhook ───────────────────────────────────────────────────────
+   Registered BEFORE express.json() on purpose. The webhook signature is an
+   HMAC over the raw request bytes, and once express.json() has parsed the
+   stream those bytes are gone — re-serialising the parsed object produces a
+   different string and verification fails every time.
+
+   It sits outside serviceRoutes for the same reason, and needs no `protect`:
+   the signature is the authentication. Verification happens inside the
+   handler, which refuses outright when RAZORPAY_WEBHOOK_SECRET is unset. */
+const { razorpayWebhook } = require('./controllers/serviceController');
+app.post(
+  '/api/services/payment-webhook',
+  express.raw({ type: 'application/json', limit: '1mb' }),
+  razorpayWebhook
+);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+/* Immediately after the body parsers and before any route: strips Mongo
+   operators ($ne, $gt, $where), dotted paths and prototype-pollution keys out
+   of every body, query and param, and removes unprintable characters from
+   every string. Queries here are built from request values, so an `email` that
+   arrives as {"$ne": null} would otherwise turn "find this user" into "find
+   any user". Applied globally because it has to hold for routes nobody
+   remembers to check. */
+app.use(sanitizeRequest);
+
 app.use(cookieParser());
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 

@@ -52,7 +52,7 @@ export default function Footer() {
           .gk-footer-brand { grid-column: 1 / -1; }
         }
       `}</style>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6">
         <div className="gk-footer-grid">
           {/* Brand — spans full width on mobile */}
           <div className="gk-footer-brand">
@@ -60,7 +60,11 @@ export default function Footer() {
               {/* The logo is dark-on-white artwork, so on the dark footer it
                   sits in a white chip rather than disappearing into it. */}
               <div style={{ background: '#FFFFFF', borderRadius: '12px', padding: '0.5rem 0.7rem', display: 'inline-flex', alignItems: 'center' }}>
-                <img src="/gkmotorslogo.png" alt="GK Motors" style={{ height: 40, width: 'auto', objectFit: 'contain', display: 'block' }} />
+                {/* Footer sits below the fold on every page — lazy, async-decoded, and
+                    sized so it cannot shift the footer as it arrives. */}
+                <img src="/gkmotorslogo.png" alt="GK Motors" width={720} height={341}
+                  loading="lazy" decoding="async"
+                  style={{ height: 40, width: 'auto', objectFit: 'contain', display: 'block' }} />
               </div>
             </div>
             <p style={{ fontSize: '0.95rem', lineHeight: 1.8, color: '#94A3B8', fontWeight: 500 }}>
@@ -131,7 +135,7 @@ export default function Footer() {
           </Link>
         </div>
 
-        <div style={{ borderTop: '1px solid #1E293B', marginTop: '2.5rem', paddingTop: '1.5rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ borderTop: '1px solid #1E293B', marginTop: '2rem', paddingTop: '1.25rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
           <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>© {new Date().getFullYear()} GK Motors · Avani Enterprises. All rights reserved.</p>
           <div className="flex items-center gap-4" style={{ fontSize: '0.83rem' }}>
             <Link to="/privacy" style={{ color: '#64748B', textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</Link>

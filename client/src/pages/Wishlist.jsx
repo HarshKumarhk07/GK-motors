@@ -260,7 +260,7 @@ export default function Wishlist() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+    <div style={{ flex: '1 0 auto', width: '100%', background: '#FFFFFF' }}>
       <style>{`
         .wishlist-grid {
           display: grid !important;

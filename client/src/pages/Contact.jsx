@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, Send, User, Bike, ChevronDown, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
+import {
+  cleanText, cleanMultiline, textError, multilineError, emailError, phoneError, validateAll,
+} from '../utils/validate';
 import { sendContactMessage } from '../api/contactApi';
 import { reportApiError } from '../api/apiError';
 
@@ -19,18 +22,33 @@ export default function Contact() {
     e.preventDefault();
     if (submitting) return;   // guard against a double click
 
-    if (!formData.name.trim() || !formData.message.trim()) {
-      toast.error('Please fill in your name and a message');
+    /* This form is public and unauthenticated, so it is the most exposed input
+       on the site. The checks mirror the server's exactly. */
+    const errors = validateAll({
+      name: () => textError(formData.name, { label: 'Name', min: 2, max: 80, required: true }),
+      message: () => multilineError(formData.message, { label: 'Message', min: 2, max: 4000, required: true }),
+      email: () => emailError(formData.email),
+      phone: () => phoneError(formData.phone),
+    });
+    const firstError = Object.values(errors)[0];
+    if (firstError) {
+      toast.error(firstError);
       return;
     }
-    if (!formData.email.trim() && !formData.phone.trim()) {
+    if (!cleanText(formData.email) && !cleanText(formData.phone)) {
       toast.error('Leave an email or a phone number so we can reply');
       return;
     }
 
     setSubmitting(true);
     try {
-      const { data } = await sendContactMessage(formData);
+      const { data } = await sendContactMessage({
+        name: cleanText(formData.name),
+        email: cleanText(formData.email).toLowerCase(),
+        phone: cleanText(formData.phone),
+        serviceType: cleanText(formData.serviceType),
+        message: cleanMultiline(formData.message),
+      });
       toast.success(data.message || "Thanks — we'll be in touch shortly.");
       setFormData({ name: '', email: '', phone: '', serviceType: 'Engine Repair', message: '' });
     } catch (err) {
@@ -41,7 +59,7 @@ export default function Contact() {
   };
 
   return (
-    <div style={{ background: '#FFFFFF', minHeight: '100vh', color: '#111' }}>
+    <div style={{ background: '#FFFFFF', flex: '1 0 auto', width: '100%', color: '#111' }}>
       {/* Hero Header */}
       <section style={{ 
         background: 'linear-gradient(to bottom, #F9F9F9, #FFFFFF)', 

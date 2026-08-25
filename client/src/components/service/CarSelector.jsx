@@ -3,15 +3,55 @@ import { Search, Plus, X, Loader, Car as CarIcon, Check, AlertCircle } from 'luc
 import toast from 'react-hot-toast';
 import { getServiceCars } from '../../api/serviceApi';
 import { reportApiError } from '../../api/apiError';
-import LoadingSpinner from '../common/LoadingSpinner';
 
+/**
+ * The fuel types a customer can choose. Petrol, Diesel and CNG, as specified.
+ *
+ * The database enum is deliberately NOT narrowed to match. It still permits
+ * 'electric' and 'hybrid', and Mongoose validates on every save() — so
+ * removing them would make any pre-existing car or booking carrying one throw
+ * a ValidationError the next time an admin touched an unrelated field. The
+ * choice is narrowed here, in the UI, where it is safe.
+ */
 const FUEL_TYPES = [
   { value: 'petrol', label: 'Petrol' },
   { value: 'diesel', label: 'Diesel' },
-  { value: 'electric', label: 'Electric' },
-  { value: 'hybrid', label: 'Hybrid' },
   { value: 'cng', label: 'CNG' },
 ];
+
+/** Values that exist in older records but are no longer offered. */
+const LEGACY_FUEL_LABELS = { electric: 'Electric', hybrid: 'Hybrid' };
+
+const FUEL_VALUES = FUEL_TYPES.map((f) => f.value);
+
+/**
+ * Coerce whatever a record carries into something safe to display and submit.
+ *
+ * Old catalogue rows can be missing `fuelType` entirely, carry a legacy value,
+ * or carry stray casing/whitespace. Returns the value unchanged when it is one
+ * we still offer, keeps a recognised legacy value as-is (so selecting a car
+ * never silently rewrites its fuel), and otherwise falls back to petrol —
+ * which is also the schema default, so nothing is invented.
+ */
+const normaliseFuel = (value) => {
+  const v = String(value ?? '').trim().toLowerCase();
+  if (FUEL_VALUES.includes(v)) return v;
+  if (LEGACY_FUEL_LABELS[v]) return v;
+  return 'petrol';
+};
+
+/**
+ * The options to show for a given car: the three standard ones, plus the car's
+ * own legacy value if it has one, so an existing electric/hybrid record stays
+ * selectable and is never quietly converted to petrol.
+ */
+const fuelOptionsFor = (value) => {
+  const v = normaliseFuel(value);
+  return LEGACY_FUEL_LABELS[v]
+    ? [...FUEL_TYPES, { value: v, label: LEGACY_FUEL_LABELS[v], legacy: true }]
+    : FUEL_TYPES;
+};
+
 const TRANSMISSIONS = [
   { value: 'manual', label: 'Manual' },
   { value: 'automatic', label: 'Automatic' },
@@ -61,6 +101,13 @@ export default function CarSelector({ onSelect, selectedCar }) {
   });
   const [errors, setErrors] = useState({});
 
+  /* The car the customer has picked but not yet confirmed, and the fuel they
+     have chosen for it. Holding it here is what turns "select car" into the
+     two explicit steps the flow calls for — pick the vehicle, then state its
+     fuel — without a second route or a second component. */
+  const [pendingCar, setPendingCar] = useState(null);
+  const [pendingFuel, setPendingFuel] = useState('petrol');
+
   const fetchCars = () => {
     setLoading(true);
     setLoadError('');
@@ -80,18 +127,29 @@ export default function CarSelector({ onSelect, selectedCar }) {
     );
   }, [cars, search]);
 
+  /* Picking a car no longer commits it. It stages the choice and moves to the
+     fuel step, so a catalogue vehicle's fuel is something the customer states
+     rather than something inherited silently from the admin's record. */
   const chooseCatalogueCar = (car) => {
-    onSelect({
+    setPendingCar({
       carId: car._id,
       brand: car.brand,
       model: car.model,
       year: car.year,
-      fuelType: car.fuelType,
-      transmission: car.transmission,
+      fuelType: normaliseFuel(car.fuelType),
+      transmission: car.transmission || 'manual',
       image: car.image || null,
       isManualEntry: false,
       servicePrices: car.servicePrices || [],
     });
+    setPendingFuel(normaliseFuel(car.fuelType));
+  };
+
+  /** Commit the staged car with the fuel the customer chose. */
+  const confirmPendingCar = () => {
+    if (!pendingCar) return;
+    onSelect({ ...pendingCar, fuelType: normaliseFuel(pendingFuel) });
+    setPendingCar(null);
   };
 
   const validateManual = () => {
@@ -121,13 +179,15 @@ export default function CarSelector({ onSelect, selectedCar }) {
       toast.error('Please fix the highlighted fields');
       return;
     }
+    // Normalised on the way out, so a manually entered car and a catalogue car
+    // reach the backend in exactly the same shape.
     onSelect({
       carId: 'manual',
       brand: form.brand.trim(),
       model: form.model.trim(),
       year: Number(form.year),
-      fuelType: form.fuelType,
-      transmission: form.transmission,
+      fuelType: normaliseFuel(form.fuelType),
+      transmission: form.transmission || 'manual',
       image: null,
       isManualEntry: true,
       servicePrices: [],
@@ -147,18 +207,82 @@ export default function CarSelector({ onSelect, selectedCar }) {
   };
   const errorStyle = { color: '#EF4444', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.3rem' };
 
-  if (loading) return <LoadingSpinner size="lg" text="Loading cars..." />;
+  /* ── Fuel step ────────────────────────────────────────────────────────
+     Shown once a vehicle is picked. Kept inside this component so the
+     surrounding container never unmounts — see the note on the loading state
+     below for why that matters. */
+  if (pendingCar) {
+    const options = fuelOptionsFor(pendingCar.fuelType);
+    return (
+      <div className="gk-car-step">
+        <style>{CAR_SELECTOR_STYLES}</style>
+        <div style={{ marginBottom: '1.25rem' }}>
+          <h2 className="gk-car-title">Fuel type</h2>
+          <p className="gk-car-sub">
+            {pendingCar.brand} {pendingCar.model} · {pendingCar.year}
+          </p>
+        </div>
+
+        <fieldset className="gk-fuel-set">
+          <legend className="gk-fuel-legend">Which fuel does your car run on?</legend>
+          <div className="gk-fuel-row" role="radiogroup" aria-label="Fuel type">
+            {options.map((f) => {
+              const active = normaliseFuel(pendingFuel) === f.value;
+              return (
+                <button
+                  key={f.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => setPendingFuel(f.value)}
+                  className={`gk-fuel-chip${active ? ' is-on' : ''}`}
+                >
+                  {f.label}
+                  {f.legacy && <span className="gk-fuel-legacy"> (on record)</span>}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <div className="gk-car-actions">
+          <button type="button" onClick={() => setPendingCar(null)} className="gk-car-back">
+            Back
+          </button>
+          <button type="button" onClick={confirmPendingCar} className="gk-car-next">
+            <Check size={15} /> Confirm car
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
+    <div className="gk-car-step">
+      <style>{CAR_SELECTOR_STYLES}</style>
       <div style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.4rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.25rem' }}>
-          Select Your Car
-        </h2>
-        <p style={{ color: '#64748B', fontSize: '0.8rem', fontWeight: 500 }}>
+        <h2 className="gk-car-title">Select Your Car</h2>
+        <p className="gk-car-sub">
           Pricing depends on your car, so pick it first.
         </p>
       </div>
+
+      {/* ── Loading ───────────────────────────────────────────────────────
+          Skeleton tiles at the real card's dimensions, NOT a bare spinner.
+          Returning a small spinner from the top of this component was the
+          cause of the reported scroll jump: choosing "change car" swapped a
+          full-height region for a ~100px one, the document shrank, the browser
+          clamped scrollTop to the new scrollHeight, and the page appeared to
+          jump to the top — then jumped again when the grid arrived. Holding
+          the height means there is no collapse to recover from. */}
+      {loading && (
+        <div className="gk-car-grid" aria-busy="true" aria-live="polite">
+          <span className="gk-sr">Loading cars…</span>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="gk-car-skel" />
+          ))}
+        </div>
+      )}
 
       {loadError && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: '12px', padding: '0.9rem 1.1rem', marginBottom: '1.25rem' }}>
@@ -171,7 +295,7 @@ export default function CarSelector({ onSelect, selectedCar }) {
       )}
 
       {/* Search */}
-      {cars.length > 0 && (
+      {!loading && cars.length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '12px', padding: '0.65rem 1rem', marginBottom: '1.25rem' }}>
           <Search size={16} style={{ color: '#1E3A8A', flexShrink: 0 }} />
           <input
@@ -190,7 +314,7 @@ export default function CarSelector({ onSelect, selectedCar }) {
       )}
 
       {/* No cars at all */}
-      {cars.length === 0 && !loadError && (
+      {!loading && cars.length === 0 && !loadError && (
         <div style={{ background: '#F8FAFC', border: '1.5px dashed #CBD5E1', borderRadius: '16px', padding: '2rem', textAlign: 'center', marginBottom: '1.25rem' }}>
           <CarIcon size={32} style={{ color: '#94A3B8', marginBottom: '0.75rem' }} />
           <p style={{ color: '#475569', fontWeight: 700, marginBottom: '0.3rem' }}>No cars in our catalogue yet</p>
@@ -201,8 +325,8 @@ export default function CarSelector({ onSelect, selectedCar }) {
       )}
 
       {/* Car grid */}
-      {filtered.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.75rem', marginBottom: '1.25rem' }}>
+      {!loading && filtered.length > 0 && (
+        <div className="gk-car-grid">
           {filtered.map((car) => {
             const isSelected = selectedCar && !selectedCar.isManualEntry && String(selectedCar.carId) === String(car._id);
             return (
@@ -243,7 +367,7 @@ export default function CarSelector({ onSelect, selectedCar }) {
       )}
 
       {/* Search returned nothing */}
-      {cars.length > 0 && filtered.length === 0 && (
+      {!loading && cars.length > 0 && filtered.length === 0 && (
         <div style={{ background: '#F8FAFC', border: '1.5px dashed #CBD5E1', borderRadius: '16px', padding: '1.75rem', textAlign: 'center', marginBottom: '1.5rem' }}>
           <p style={{ color: '#475569', fontWeight: 700 }}>No cars match "{search}"</p>
           <p style={{ color: '#64748B', fontSize: '0.85rem', fontWeight: 500, marginTop: '0.3rem' }}>
@@ -253,7 +377,7 @@ export default function CarSelector({ onSelect, selectedCar }) {
       )}
 
       {/* Manual entry */}
-      {!manualOpen ? (
+      {loading ? null : !manualOpen ? (
         <button
           onClick={() => setManualOpen(true)}
           style={{
@@ -333,3 +457,68 @@ export default function CarSelector({ onSelect, selectedCar }) {
     </div>
   );
 }
+
+/* Scoped styles for the car step. Static rules only — no animation, no blur,
+   no shadow larger than the cards already carried. */
+const CAR_SELECTOR_STYLES = `
+  .gk-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+  .gk-car-title { font-family: Rajdhani, sans-serif; font-size: 1.4rem; font-weight: 900; color: #0F172A; margin: 0 0 0.25rem; }
+  .gk-car-sub   { color: #64748B; font-size: 0.8rem; font-weight: 500; margin: 0; }
+  @media (max-width: 400px) { .gk-car-title { font-size: 1.2rem; } }
+
+  /* Two columns at 320px, growing with the viewport. auto-fill with a 140px
+     minimum used to leave a single stretched card on the narrowest phones. */
+  .gk-car-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+  }
+  @media (min-width: 420px) { .gk-car-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; } }
+  @media (min-width: 768px) { .gk-car-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 1200px){ .gk-car-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+
+  /* Same footprint as a real card, so the region does not resize when the
+     data lands. 80px thumb + ~62px of text block. */
+  .gk-car-skel {
+    min-height: 142px;
+    border-radius: 14px;
+    border: 2px solid #E2E8F0;
+    background: #F1F5F9;
+  }
+
+  /* ── Fuel step ── */
+  .gk-fuel-set { border: 0; padding: 0; margin: 0 0 1.5rem; min-width: 0; }
+  .gk-fuel-legend {
+    padding: 0; margin-bottom: 0.6rem;
+    font-size: 0.68rem; font-weight: 800; color: #64748B;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .gk-fuel-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .gk-fuel-chip {
+    flex: 1 1 auto; min-width: 96px; min-height: 46px;
+    padding: 0.7rem 1rem; border-radius: 11px;
+    border: 1.5px solid #E2E8F0; background: #FFF;
+    color: #0F172A; font-weight: 800; font-size: 0.86rem;
+    cursor: pointer; font-family: inherit;
+  }
+  .gk-fuel-chip.is-on { border-color: #1E3A8A; background: #EFF6FF; color: #1E3A8A; }
+  .gk-fuel-chip:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+  .gk-fuel-legacy { font-weight: 600; font-size: 0.72rem; color: #64748B; }
+
+  .gk-car-actions { display: flex; gap: 0.6rem; }
+  .gk-car-back {
+    background: #F1F5F9; color: #475569; border: none; border-radius: 10px;
+    padding: 0.8rem 1.2rem; min-height: 46px; font-weight: 800; font-size: 0.85rem;
+    cursor: pointer; font-family: inherit;
+  }
+  .gk-car-next {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+    background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%); color: #FFF;
+    border: none; border-radius: 10px; padding: 0.8rem; min-height: 46px;
+    font-family: Rajdhani, sans-serif; font-weight: 900; font-size: 0.88rem;
+    letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer;
+  }
+  .gk-car-back:focus-visible, .gk-car-next:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+`;

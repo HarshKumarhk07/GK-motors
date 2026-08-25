@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Menu, X, ChevronDown, User, LogOut, Settings, Wrench, Phone, ShoppingCart, Heart, Package } from 'lucide-react';
-import { useScrollLock } from '../../utils/responsive';
 import { useCart, useServiceCart } from '../../context/CartContext';
 
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Services', href: '/services' },
   { label: 'Shop', href: '/parts' },
-  { label: 'How It Works', href: '/#how-it-works' },
+  /* "How It Works" removed from the navigation on request. The section itself
+     still exists on the home page with its id intact, and App.jsx's hash-aware
+     ScrollToTop still resolves /#how-it-works — so any existing link or
+     bookmark keeps working; it is only gone from this row. */
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
@@ -29,6 +31,43 @@ const isActive = (pathname, href) =>
   href === '/' ? pathname === '/' : pathname.startsWith(href);
 
 const NAV_STYLES = `
+  /* ── Sticky bar background ───────────────────────────────────────────────
+     A backdrop-filter on a position:sticky element is the single most
+     expensive thing this page does while scrolling: the compositor has to
+     re-sample and re-blur the full width of the viewport behind the bar on
+     every frame, for the whole length of the page, and it cannot be skipped
+     because the bar is pinned by design.
+
+     Desktop GPUs absorb that, so the frosted look is kept there. Phones and
+     tablets get a near-opaque background instead — same bar, same height,
+     same border, same stickiness, no per-frame blur. At 0.97 alpha over the
+     page's white/#F8FAFC sections the difference is not perceptible in
+     normal use; what goes away is the stutter.
+
+     Declared here rather than inline because an inline style cannot carry a
+     media query, and the inline value would win over any stylesheet rule. */
+  .gk-nav {
+    background: rgba(255, 255, 255, 0.85);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  @media (max-width: 1023px) {
+    .gk-nav {
+      background: rgba(255, 255, 255, 0.97);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+  /* Same reasoning for anyone who has asked for less motion/effects, and for
+     devices that report a low-power or slow compositor path. */
+  @media (prefers-reduced-motion: reduce) {
+    .gk-nav {
+      background: rgba(255, 255, 255, 0.97);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
   .gk-burger { display: inline-flex; align-items: center; justify-content: center; }
   @media (min-width: 1024px) { .gk-burger { display: none; } }
   /* The link row is dense at exactly 1024px, so tighten it there and let it
@@ -41,6 +80,56 @@ const NAV_STYLES = `
   @media (max-width: 380px) {
     .gk-nav-row { gap: 0.35rem; }
     .gk-nav-right { gap: 0.5rem !important; }
+  }
+
+  /* ── Mobile drawer ───────────────────────────────────────────────────────
+     Fixed to the viewport rather than flowing inside the sticky bar. The bar
+     is position:sticky, and anything inside it inherits that bar's fate — if
+     sticky resolves badly the drawer goes with it. Anchored to the viewport
+     instead, the panel is visible whatever the bar does.
+
+     top: 64px matches the bar's h-16, so the panel opens directly beneath
+     it and the bar (z-50, above both) stays usable with its close button.
+
+     ONE DEPENDENCY WORTH KNOWING: a backdrop-filter creates a containing
+     block for position:fixed descendants, which would re-anchor this panel to
+     the bar instead of the viewport. That is safe here only because the two
+     rules complement exactly — .gk-nav carries the blur from 1024px up, and
+     the panel is display:none from 1024px up. If the blur is ever restored on
+     mobile, move this markup out of <nav> at the same time. */
+  .gk-nav-backdrop {
+    position: fixed;
+    top: 64px; left: 0; right: 0; bottom: 0;
+    z-index: 48;
+    background: rgba(15, 23, 42, 0.55);
+    border: 0; padding: 0; margin: 0;
+    width: 100%;
+    cursor: pointer;
+    /* Stops a drag that starts on the backdrop from scrolling the page behind,
+       without touching <body>'s overflow — which is what broke sticky. */
+    touch-action: none;
+  }
+
+  .gk-nav-drawer {
+    position: fixed;
+    top: 64px; left: 0; right: 0;
+    z-index: 49;
+    background: #0F172A;
+    max-height: calc(100vh - 64px);
+    max-height: calc(100dvh - 64px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* A scroll that reaches the panel's end stops there instead of handing the
+       remainder to the page behind it. */
+    overscroll-behavior: contain;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .gk-nav-drawer:focus { outline: none; }
+
+  /* The drawer is a mobile affordance; the burger is hidden from 1024px up, so
+     make sure a stale open state can never leave it on screen at desktop. */
+  @media (min-width: 1024px) {
+    .gk-nav-backdrop, .gk-nav-drawer { display: none; }
   }
 `;
 
@@ -56,12 +145,37 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // The panel overlays the page, so the page behind it must not scroll.
-  useScrollLock(mobileOpen);
+  /* ── Why there is no body scroll lock here any more ──────────────────────
+     This used to call useScrollLock(mobileOpen), which sets
+     `document.body.style.overflow = 'hidden'`.
+
+     That single line was what froze the site. Giving <body> an `overflow`
+     other than `visible` turns it into a scroll container, and
+     `position: sticky` resolves against the nearest scrollport. The bar's
+     scrollport therefore switched from the viewport — scrolled to wherever
+     the reader was — to <body>, whose own scrollTop is 0. Sticky had nothing
+     left to stick to, so the bar snapped back to its static position at the
+     very top of the document, thousands of pixels above the viewport, and
+     vanished. The drawer, being inside it, vanished with it. Meanwhile
+     scrolling was locked, so the page could not be moved to go and find them:
+     no menu, no navbar, nothing responding.
+
+     The drawer is now a fixed overlay (see below), anchored to the viewport
+     rather than to the sticky bar, so it cannot be lost. Background scrolling
+     is held off by `overscroll-behavior: contain` on the panel and
+     `touch-action: none` on the backdrop — neither of which touches <body>'s
+     overflow, so the bar keeps its scrollport and stays exactly where it is. */
 
   // Every link already closes the panel, but a browser back/forward gesture
   // changes the route without one, which would leave it hanging open.
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  // Move focus into the panel when it opens, so keyboard and screen-reader
+  // users are not left behind on the burger button.
+  const drawerRef = useRef(null);
+  useEffect(() => {
+    if (mobileOpen) drawerRef.current?.focus();
+  }, [mobileOpen]);
 
   // Escape is the expected way out of anything overlaying the page.
   useEffect(() => {
@@ -78,16 +192,23 @@ export default function Navbar() {
   };
 
   return (
-    <nav style={{ background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(0, 0, 0, 0.05)' }} className="sticky top-0 z-50">
+    <nav style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.05)' }} className="gk-nav sticky top-0 z-50">
       <style>{NAV_STYLES}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-2 min-w-0 gk-nav-row">
           {/* Logo — text based for now */}
           <Link to="/" className="flex items-center gap-2 mr-2 sm:mr-0 min-w-0 flex-shrink" style={{ textDecoration: 'none' }}>
+            {/* Intrinsic size lets the browser hold the logo's slot before the
+                file lands, so the sticky bar does not reflow on first paint.
+                Height still comes from the h-9/h-11 classes. Eager: it is
+                above the fold on every route. */}
             <img
               src="/gkmotorslogo.png"
               alt="GK Motors"
               className="h-9 sm:h-11"
+              width={720}
+              height={341}
+              decoding="async"
               style={{ width: 'auto', objectFit: 'contain', display: 'block' }}
             />
           </Link>
@@ -273,7 +394,24 @@ export default function Navbar() {
           the drawer hung 4px past each edge. Sitting outside the container it
           is full-width by construction, at any padding. */}
       {mobileOpen && (
-        <div id="gk-mobile-nav" style={{ background: '#0F172A', width: '100%', maxHeight: 'calc(100vh - 64px)', overflowY: 'auto' }}>
+        <>
+          {/* Tap-anywhere-else to close. A real <button> so it is reachable by
+              keyboard and announced, rather than a click-handling <div>. */}
+          <button
+            type="button"
+            className="gk-nav-backdrop"
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
+          />
+        <div
+          id="gk-mobile-nav"
+          ref={drawerRef}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+          className="gk-nav-drawer"
+        >
           <div className="max-w-7xl mx-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '1.25rem 1rem 1rem' }}>
               <Link to="/services" onClick={() => setMobileOpen(false)}
                 style={{
@@ -321,6 +459,7 @@ export default function Navbar() {
             )}
           </div>
         </div>
+        </>
       )}
     </nav>
   );

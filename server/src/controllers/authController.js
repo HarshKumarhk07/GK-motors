@@ -2,6 +2,9 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const { sendOTPEmail, sendWelcomeEmail } = require('../services/emailService');
+const {
+  cleanText, cleanEmail, cleanPhone, cleanPincode, cleanNumber,
+} = require('../utils/sanitize');
 const crypto = require('crypto');
 const { clearRateLimit } = require('../middleware/rateLimit');
 
@@ -46,11 +49,28 @@ const normaliseEmail = (value) => String(value || '').trim().toLowerCase();
 // @desc  Register user
 // @route POST /api/auth/register
 const register = asyncHandler(async (req, res) => {
-  const { name, email, phone, password } = req.body;
+  /* Every field is validated before anything touches the database.
+     Previously `name`, `email` and `phone` went straight into User.create()
+     unchecked: the schema has no format validator on either identifier, so an
+     address like "notanemail" was stored happily and then became an account
+     that could never receive an OTP. Only `password` was enforced, by the
+     schema's minlength. */
+  const name = cleanText(req.body.name, { field: 'Name', min: 2, max: 80, required: true });
+  const email = cleanEmail(req.body.email);
+  const phone = cleanPhone(req.body.phone);
+  const { password } = req.body;
 
-  if (!name || (!email && !phone)) {
+  if (!email && !phone) {
     res.status(400);
-    throw new Error('Name and email or phone are required');
+    throw new Error('An email address or a phone number is required');
+  }
+
+  /* Length is capped here as well as by the schema. bcrypt silently ignores
+     anything past 72 bytes, so a longer value is not the password the user
+     thinks it is, and an unbounded one is free CPU for an attacker. */
+  if (password !== undefined && password !== null && String(password).length > 72) {
+    res.status(400);
+    throw new Error('Password cannot exceed 72 characters');
   }
 
   // Build the duplicate check from the identifiers actually supplied. Mongoose
@@ -59,8 +79,8 @@ const register = asyncHandler(async (req, res) => {
   // document, which made phone-only signup fail as "already exists" the moment
   // the collection had one user in it.
   const identifiers = [];
-  if (email) identifiers.push({ email: String(email).toLowerCase().trim() });
-  if (phone) identifiers.push({ phone: String(phone).trim() });
+  if (email) identifiers.push({ email });
+  if (phone) identifiers.push({ phone });
 
   const existingUser = await User.findOne({ $or: identifiers });
   if (existingUser) {
@@ -283,7 +303,13 @@ const getMe = asyncHandler(async (req, res) => {
 // @desc  Update profile
 // @route PUT /api/auth/profile
 const updateProfile = asyncHandler(async (req, res) => {
-  const { name, email, phone } = req.body;
+  /* Same rules as registration. This endpoint used to assign req.body values
+     straight onto the document, so an account could be edited into a state
+     registration would have refused. */
+  const name = cleanText(req.body.name, { field: 'Name', min: 2, max: 80 });
+  const email = cleanEmail(req.body.email);
+  const phone = cleanPhone(req.body.phone);
+
   const user = await User.findById(req.user._id);
   if (!user) { res.status(404); throw new Error('User not found'); }
 
@@ -296,11 +322,53 @@ const updateProfile = asyncHandler(async (req, res) => {
   res.json({ success: true, user: { _id: user._id, name: user.name, email: user.email, phone: user.phone, avatar: user.avatar } });
 });
 
+/**
+ * Build a stored address from a request body.
+ *
+ * Only the seven fields the schema defines are read, and each is validated.
+ * `addAddress` previously did `user.addresses.push(req.body)` -- the whole
+ * body, whatever it contained, straight into the subdocument array. The
+ * pincode rule matches the one createServiceBooking enforces, so an address
+ * can no longer be saved in a shape that blocks checkout later.
+ */
+const cleanAddressInput = (body = {}) => {
+  const address = {
+    label: cleanText(body.label, { field: 'Label', max: 40 }) || 'Address',
+    street: cleanText(body.street, { field: 'Street address', min: 3, max: 200, required: true }),
+    city: cleanText(body.city, { field: 'City', min: 2, max: 80, required: true }),
+    state: cleanText(body.state, { field: 'State', min: 2, max: 80, required: true }),
+    pincode: cleanPincode(body.pincode),
+  };
+
+  // Coordinates are optional and only kept when both are present and sane;
+  // a half-set pair is worse than none.
+  const lat = cleanNumber(body.lat, { field: 'Latitude', min: -90, max: 90 });
+  const lng = cleanNumber(body.lng, { field: 'Longitude', min: -180, max: 180 });
+  if (lat !== undefined && lng !== undefined) {
+    address.lat = lat;
+    address.lng = lng;
+  }
+  return address;
+};
+
+// A single account does not need an unbounded address book, and an unbounded
+// array is a slow document.
+const MAX_ADDRESSES = 20;
+
 // @desc  Add address
 // @route POST /api/auth/address
 const addAddress = asyncHandler(async (req, res) => {
+  const address = cleanAddressInput(req.body);
+
   const user = await User.findById(req.user._id);
-  user.addresses.push(req.body);
+  if (!user) { res.status(404); throw new Error('User not found'); }
+
+  if ((user.addresses?.length || 0) >= MAX_ADDRESSES) {
+    res.status(400);
+    throw new Error(`You can save up to ${MAX_ADDRESSES} addresses. Please remove one first.`);
+  }
+
+  user.addresses.push(address);
   await user.save();
   res.json({ success: true, addresses: user.addresses });
 });
@@ -322,18 +390,26 @@ const toggleWishlist = asyncHandler(async (req, res) => {
 // @desc  Update address
 // @route PUT /api/auth/address/:addressId
 const updateAddress = asyncHandler(async (req, res) => {
+  /* Validated through the same builder as addAddress, so an address cannot be
+     edited into a shape it could never have been created in. The old version
+     copied each field behind a truthiness check with no format validation --
+     which also meant a field could never be cleared, since '' is falsy. */
+  const next = cleanAddressInput(req.body);
+
   const user = await User.findById(req.user._id);
+  if (!user) { res.status(404); throw new Error('User not found'); }
+
   const address = user.addresses.id(req.params.addressId);
   if (!address) { res.status(404); throw new Error('Address not found'); }
-  
-  if (req.body.label) address.label = req.body.label;
-  if (req.body.street) address.street = req.body.street;
-  if (req.body.city) address.city = req.body.city;
-  if (req.body.state) address.state = req.body.state;
-  if (req.body.pincode) address.pincode = req.body.pincode;
-  if (req.body.lat) address.lat = req.body.lat;
-  if (req.body.lng) address.lng = req.body.lng;
-  
+
+  address.label = next.label;
+  address.street = next.street;
+  address.city = next.city;
+  address.state = next.state;
+  address.pincode = next.pincode;
+  address.lat = next.lat;
+  address.lng = next.lng;
+
   await user.save();
   res.json({ success: true, addresses: user.addresses });
 });

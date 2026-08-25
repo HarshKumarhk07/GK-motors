@@ -149,5 +149,9 @@ const serviceBookingSchema = new mongoose.Schema(
 
 serviceBookingSchema.index({ user: 1, createdAt: -1 });
 serviceBookingSchema.index({ scheduledDate: 1, scheduledTime: 1, status: 1 });
+// The Razorpay webhook can only identify a booking by its order id, and that
+// lookup is on the critical path of recording a payment. Sparse, because a
+// booking that never reached the payment sheet has no order id.
+serviceBookingSchema.index({ 'payment.razorpayOrderId': 1 }, { sparse: true });
 
 module.exports = mongoose.model('ServiceBooking', serviceBookingSchema);

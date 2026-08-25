@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getMyBookings } from '../api/serviceApi';
+import {
+  getMyBookings, createServicePayment, verifyServicePayment, reportServicePaymentFailed,
+} from '../api/serviceApi';
 import { getMyOrders, cancelMyOrder } from '../api/storeApi';
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -15,6 +17,37 @@ const PART_PLACEHOLDER = '/part-images/_placeholder.svg';
 
 const SERVICE_STEPS = ['requested', 'accepted', 'in_progress', 'completed'];
 const ORDER_STEPS = ['placed', 'confirmed', 'shipped', 'delivered'];
+
+const loadRazorpay = () =>
+  new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const s = document.createElement('script');
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+
+/**
+ * Can this booking still be paid for?
+ *
+ * Anything not already paid and not cancelled, as long as there is an amount
+ * to pay. `failed` is included on purpose — a declined card is exactly the
+ * case where the customer needs to try again, and a booking whose payment
+ * failed is otherwise a dead end.
+ */
+const isPayable = (b) =>
+  b?.status !== 'cancelled'
+  && b?.payment?.status !== 'paid'
+  && Number(b?.totalAmount ?? b?.estimatedCost ?? 0) > 0;
+
+/** Wording for the payment pill, so a failed attempt does not read as merely pending. */
+const paymentLabel = (status) => {
+  if (status === 'paid') return 'Paid';
+  if (status === 'failed') return 'Payment failed';
+  if (status === 'refunded') return 'Refunded';
+  return 'Payment pending';
+};
 
 const statusBadge = (status) => {
   const map = {
@@ -127,6 +160,7 @@ export default function MyBookings() {
   const [serviceError, setServiceError] = useState('');
   const [orderError, setOrderError] = useState('');
   const [cancelling, setCancelling] = useState('');
+  const [payingId, setPayingId] = useState('');
 
   const loadServices = useCallback(
     () =>
@@ -162,6 +196,92 @@ export default function MyBookings() {
     setSearchParams(next, { replace: true });
   };
 
+  /**
+   * Pay for a booking that already exists.
+   *
+   * Deliberately reuses the booking rather than creating one: the row, its
+   * server-resolved prices and its slot are already there, and POST
+   * /services/:id/payment re-derives the amount from that row, so nothing the
+   * browser sends can change what is charged.
+   *
+   * Everything mirrors CheckoutModal's payment step, including reporting a
+   * cancellation or failure back so the slot stops being held.
+   */
+  const handleCompletePayment = async (booking) => {
+    if (payingId) return;                       // guard against a double tap
+    setPayingId(booking._id);
+
+    try {
+      const { data: pay } = await createServicePayment(booking._id);
+
+      const ok = await loadRazorpay();
+      if (!ok) throw new Error('Could not load the payment gateway. Check your connection and retry.');
+
+      const key = pay.key || import.meta.env.VITE_RAZORPAY_KEY_ID;
+      if (!key) throw new Error('Payment is not configured. Please contact support.');
+
+      await new Promise((resolve) => {
+        const rzp = new window.Razorpay({
+          key,
+          amount: pay.order.amount,
+          currency: pay.order.currency || 'INR',
+          name: 'GK Motors',
+          description: bookingTitle(booking).slice(0, 240),
+          order_id: pay.order.id,
+          prefill: { name: user?.name || '', email: user?.email || '', contact: user?.phone || '' },
+          theme: { color: '#1E3A8A' },
+          modal: {
+            ondismiss: () => {
+              setPayingId('');
+              reportServicePaymentFailed(booking._id, {
+                cancelled: true,
+                reason: 'Customer closed the payment sheet',
+              }).catch((e) => console.error('[MyBookings.reportCancelled]', e?.message));
+              resolve();
+            },
+          },
+          handler: async (response) => {
+            try {
+              await verifyServicePayment(booking._id, {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              });
+              toast.success('Payment received. Your booking is confirmed.');
+              await loadServices();             // pull the now-paid booking back
+            } catch (err) {
+              toast.error(reportApiError(
+                'MyBookings.verifyServicePayment', err,
+                'We could not confirm your payment. If you were charged, contact support.'
+              ));
+            } finally {
+              setPayingId('');
+              resolve();
+            }
+          },
+        });
+        rzp.on('payment.failed', (resp) => {
+          console.error('[MyBookings.payment.failed]', resp?.error);
+          toast.error(resp?.error?.description || 'Payment failed. Please try again.');
+          setPayingId('');
+          reportServicePaymentFailed(booking._id, {
+            reason: resp?.error?.description || 'Payment failed',
+          }).catch((e) => console.error('[MyBookings.reportFailed]', e?.message));
+          resolve();
+        });
+        rzp.open();
+      });
+    } catch (err) {
+      // 409 means the slot was released after the payment hold expired and
+      // has since gone to someone else. Refresh so the customer sees why.
+      toast.error(err.response
+        ? reportApiError('MyBookings.completePayment', err, 'Could not start the payment.')
+        : err.message);
+      if (err.response?.status === 409) loadServices();
+      setPayingId('');
+    }
+  };
+
   const handleCancelOrder = async (order) => {
     if (!window.confirm('Cancel this order? Any reserved stock is released.')) return;
     setCancelling(order._id);
@@ -184,7 +304,7 @@ export default function MyBookings() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+    <div style={{ flex: '1 0 auto', width: '100%', background: '#FFFFFF' }}>
       <style>{DASHBOARD_STYLES}</style>
 
       <header className="gk-dash-head">
@@ -259,12 +379,33 @@ export default function MyBookings() {
                           <span className="gk-dash-amount-value">{money(bookingAmount(booking))}</span>
                         </div>
                       )}
-                      <span className={`gk-dash-pay ${booking.payment?.status === 'paid' ? 'is-paid' : ''}`}>
+                      <span className={`gk-dash-pay ${booking.payment?.status === 'paid' ? 'is-paid' : ''}${booking.payment?.status === 'failed' ? ' is-failed' : ''}`}>
                         <CreditCard size={12} />
-                        {booking.payment?.status === 'paid' ? 'Paid' : 'Payment pending'}
+                        {paymentLabel(booking.payment?.status)}
                       </span>
+
+                      {/* An unpaid booking used to be a dead end here: the pill
+                          said "Payment pending" and there was no way to act on
+                          it. This pays the existing booking — it never creates
+                          a second one. */}
+                      {isPayable(booking) && (
+                        <button
+                          onClick={() => handleCompletePayment(booking)}
+                          disabled={Boolean(payingId)}
+                          className="gk-dash-paynow"
+                        >
+                          <CreditCard size={13} />
+                          {payingId === booking._id ? 'Opening…' : 'Complete Payment'}
+                        </button>
+                      )}
                     </div>
                   </div>
+
+                  {isPayable(booking) && (
+                    <p className="gk-dash-paynote">
+                      Your slot is only held for a short time while payment is pending — complete it to secure this booking.
+                    </p>
+                  )}
 
                   {booking.status !== 'cancelled' && (
                     <Timeline steps={SERVICE_STEPS} current={booking.status} />
@@ -439,6 +580,20 @@ const DASHBOARD_STYLES = `
   .gk-dash-amount-value { font-family: Rajdhani, sans-serif; font-size: 1.35rem; font-weight: 900; color: #0F172A; white-space: nowrap; }
   .gk-dash-pay { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; font-weight: 800; padding: 0.22rem 0.55rem; border-radius: 999px; background: #FFF7ED; color: #C2410C; white-space: nowrap; }
   .gk-dash-pay.is-paid { background: #ECFDF5; color: #047857; }
+  .gk-dash-pay.is-failed { background: #FEF2F2; color: #B91C1C; }
+  .gk-dash-paynow {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%); color: #FFF;
+    border: none; border-radius: 9px; padding: 0.5rem 0.9rem; min-height: 38px;
+    font-family: Rajdhani, sans-serif; font-weight: 900; font-size: 0.78rem;
+    letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; white-space: nowrap;
+  }
+  .gk-dash-paynow:disabled { background: #E2E8F0; color: #94A3B8; cursor: not-allowed; }
+  .gk-dash-paynote {
+    margin: 0.7rem 0 0; color: #B45309; background: #FFFBEB;
+    border: 1px solid #FCD34D; border-radius: 9px; padding: 0.5rem 0.7rem;
+    font-size: 0.74rem; font-weight: 600; line-height: 1.5;
+  }
 
   .gk-dash-order-head { display: flex; gap: 0.75rem; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; margin-bottom: 0.5rem; }
   .gk-dash-order-total { text-align: right; margin-left: auto; }

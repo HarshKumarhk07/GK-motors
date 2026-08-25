@@ -11,6 +11,7 @@ const {
   getAllBookings,
   createServicePayment,
   verifyServicePayment,
+  markServicePaymentFailed,
 } = require('../controllers/serviceController');
 const { protect } = require('../middleware/auth');
 const { adminOnly, mechanicOrAdmin } = require('../middleware/admin');
@@ -29,5 +30,9 @@ router.get('/:id', protect, getBooking);
 router.put('/:id/status', protect, mechanicOrAdmin, updateBookingStatus);
 router.post('/:id/payment', protect, createServicePayment);
 router.post('/:id/verify-payment', protect, verifyServicePayment);
+// Client-reported cancellation / failure. The Razorpay webhook is the
+// authoritative source (mounted in index.js, ahead of express.json); this is
+// the fast path so an abandoned checkout releases its slot without waiting.
+router.post('/:id/payment-failed', protect, markServicePaymentFailed);
 
 module.exports = router;

@@ -66,7 +66,7 @@ export default function SpareParts() {
   const gridParts = parts.filter((p) => !featuredIds.has(p._id));
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+    <div style={{ flex: '1 0 auto', background: '#FFFFFF', width: '100%' }}>
       <style>{`
         @media (max-width: 640px) {
           .parts-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.6rem !important; }

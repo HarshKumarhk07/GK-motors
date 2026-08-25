@@ -3,6 +3,9 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowRight, Loader } from 'lucide-react';
+import {
+  cleanText, textError, emailError, phoneError, passwordError,
+} from '../utils/validate';
 import { useState } from 'react';
 
 export default function Register() {
@@ -15,8 +18,22 @@ export default function Register() {
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
 
   const onSubmit = async (data) => {
+    /* The server requires one contact route or the other and re-validates
+       everything; this is the same rule stated where the customer can see it,
+       rather than after a round trip. */
+    if (!cleanText(data.email) && !cleanText(data.phone)) {
+      toast.error('Enter an email address or a mobile number');
+      return;
+    }
     try {
-      await registerUser(data);
+      // Sanitised on the way out so the value stored matches what the field
+      // showed -- trimmed, no stray markup, no invisible characters.
+      await registerUser({
+        name: cleanText(data.name),
+        email: cleanText(data.email).toLowerCase(),
+        phone: cleanText(data.phone),
+        password: data.password,
+      });
       toast.success('Account created! Welcome');
       navigate(redirectTo, { replace: true });
     } catch (err) {
@@ -56,9 +73,16 @@ export default function Register() {
         <div className="register-container" style={{ background: '#FFF', border: '1px solid #EEE', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 10px 40px rgba(0,0,0,0.03)' }}>
           <form onSubmit={handleSubmit(onSubmit)}>
             {[
-              { name: 'name', label: 'Full Name', icon: User, placeholder: 'John Doe', type: 'text', rules: { required: 'Name is required' } },
-              { name: 'email', label: 'Email Address', icon: Mail, placeholder: 'you@example.com', type: 'email', rules: { pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' } } },
-              { name: 'phone', label: 'Mobile Number', icon: Phone, placeholder: '+91 98765 43210', type: 'tel', rules: {} },
+              /* Rules delegate to the shared checkers so the browser and the API
+                 agree on what is valid. The old email pattern was /^\S+@\S+$/,
+                 which accepts "a@b" -- no dot, no domain -- and phone had no
+                 rules at all, so a mobile number of "abc" reached the server. */
+              { name: 'name', label: 'Full Name', icon: User, placeholder: 'John Doe', type: 'text',
+                rules: { validate: (v) => textError(v, { label: 'Name', min: 2, max: 80, required: true }) || true } },
+              { name: 'email', label: 'Email Address', icon: Mail, placeholder: 'you@example.com', type: 'email',
+                rules: { validate: (v) => emailError(v) || true } },
+              { name: 'phone', label: 'Mobile Number', icon: Phone, placeholder: '+91 98765 43210', type: 'tel',
+                rules: { validate: (v) => phoneError(v) || true } },
             ].map(({ name, label, icon: Icon, placeholder, type, rules }) => (
               <div key={name} className="form-input-wrapper" style={{ marginBottom: '0.8rem' }}>
                 <label className="form-label" style={{ color: '#333', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '0.3rem' }}>{label}</label>
@@ -76,7 +100,7 @@ export default function Register() {
                 <Lock size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#AAA' }} />
                 <input type={showPass ? 'text' : 'password'} className="input-light form-input" style={{ paddingLeft: '2.8rem', paddingRight: '2.8rem', height: '44px', fontSize: '0.85rem' }}
                   placeholder="Min. 6 characters"
-                  {...register('password', { required: 'Password required', minLength: { value: 6, message: 'Min 6 characters' } })} />
+                  {...register('password', { validate: (v) => passwordError(v) || true })} />
                 <button type="button" onClick={() => setShowPass(!showPass)}
                   style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#AAA', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}

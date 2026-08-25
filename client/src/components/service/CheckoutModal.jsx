@@ -9,9 +9,11 @@ import { useAuth } from '../../context/AuthContext';
 import { useServiceCart } from '../../context/CartContext';
 import {
   getAvailability, createServiceBooking, createServicePayment, verifyServicePayment,
+  reportServicePaymentFailed,
 } from '../../api/serviceApi';
 import { getMe, addAddress } from '../../api/authApi';
 import { reportApiError } from '../../api/apiError';
+import { cleanText, textError, pincodeError, validateAll } from '../../utils/validate';
 import { istNow, slotMinutes, addIstDays, formatIstDate } from '../../utils/istTime';
 
 const MAX_DAYS_AHEAD = 30;
@@ -83,6 +85,91 @@ const loadRazorpay = () =>
     document.body.appendChild(s);
   });
 
+/* ── Pending-booking handoff ───────────────────────────────────────────────
+   The booking row is written before the customer ever reaches the Razorpay
+   sheet, so a cancelled or failed payment leaves a real, still-payable
+   booking behind. That id used to live only in component state, which is
+   reset every time the modal opens — so closing the modal after a failed
+   payment and trying again created a SECOND booking for the same job.
+
+   It is parked in sessionStorage instead, tagged with a signature of the
+   inputs that define the booking. Reuse requires the signature to still
+   match: change the car, the services, the slot, the address or the pickup
+   choice and the pending booking no longer describes what the customer is
+   buying, so a fresh one is created rather than charging them for the wrong
+   thing.
+
+   sessionStorage rather than localStorage — this handoff belongs to one tab
+   and one sitting, and should not outlive the browser session.            */
+const PENDING_BOOKING_KEY = 'gkmotors_pending_booking';
+
+/* Server-side an unpaid booking only holds its slot for SLOT_HOLD_MINUTES.
+   Well past that there is nothing worth resuming, so the handoff is dropped
+   rather than resurrected hours later. */
+const PENDING_BOOKING_TTL_MS = 60 * 60 * 1000;
+
+const readPendingBooking = () => {
+  try {
+    const raw = sessionStorage.getItem(PENDING_BOOKING_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed.id !== 'string' || typeof parsed.key !== 'string') return null;
+    if (!Number.isFinite(parsed.at) || Date.now() - parsed.at > PENDING_BOOKING_TTL_MS) {
+      sessionStorage.removeItem(PENDING_BOOKING_KEY);
+      return null;
+    }
+    return parsed;
+  } catch (err) {
+    // Private browsing, quota, or corrupt JSON — behave as if there were none.
+    console.error('CheckoutModal: could not read the pending booking ->', err.message);
+    return null;
+  }
+};
+
+const writePendingBooking = (id, key) => {
+  try {
+    sessionStorage.setItem(PENDING_BOOKING_KEY, JSON.stringify({ id, key, at: Date.now() }));
+  } catch (err) {
+    // Non-fatal: the id still lives in component state for this modal session.
+    console.error('CheckoutModal: could not store the pending booking ->', err.message);
+  }
+};
+
+const clearPendingBooking = () => {
+  try {
+    sessionStorage.removeItem(PENDING_BOOKING_KEY);
+  } catch (err) {
+    console.error('CheckoutModal: could not clear the pending booking ->', err.message);
+  }
+};
+
+/**
+ * Everything that decides what this booking *is*.
+ *
+ * Two checkouts with the same signature are the same purchase and may share a
+ * booking row; anything else must not.
+ */
+const checkoutSignature = ({ car, services, scheduledDate, scheduledTime, addressId, pickupDrop }) =>
+  JSON.stringify({
+    car: car
+      ? [car.carId ?? '', car.brand, car.model, car.year, car.isManualEntry ? 1 : 0]
+      : null,
+    services: services.map((s) => String(s.serviceType || s.serviceId)).sort(),
+    scheduledDate,
+    scheduledTime,
+    addressId: addressId || '',
+    pickup: pickupDrop.enabled
+      ? [
+          1,
+          pickupDrop.dropType,
+          pickupDrop.pickupAddress?._id || formatAddress(pickupDrop.pickupAddress),
+          pickupDrop.dropType === 'different'
+            ? (pickupDrop.dropAddress?._id || formatAddress(pickupDrop.dropAddress))
+            : '',
+        ]
+      : [0],
+  });
+
 export default function CheckoutModal({ open, onClose }) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -118,7 +205,10 @@ export default function CheckoutModal({ open, onClose }) {
 
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState('');
-  const [bookingId, setBookingId] = useState(null);   // survives a failed payment so retry reuses it
+  // Mirrors the sessionStorage handoff above. sessionStorage is the source of
+  // truth, so the id survives the modal being closed and reopened; this is
+  // just the copy the current render needs.
+  const [bookingId, setBookingId] = useState(() => readPendingBooking()?.id ?? null);
 
   // ── date bounds ──
   const { minDate, maxDate } = useMemo(() => {
@@ -137,7 +227,10 @@ export default function CheckoutModal({ open, onClose }) {
     setScheduledDate(minDate);
     setScheduledTime('');
     setPayError('');
-    setBookingId(null);
+    // NOT reset to null: an unpaid booking from an earlier attempt is still
+    // payable, and throwing the id away here is what used to make a retry
+    // create a duplicate. handlePay re-checks the signature before reusing it.
+    setBookingId(readPendingBooking()?.id ?? null);
     setPickupDrop({ enabled: false, pickupAddress: null, dropType: 'service_center', dropAddress: null });
   }, [open, minDate]);
 
@@ -179,8 +272,17 @@ export default function CheckoutModal({ open, onClose }) {
       .then(({ data }) => {
         const list = data.user?.addresses || [];
         setAddresses(list);
-        if (list.length) setSelectedAddressId((prev) => prev ?? list[0]._id);
-        else setAddingAddress(true);
+        if (list.length) {
+          // Drop a selection that no longer exists on the account rather than
+          // holding an id the server would reject, and never leave the step
+          // with nothing chosen.
+          setSelectedAddressId((prev) =>
+            (prev && list.some((a) => a._id === prev)) ? prev : list[0]._id
+          );
+        } else {
+          setSelectedAddressId(null);
+          setAddingAddress(true);
+        }
       })
       .catch((err) => {
         reportApiError('CheckoutModal.getMe', err);
@@ -195,14 +297,18 @@ export default function CheckoutModal({ open, onClose }) {
   if (!open) return null;
 
   // ── address helpers ──
+  /* Mirrors the rules authController.cleanAddressInput enforces, so an address
+     the form accepts is one the API will store. The presence checks were
+     already here; what is added is minimum and maximum lengths, and the fact
+     that a value made only of markup no longer counts as filled in. */
   const validateAddress = () => {
-    const e = {};
-    if (!addressForm.street.trim()) e.street = 'Street address is required';
-    if (!addressForm.city.trim()) e.city = 'City is required';
-    if (!addressForm.state.trim()) e.state = 'State is required';
-    if (!/^[1-9]\d{5}$/.test(addressForm.pincode.trim())) {
-      e.pincode = 'Enter a valid 6-digit pincode (cannot start with 0)';
-    }
+    const e = validateAll({
+      label: () => textError(addressForm.label, { label: 'Label', max: 40 }),
+      street: () => textError(addressForm.street, { label: 'Street address', min: 3, max: 200, required: true }),
+      city: () => textError(addressForm.city, { label: 'City', min: 2, max: 80, required: true }),
+      state: () => textError(addressForm.state, { label: 'State', min: 2, max: 80, required: true }),
+      pincode: () => pincodeError(addressForm.pincode),
+    });
     setAddressErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -314,11 +420,14 @@ export default function CheckoutModal({ open, onClose }) {
     setSavingAddress(true);
     try {
       const { data } = await addAddress({
-        label: addressForm.label || 'Home',
-        street: addressForm.street.trim(),
-        city: addressForm.city.trim(),
-        state: addressForm.state.trim(),
-        pincode: addressForm.pincode.trim(),
+        // Sanitised, not just trimmed: markup and invisible characters are
+        // removed here as well as on the server, so what is sent matches what
+        // the customer saw in the field.
+        label: cleanText(addressForm.label) || 'Home',
+        street: cleanText(addressForm.street),
+        city: cleanText(addressForm.city),
+        state: cleanText(addressForm.state),
+        pincode: cleanText(addressForm.pincode),
         lat: addressForm.lat, lng: addressForm.lng,
       });
       const list = data.addresses || [];
@@ -343,8 +452,28 @@ export default function CheckoutModal({ open, onClose }) {
     setPayError('');
 
     try {
-      // 1. Create (or reuse) the booking
-      let id = bookingId;
+      /* The address is looked up by id from a list refetched on open, so it can
+         legitimately be missing: deleted from another tab or on /profile, or a
+         stale id left selected. Dereferencing it below used to throw a
+         TypeError inside the click handler and leave the button spinning. */
+      if (!selectedAddress) {
+        setPayError('Please choose a delivery address before paying.');
+        setPaying(false);
+        setStep(3);
+        loadAddresses();
+        return;
+      }
+
+      // 1. Create (or reuse) the booking.
+      //    A pending booking from an earlier attempt is reused only when it
+      //    still describes this exact checkout — see checkoutSignature.
+      const signature = checkoutSignature({
+        car, services, scheduledDate, scheduledTime,
+        addressId: selectedAddress?._id, pickupDrop,
+      });
+      const pending = readPendingBooking();
+      let id = pending && pending.key === signature ? pending.id : null;
+
       if (!id) {
         const { data } = await createServiceBooking({
           selectedCar: {
@@ -379,8 +508,9 @@ export default function CheckoutModal({ open, onClose }) {
           totalAmount,
         });
         id = data.booking._id;
-        setBookingId(id);
+        writePendingBooking(id, signature);
       }
+      setBookingId(id);
 
       // 2. Razorpay order
       const { data: pay } = await createServicePayment(id);
@@ -404,9 +534,17 @@ export default function CheckoutModal({ open, onClose }) {
           theme: { color: '#1E3A8A' },
           modal: {
             ondismiss: () => {
-              // Booking stays in `requested` so the customer can retry.
+              // Booking stays payable so the customer can retry — the id is
+              // kept in sessionStorage so the retry reuses it rather than
+              // creating a second booking.
               setPayError('Payment was cancelled. Your booking is saved — you can pay again below.');
               setPaying(false);
+              // Tell the server, so a slot is not held for someone who walked
+              // away. Best-effort: the webhook is the authoritative source.
+              reportServicePaymentFailed(id, {
+                cancelled: true,
+                reason: 'Customer closed the payment sheet',
+              }).catch((e) => console.error('[CheckoutModal.reportCancelled]', e?.message));
               resolve();
             },
           },
@@ -418,6 +556,9 @@ export default function CheckoutModal({ open, onClose }) {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
               });
+              // Paid: the handoff has done its job. Dropping it here is what
+              // stops the next checkout from trying to pay this booking again.
+              clearPendingBooking();
               clearCart();                    // only ever cleared on success
               toast.success('Booking confirmed. See you soon.');
               onClose();
@@ -437,11 +578,23 @@ export default function CheckoutModal({ open, onClose }) {
           console.error('[CheckoutModal.payment.failed]', resp?.error);
           setPayError(resp?.error?.description || 'Payment failed. Please try again.');
           setPaying(false);
+          // Record the failure so the booking stops holding its slot. The
+          // booking itself stays, so "Retry Payment" reuses it.
+          reportServicePaymentFailed(id, {
+            reason: resp?.error?.description || 'Payment failed',
+          }).catch((e) => console.error('[CheckoutModal.reportFailed]', e?.message));
           resolve();
         });
         rzp.open();
       });
     } catch (err) {
+      /* 409 means the slot went to someone else while this booking sat unpaid.
+         Retrying the same booking can never succeed, so drop the handoff and
+         let the customer start a clean one on a slot that is still free. */
+      if (err.response?.status === 409) {
+        clearPendingBooking();
+        setBookingId(null);
+      }
       setPayError(err.response ? reportApiError('CheckoutModal.handlePay', err) : err.message);
       setPaying(false);
     }
@@ -455,7 +608,10 @@ export default function CheckoutModal({ open, onClose }) {
     !pickupDrop.enabled
     || (Boolean(pickupDrop.pickupAddress)
         && (pickupDrop.dropType !== 'different' || Boolean(pickupDrop.dropAddress)));
-  const canContinueFromAddress = Boolean(selectedAddress);
+  // Boolean(selectedAddress) alone passed when a stale id happened to match
+  // nothing: `find` returns undefined, but so does an empty list — this makes
+  // the requirement explicit.
+  const canContinueFromAddress = Boolean(selectedAddress && selectedAddress._id);
   const canContinue =
     step === 1 ? canContinueFromDate
     : step === 2 ? canContinueFromPickup
@@ -510,9 +666,10 @@ export default function CheckoutModal({ open, onClose }) {
         justifyContent: 'center', padding: '1rem', overflowY: 'auto',
       }}
     >
-      <div style={{ background: '#FFF', borderRadius: '20px', width: '100%', maxWidth: '620px', maxHeight: '92vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div className="gk-co-modal" style={{ background: '#FFF', borderRadius: '20px', width: '100%', maxWidth: '620px', maxHeight: '92vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <style>{CHECKOUT_STYLES}</style>
         {/* Header */}
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="gk-co-head" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, fontSize: '1.35rem', color: '#0F172A' }}>
             Complete Your Booking
           </h2>
@@ -522,12 +679,12 @@ export default function CheckoutModal({ open, onClose }) {
         </div>
 
         {/* Stepper */}
-        <div style={{ display: 'flex', gap: '0.5rem', padding: '1rem 1.5rem', borderBottom: '1px solid #F1F5F9' }}>
+        <div className="gk-co-steps" style={{ display: 'flex', gap: '0.5rem', padding: '1rem 1.5rem', borderBottom: '1px solid #F1F5F9' }}>
           {STEPS.map(({ n, label, icon: Icon }) => {
             const active = step === n;
             const done = step > n;
             return (
-              <div key={n} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <div key={n} className="gk-co-step" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
                   background: done ? '#DCFCE7' : active ? '#1E3A8A' : '#F1F5F9',
@@ -536,7 +693,7 @@ export default function CheckoutModal({ open, onClose }) {
                 }}>
                   {done ? <Check size={14} /> : <Icon size={13} />}
                 </div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: active ? '#0F172A' : '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span className="gk-co-step-label" style={{ fontSize: '0.75rem', fontWeight: 800, color: active ? '#0F172A' : '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   {label}
                 </span>
               </div>
@@ -545,7 +702,7 @@ export default function CheckoutModal({ open, onClose }) {
         </div>
 
         {/* Body */}
-        <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
+        <div className="gk-co-body" style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
           {/* ── STEP 1 ── */}
           {step === 1 && (
             <div>
@@ -992,6 +1149,7 @@ export default function CheckoutModal({ open, onClose }) {
                 </div>
               )}
 
+              <div className="gk-co-pay-wrap">
               <button
                 onClick={handlePay}
                 disabled={paying}
@@ -1008,13 +1166,14 @@ export default function CheckoutModal({ open, onClose }) {
                 <CreditCard size={17} />
                 {paying ? 'Processing…' : payError ? 'Retry Payment' : `Pay ₹${Number(totalAmount).toLocaleString('en-IN')}`}
               </button>
+              </div>
             </div>
           )}
         </div>
 
         {/* Footer nav */}
         {step < 4 && (
-          <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #E2E8F0', display: 'flex', gap: '0.7rem' }}>
+          <div className="gk-co-foot" style={{ padding: '1rem 1.5rem', borderTop: '1px solid #E2E8F0', display: 'flex', gap: '0.7rem' }}>
             {step > 1 && (
               <button onClick={() => setStep(step - 1)}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '10px', padding: '0.8rem 1.2rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer' }}>
@@ -1056,3 +1215,52 @@ export default function CheckoutModal({ open, onClose }) {
     </div>
   );
 }
+
+/* Responsive rules for the modal.
+ *
+ * This component previously had NO media queries at all: a 620px card with
+ * 1.5rem padding throughout and a four-item horizontal stepper carrying
+ * uppercase labels, rendered identically at 1440px and at 320px. Everything
+ * below is layout only — no colour, no spacing on desktop, no behaviour. */
+const CHECKOUT_STYLES = `
+  @media (max-width: 560px) {
+    /* Use the full height rather than floating a 92vh card inside a scrolling
+       overlay: two nested scroll containers is what makes iOS scroll-chain
+       unpredictably here. */
+    .gk-co-modal {
+      max-height: 100dvh !important;
+      height: 100dvh !important;
+      border-radius: 0 !important;
+    }
+    .gk-co-head  { padding: 1rem 1.1rem !important; }
+    .gk-co-steps { padding: 0.75rem 1.1rem !important; gap: 0.35rem !important; }
+    .gk-co-body  { padding: 1.1rem !important; }
+    .gk-co-foot  {
+      padding: 0.85rem 1.1rem calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Icons only. Four uppercase labels cannot fit across a 320px row, and
+       truncating them left four meaningless fragments. The circles keep their
+       done/active states, and each step now carries its name as an accessible
+       title instead. */
+    .gk-co-step-label { display: none !important; }
+    .gk-co-step { flex: 0 0 auto !important; }
+    .gk-co-steps { justify-content: space-between !important; }
+
+    /* The footer is hidden on the payment step, so the pay button would sit at
+       the end of a scrolling body. Pin it to the bottom of that body. */
+    .gk-co-pay-wrap {
+      position: sticky;
+      bottom: calc(-1.1rem - env(safe-area-inset-bottom, 0px));
+      background: #FFFFFF;
+      padding: 0.75rem 0 calc(0.75rem + env(safe-area-inset-bottom, 0px));
+      margin: 0 0 -1.1rem;
+      box-shadow: 0 -8px 12px -8px rgba(15, 23, 42, 0.15);
+    }
+  }
+
+  /* The address form's two-up City/State row is tight below 380px. */
+  @media (max-width: 380px) {
+    .gk-co-body input, .gk-co-body select { font-size: 16px !important; }  /* iOS: <16px triggers zoom-on-focus */
+  }
+`;

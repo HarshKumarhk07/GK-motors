@@ -2,7 +2,7 @@ import { Shield, Clock, MapPin, Star, Zap, Award, Users, CheckCircle, Heart } fr
 
 export default function About() {
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+    <div style={{ flex: '1 0 auto', background: '#FFFFFF', width: '100%' }}>
       <style>{`
         @media (max-width: 768px) {
           section { padding: 3rem 0 !important; }

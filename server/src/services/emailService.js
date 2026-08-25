@@ -314,13 +314,17 @@ const sendWelcomeEmail = async (user) => {
 };
 
 /**
- * Booking confirmation, sent after a service booking is created.
+ * The blocks both booking emails are built from.
+ *
+ * Extracted so the "received" and "confirmed" templates can never drift in
+ * what they tell the customer about their car, services, slot and logistics.
+ * The only thing that differs between the two is the payment story.
  *
  * Every field is defensive: bookings made before a field existed, or through
  * the older single-service flow, still have to produce a sensible email
  * rather than throwing inside the send.
  */
-const sendBookingConfirmationEmail = async (user, booking, serviceCenter = {}) => {
+const bookingBlocks = (booking, serviceCenter = {}) => {
   const centerLine = serviceCenter.fullAddress || SERVICE_CENTER_LINE;
   const car = booking.selectedCar || {};
   const services = Array.isArray(booking.services) ? booking.services : [];
@@ -364,27 +368,131 @@ const sendBookingConfirmationEmail = async (user, booking, serviceCenter = {}) =
         </div>
       `);
 
+  return {
+    centerLine,
+    carName,
+    carCard,
+    serviceRows,
+    when,
+    logistics,
+    pickupEnabled: Boolean(pd.enabled),
+    reference: String(booking._id).slice(-8).toUpperCase(),
+  };
+};
+
+/** The dark money strip that closes both booking emails. */
+const totalStrip = (label, amount) => `
+  <div style="background:#0F172A;border-radius:10px;padding:16px 20px;margin-top:4px;">
+    <span style="color:#CBD5E1;font-size:14px;">${label}</span>
+    <span style="color:#FFFFFF;font-size:21px;font-weight:800;float:right;">${inr(amount)}</span>
+    <div style="clear:both;"></div>
+  </div>
+`;
+
+/** Link back into the customer's own booking list, when CLIENT_URL is set. */
+const bookingsCta = (label) => {
+  const clientUrl = (process.env.CLIENT_URL || '').replace(/\/+$/, '');
+  if (!clientUrl) return '';
+  return `<div style="text-align:center;margin-top:22px;">
+      <a href="${clientUrl}/my-bookings?tab=services" style="display:inline-block;background:#1E3A8A;color:#FFFFFF;padding:13px 26px;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;">${label}</a>
+    </div>`;
+};
+
+/**
+ * Booking received — payment still pending.
+ *
+ * Sent when the booking record is created, which happens BEFORE the customer
+ * ever reaches the Razorpay sheet. It must therefore never claim the booking
+ * is confirmed or that anything has been paid. Until verifyServicePayment
+ * flips payment.status to 'paid' the slot is only held provisionally — see
+ * SLOT_HOLD_MINUTES in controllers/serviceController.js.
+ */
+const sendBookingReceivedEmail = async (user, booking, serviceCenter = {}) => {
+  const b = bookingBlocks(booking, serviceCenter);
+
+  const pendingBanner = `
+    <div style="background:#FFFBEB;border:1px solid #FCD34D;border-left:4px solid #B45309;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+      <div style="color:#92400E;font-size:13px;font-weight:800;margin-bottom:4px;">PAYMENT PENDING</div>
+      <div style="color:#92400E;font-size:13px;line-height:1.6;">
+        Your slot is held for a short time only. Complete the payment to secure this booking —
+        until then it is not confirmed.
+      </div>
+    </div>
+  `;
+
   await sendEmail({
     to: user.email,
-    subject: `Booking confirmed — ${carName} on ${when}`,
-    html: shell('Booking confirmed', `Reference ${String(booking._id).slice(-8).toUpperCase()}`, `
+    subject: `Booking received — payment pending (${b.reference})`,
+    html: shell('Booking received', `Reference ${b.reference} · Awaiting payment`, `
       <p style="margin:0 0 14px;color:#0F172A;font-size:15px;">Hello <strong>${esc(user.name)}</strong>,</p>
       <p style="margin:0 0 18px;color:#475569;font-size:14px;line-height:1.65;">
-        Your service booking is confirmed. Here are the details:
+        We have your service request. <strong>It is not confirmed yet</strong> — we will confirm it
+        as soon as your payment goes through.
       </p>
-      ${carCard}
-      ${card('Services booked', serviceRows)}
-      ${card('Schedule', row('Date', esc(when)) + row('Time', esc(booking.scheduledTime || '—')))}
-      ${logistics}
-      <div style="background:#0F172A;border-radius:10px;padding:16px 20px;margin-top:4px;">
-        <span style="color:#CBD5E1;font-size:14px;">Total</span>
-        <span style="color:#FFFFFF;font-size:21px;font-weight:800;float:right;">${inr(booking.totalAmount)}</span>
-        <div style="clear:both;"></div>
-      </div>
+      ${pendingBanner}
+      ${b.carCard}
+      ${card('Services requested', b.serviceRows)}
+      ${card('Requested slot', row('Date', esc(b.when)) + row('Time', esc(booking.scheduledTime || '—')))}
+      ${b.logistics}
+      ${totalStrip('Amount due', booking.totalAmount)}
+      ${bookingsCta('Complete Payment')}
     `),
-    text: `Hello ${user.name}, your GK Motors booking is confirmed for ${when} at ${booking.scheduledTime || ''}. `
-        + `${carName}. Total ${inr(booking.totalAmount)}. `
-        + (pd.enabled ? 'Doorstep pickup is arranged.' : `Please bring your car to: ${centerLine}`),
+    text: `Hello ${user.name}, we have received your GK Motors service request for ${b.when} at ${booking.scheduledTime || ''} `
+        + `(${b.carName}, reference ${b.reference}). This booking is NOT confirmed yet — payment of ${inr(booking.totalAmount)} is still pending. `
+        + 'Your slot is held for a short time only. Complete the payment from My Bookings to secure it.',
+  });
+};
+
+/**
+ * Booking confirmed — payment received and verified.
+ *
+ * Only ever sent from verifyServicePayment / the Razorpay webhook, after the
+ * signature has been verified server-side AND the booking has actually
+ * transitioned from unpaid to paid. Never call this from booking creation.
+ */
+const sendBookingConfirmationEmail = async (user, booking, serviceCenter = {}) => {
+  const b = bookingBlocks(booking, serviceCenter);
+  const pay = booking.payment || {};
+
+  const paidBanner = `
+    <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-left:4px solid #16A34A;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+      <div style="color:#166534;font-size:13px;font-weight:800;margin-bottom:4px;">PAYMENT RECEIVED</div>
+      <div style="color:#166534;font-size:13px;line-height:1.6;">
+        We have received ${inr(pay.advancePaid || booking.totalAmount)}. Your slot is secured.
+      </div>
+    </div>
+  `;
+
+  const paymentCard = card('Payment', [
+    row('Status', 'Paid'),
+    row('Amount', inr(pay.advancePaid || booking.totalAmount)),
+    pay.razorpayPaymentId ? row('Payment ID', esc(pay.razorpayPaymentId)) : '',
+    pay.paidAt
+      ? row('Paid on', esc(new Date(pay.paidAt).toLocaleDateString('en-IN', {
+          year: 'numeric', month: 'long', day: 'numeric',
+        })))
+      : '',
+  ].filter(Boolean).join(''));
+
+  await sendEmail({
+    to: user.email,
+    subject: `Booking confirmed — ${b.carName} on ${b.when}`,
+    html: shell('Booking confirmed', `Reference ${b.reference} · Paid`, `
+      <p style="margin:0 0 14px;color:#0F172A;font-size:15px;">Hello <strong>${esc(user.name)}</strong>,</p>
+      <p style="margin:0 0 18px;color:#475569;font-size:14px;line-height:1.65;">
+        Your payment is confirmed and your service booking is secured. Here are the details:
+      </p>
+      ${paidBanner}
+      ${b.carCard}
+      ${card('Services booked', b.serviceRows)}
+      ${card('Schedule', row('Date', esc(b.when)) + row('Time', esc(booking.scheduledTime || '—')))}
+      ${b.logistics}
+      ${paymentCard}
+      ${totalStrip('Total paid', pay.advancePaid || booking.totalAmount)}
+    `),
+    text: `Hello ${user.name}, your GK Motors booking is confirmed and paid for ${b.when} at ${booking.scheduledTime || ''}. `
+        + `${b.carName}. Reference ${b.reference}. Total paid ${inr(pay.advancePaid || booking.totalAmount)}. `
+        + (b.pickupEnabled ? 'Doorstep pickup is arranged.' : `Please bring your car to: ${b.centerLine}`),
   });
 };
 
@@ -427,12 +535,44 @@ const sendBookingStatusUpdateEmail = async (user, booking, previousStatus, newSt
     },
   };
 
-  const info = STATUS_DETAILS[newStatus] || {
+  let info = STATUS_DETAILS[newStatus] || {
     label: newStatus?.replace(/_/g, ' ')?.toUpperCase() || 'Updated',
     color: '#1E3A8A',
     title: 'Booking Status Updated',
     message: `Your booking status has been updated to ${newStatus}.`,
   };
+
+  /* ── Never claim a booking is confirmed while it is unpaid ──────────────
+     'accepted' is the one status whose copy asserts confirmation ("your
+     booking has been confirmed!"), and updateBookingStatus auto-promotes a
+     'requested' booking to 'accepted' the moment a mechanic is assigned. On
+     an unpaid booking that produced a second false confirmation, entirely
+     independent of the checkout flow. The status update itself is legitimate
+     and still goes out — only the wording changes, so the customer is told
+     what actually happened and what is still outstanding. */
+  const isPaid = booking?.payment?.status === 'paid';
+  if (!isPaid && newStatus === 'accepted') {
+    info = {
+      ...info,
+      label: 'Accepted · Payment Pending',
+      color: '#B45309',
+      title: 'Booking Accepted — Payment Pending',
+      message: 'Our team has accepted your service request. Your payment has not reached us yet, '
+        + 'so the booking is not confirmed — please complete the payment to secure your slot.',
+    };
+  }
+
+  /* A short amber strip on any unpaid update, so no status mail can read as a
+     receipt. Cancelled bookings are excluded: chasing payment for a booking we
+     have just cancelled would be nonsense. */
+  const unpaidBanner = !isPaid && newStatus !== 'cancelled'
+    ? `<div style="background:#FFFBEB;border:1px solid #FCD34D;border-left:4px solid #B45309;border-radius:8px;padding:12px 15px;margin-bottom:16px;">
+        <div style="color:#92400E;font-size:12.5px;font-weight:800;margin-bottom:3px;">PAYMENT PENDING</div>
+        <div style="color:#92400E;font-size:12.5px;line-height:1.6;">
+          This booking is not paid for yet. Complete the payment from My Bookings to secure your slot.
+        </div>
+      </div>`
+    : '';
 
   const clientUrl = (process.env.CLIENT_URL || '').replace(/\/+$/, '');
   const car = booking.selectedCar || {};
@@ -483,6 +623,8 @@ const sendBookingStatusUpdateEmail = async (user, booking, previousStatus, newSt
         </span>
       </div>
 
+      ${unpaidBanner}
+
       ${noteBlock}
 
       ${card('Booking Details', `
@@ -491,6 +633,7 @@ const sendBookingStatusUpdateEmail = async (user, booking, previousStatus, newSt
         ${row('Scheduled Date', esc(when))}
         ${row('Scheduled Time', esc(booking.scheduledTime || '—'))}
         ${booking.totalAmount ? row('Total Amount', inr(booking.totalAmount)) : ''}
+        ${row('Payment', isPaid ? 'Paid' : 'Pending')}
       `)}
 
       ${mechanicInfo}
@@ -505,6 +648,7 @@ module.exports = {
   sendEmail,
   sendOTPEmail,
   sendWelcomeEmail,
+  sendBookingReceivedEmail,
   sendBookingConfirmationEmail,
   sendBookingStatusUpdateEmail,
   resolveProvider,
