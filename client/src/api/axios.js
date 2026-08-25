@@ -27,10 +27,30 @@ if (!hasBase && import.meta.env.DEV) {
   );
 }
 
+/* A cold container plus an Atlas connection can genuinely take longer than a
+   warm request, and the landing page's reads are the first thing to hit it. */
+const REQUEST_TIMEOUT_MS = 20000;
+const MAX_RETRIES = 2;
+const RETRY_BASE_MS = 600;
+
 const API = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: REQUEST_TIMEOUT_MS,
 });
+
+/* A production bundle that was built pointing at localhost cannot work on any
+   device but the build machine, and the symptom -- every request hanging until
+   it times out -- reads like a slow server rather than a misconfiguration.
+   vite.config.js now fails such a build outright; this says the same thing in
+   the console for a bundle built before that guard existed. */
+if (!import.meta.env.DEV && /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(API_BASE_URL)) {
+  console.error(
+    '[api] This build points at %s, which is the visitor\'s own machine, so every '
+    + 'request will hang and time out. Rebuild with VITE_API_URL set to the public '
+    + 'API origin.',
+    API_BASE_URL
+  );
+}
 
 // Attach JWT
 API.interceptors.request.use((config) => {
@@ -43,10 +63,45 @@ API.interceptors.request.use((config) => {
 // otherwise trigger one redirect per 401. Latch so only the first wins.
 let redirecting = false;
 
+/**
+ * Should this failure be retried?
+ *
+ * Only when the request never reached the server -- a timeout or a dropped
+ * connection -- and only for methods that are safe to repeat.
+ *
+ * GET and HEAD only, deliberately. A POST that timed out may well have been
+ * received and acted on; retrying one could create a second booking or, far
+ * worse, a second payment. Phase 2A went to some length to make a payment
+ * happen exactly once, and a blanket retry here would undo that. Anything with
+ * a response is left alone too: a 4xx or 5xx is an answer, not a lost request.
+ */
+const isRetryable = (error) => {
+  const method = String(error.config?.method || '').toLowerCase();
+  if (method !== 'get' && method !== 'head') return false;
+  if (error.response) return false;
+  return error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || !error.request?.status;
+};
+
+const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+
 // Handle 401
 API.interceptors.response.use(
   (res) => res,
-  (error) => {
+  async (error) => {
+    /* Retry idempotent reads before giving up. A first request that wakes a
+       sleeping backend can exceed the timeout while the second, against a warm
+       server, returns immediately -- which is exactly why a manual reload
+       "fixes" it. Doing that automatically saves the customer from having to. */
+    const config = error.config;
+    if (config && isRetryable(error)) {
+      config.__retryCount = config.__retryCount || 0;
+      if (config.__retryCount < MAX_RETRIES) {
+        config.__retryCount += 1;
+        await wait(RETRY_BASE_MS * (2 ** (config.__retryCount - 1)));
+        return API(config);
+      }
+    }
+
     if (error.response?.status === 401 && !redirecting) {
       redirecting = true;
       localStorage.removeItem('bikeservice_token');
