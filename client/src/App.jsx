@@ -121,31 +121,10 @@ const ScrollToTop = () => {
  * a slab of dark navy directly under the footer. Being the same colour as the
  * footer, it read as extra page rather than as a gap.
  */
-const SHELL_STYLES = `
-  /* Declared in a stylesheet rather than inline so the dvh line can override
-     the vh line — an inline style would win over both and pin it to 100vh.
-
-     100vh first as the fallback; 100dvh for browsers that have it. On mobile
-     100vh is measured with the URL bar hidden, so it is taller than the
-     visible viewport and on its own would add a strip of scroll at the
-     bottom — trading one gap for another. */
-  .gk-shell {
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    flex: 1 0 auto;
-    width: 100%;
-  }
-`;
-
 const Layout = ({ hideNav = false }) => (
-  <div className="gk-shell" style={{ width: '100%', maxWidth: '100%', position: 'relative' }}>
-    <style>{SHELL_STYLES}</style>
+  <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100%', position: 'relative' }}>
     {!hideNav && <Navbar />}
-    {/* flex: 1 0 auto — absorbs any leftover height so the footer is pushed to
-        the bottom of the viewport on a short page, and never shrinks below its
-        own content on a long one. */}
+    {/* flex: 1 0 auto — absorbs all remaining height so footer stays pinned to bottom */}
     <main style={{ width: '100%', maxWidth: '100%', position: 'relative', flex: '1 0 auto', display: 'flex', flexDirection: 'column' }}>
       <Suspense fallback={<RouteFallback />}>
         <Outlet />

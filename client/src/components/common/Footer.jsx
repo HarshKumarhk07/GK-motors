@@ -32,7 +32,7 @@ const LOCATIONS = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: '#0F172A', borderTop: '1px solid #1E293B', color: '#94A3B8' }}>
+    <footer style={{ background: '#0F172A', borderTop: '1px solid #1E293B', color: '#94A3B8', width: '100%', flexShrink: 0 }}>
       <style>{`
         /* min() floor + min-width:0 on the items: without them a long address
            line sets a column's min-content width and the footer runs 1px past
