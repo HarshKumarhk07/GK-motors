@@ -152,9 +152,18 @@
   -webkit-text-fill-color: transparent;
 }
 /* On dark grounds the gradient has to start brighter or its left end vanishes
-   into the background. */
+   into the background.
+
+   `background-image`, NOT `background`. This is the bug that made the hero
+   headline render as a solid cyan BLOCK instead of gradient-filled text:
+   `background` is a shorthand, so it resets every background-* longhand it
+   does not mention — including the `background-clip: text` set by .gk-grad
+   above. Clip fell back to `border-box` while `-webkit-text-fill-color:
+   transparent` stayed, so the text went invisible and the gradient painted
+   the whole element box. Any future variant of .gk-grad must use
+   `background-image` for the same reason. */
 .gk-grad--dark {
-  background: linear-gradient(100deg, var(--gk-cyan) 0%, var(--gk-cyan-soft) 55%, #FFFFFF 100%);
+  background-image: linear-gradient(100deg, var(--gk-cyan) 0%, var(--gk-cyan-soft) 55%, #FFFFFF 100%);
 }
 
 .gk-head {
@@ -302,12 +311,17 @@
   transition: color .35s, background .35s, box-shadow .35s,
               transform .35s cubic-bezier(.22, 1, .36, 1);
 }
+/* No rotation here. The chip used to tip -6deg on hover, which read as the
+   icon being knocked crooked rather than as a deliberate effect — and with a
+   dozen chips on screen the whole grid looked misaligned the moment a pointer
+   crossed it. A straight lift and fill says the same thing without breaking
+   the grid's alignment. */
 .gk-card:hover .gk-chip,
 .gk-chip--on {
   color: #FFFFFF;
   background: var(--gk-g-brand);
   border-color: transparent;
-  transform: rotate(-6deg) scale(1.06);
+  transform: translateY(-3px);
   box-shadow: var(--gk-sh-brand);
 }
 .gk-chip--sm { width: 42px; height: 42px; border-radius: 12px; }

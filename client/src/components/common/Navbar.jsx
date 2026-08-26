@@ -102,12 +102,24 @@ const NAV_STYLES = `
   }
   .gk-nav-links a:hover { color: var(--gk-navy); }
   .gk-nav-links a[data-active="true"] { color: #FFFFFF; }
-  .gk-nav-links a > span { position: relative; z-index: 1; }
+
+  /* The label carries its own class rather than being matched as 'a > span'.
+     NOTE: no backticks anywhere in this string — NAV_STYLES is a template
+     literal, so one inside a CSS comment terminates it and the file stops
+     parsing.
+     That selector also matched the pill, which is a sibling span, and at
+     (0,1,2) it outweighed .gk-nav-pill at (0,1,0) — so the pill was forced
+     from position:absolute to relative, collapsed to zero width, and never
+     painted. The active link was left as white text on the white nav card:
+     on the home page, "Home" simply vanished from the row. */
+  .gk-nav-label { position: relative; z-index: 1; }
   .gk-nav-pill {
-    position: absolute; inset: 0;
+    position: absolute;
+    inset: 0;
     border-radius: 9px;
     background: var(--gk-g-brand);
     box-shadow: 0 4px 14px rgba(21,103,211,.32);
+    z-index: 0;
   }
 
   .gk-burger { display: inline-flex; align-items: center; justify-content: center; }
@@ -161,9 +173,15 @@ const NAV_STYLES = `
     background: var(--gk-g-brand); color: #FFF;
     font-size: 0.72rem; font-weight: 700; object-fit: cover;
   }
+  .gk-nav-user[data-open="true"] { border-color: rgba(21,103,211,.45); }
+  .gk-nav-chev { transition: transform .25s cubic-bezier(.22,1,.36,1); }
+  .gk-nav-user[data-open="true"] .gk-nav-chev { transform: rotate(180deg); }
+
   .gk-nav-menu {
     position: absolute; right: 0; top: calc(100% + 0.6rem);
-    min-width: 210px; z-index: 100;
+    /* Above the sticky bar's own z-50 and above the announcement strip's 51,
+       so the panel can never be painted over by page furniture. */
+    min-width: 210px; z-index: 200;
     background: var(--gk-navy);
     border: 1px solid rgba(255,255,255,.1);
     border-radius: 14px; overflow: hidden;
@@ -344,6 +362,36 @@ export default function Navbar() {
     return () => window.removeEventListener('keydown', onKey);
   }, [mobileOpen]);
 
+  /* ── Closing the account menu ───────────────────────────────────────────
+     It previously had no way out except pressing the same button again. Every
+     other menu on the web closes when you click away from it or press Escape,
+     so one that does not reads as broken even though its toggle works.
+
+     `pointerdown`, not `click`: a click fires only after the button is
+     released, which on a link inside the menu means navigation has already
+     been queued. Pointerdown also beats the browser's own focus handling, so
+     the menu is gone before anything else reacts. The listener is only bound
+     while the menu is open, so there is no idle document-level handler. */
+  const userMenuRef = useRef(null);
+  useEffect(() => {
+    if (!dropdownOpen) return undefined;
+
+    const onPointerDown = (e) => {
+      if (!userMenuRef.current?.contains(e.target)) setDropdownOpen(false);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') setDropdownOpen(false); };
+
+    document.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [dropdownOpen]);
+
+  // A route change should not leave the account menu hanging open either.
+  useEffect(() => { setDropdownOpen(false); }, [location.pathname]);
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -399,7 +447,7 @@ export default function Navbar() {
                         transition={{ type: 'spring', stiffness: 420, damping: 34 }}
                       />
                     )}
-                    <span>{link.label}</span>
+                    <span className="gk-nav-label">{link.label}</span>
                   </Link>
                 );
               })}
@@ -417,27 +465,28 @@ export default function Navbar() {
               </Link>
 
               {user ? (
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }} ref={userMenuRef}>
                   <button
                     type="button"
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    onClick={() => setDropdownOpen((v) => !v)}
                     className="gk-nav-user"
+                    data-open={dropdownOpen}
                     aria-expanded={dropdownOpen}
                     aria-haspopup="menu"
                   >
-                    {dropdownOpen ? (
-                      <X size={18} style={{ color: 'var(--gk-blue)' }} />
+                    {/* The button used to swap its whole label for an X while
+                        open. That made it collapse from ~150px to ~30px the
+                        instant it was clicked, shunting "Book Now" sideways and
+                        moving the thing you just pressed out from under the
+                        pointer. The contents are now stable and only the
+                        chevron rotates. */}
+                    {user.avatar ? (
+                      <img src={user.avatar} alt="" className="gk-nav-avatar" />
                     ) : (
-                      <>
-                        {user.avatar ? (
-                          <img src={user.avatar} alt="" className="gk-nav-avatar" />
-                        ) : (
-                          <span className="gk-nav-avatar">{user.name?.charAt(0).toUpperCase()}</span>
-                        )}
-                        <span className="hidden sm:block">{user.name}</span>
-                        <ChevronDown size={14} />
-                      </>
+                      <span className="gk-nav-avatar">{user.name?.charAt(0).toUpperCase()}</span>
                     )}
+                    <span className="hidden sm:block">{user.name}</span>
+                    <ChevronDown size={14} className="gk-nav-chev" />
                   </button>
 
                   {dropdownOpen && (

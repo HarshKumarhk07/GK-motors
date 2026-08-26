@@ -55,7 +55,7 @@ import {
   ArrowRight, Wrench, Sparkles, Zap, PaintBucket, Droplets, CircleDot, Battery,
   Disc, Settings, Shield, ShieldCheck, Award, Car, CheckCircle, Clock,
   Star, Phone, Calendar, Users, MapPin, AlertCircle, RefreshCw, ChevronDown,
-  ChevronRight, Truck, Navigation, MessageCircle, IndianRupee, Headset,
+  ChevronRight, Truck, Navigation, IndianRupee, Headset,
 } from 'lucide-react';
 
 import { getServiceCategories, getCategories } from '../api/serviceApi';
@@ -64,7 +64,7 @@ import PartCard, { PartCardSkeleton } from '../components/parts/PartCard';
 import SectionBoundary from '../components/common/SectionBoundary';
 import BrandRail from '../components/common/BrandRail';
 import {
-  Reveal, Stagger, StaggerItem, Parallax, Tilt, CountUp, ScrollProgressLine, motion,
+  Reveal, Stagger, StaggerItem, Parallax, ScrollRecede, CountUp, ScrollProgressLine, motion,
 } from '../components/common/Motion';
 import { C, G, BIZ } from '../theme';
 
@@ -173,6 +173,33 @@ const TESTIMONIALS = [
   {
     name: 'Vikas Hooda', car: 'Honda City', initial: 'V',
     text: 'Clutch replacement. They laid out the OEM option and the cheaper one, explained what actually differs, and let me decide instead of choosing for me.',
+  },
+];
+
+/* The three offers that lead the page. `tone` selects a gradient from the
+   brand family in the stylesheet — varied enough to give the strip colour,
+   close enough that it still reads as one set. */
+const PROMOS = [
+  {
+    icon: Truck, tone: 'blue',
+    kicker: 'Included, always',
+    title: 'Free pickup & drop',
+    desc: 'We collect the car from your door anywhere in Rohtak and bring it back washed. No delivery charge, no minimum bill.',
+    to: '/services',
+  },
+  {
+    icon: Headset, tone: 'cyan',
+    kicker: 'One call',
+    title: 'Roadside breakdown',
+    desc: 'Flat battery, puncture, or it simply will not start. Call the workshop and somebody comes out to you.',
+    href: `tel:${BIZ.phoneTel}`,
+  },
+  {
+    icon: Shield, tone: 'navy',
+    kicker: 'We handle it',
+    title: 'Cashless insurance claims',
+    desc: 'Surveyor coordination, paperwork and follow-up done for you. You pay the excess, we deal with the insurer.',
+    to: '/services?category=12',
   },
 ];
 
@@ -423,7 +450,8 @@ export default function Home() {
             <div className="gk-hero-visual">
               <LogoRing />
 
-              <Parallax distance={26} className="gk-quote-wrap">
+              <ScrollRecede className="gk-quote-wrap" rotate={24} lift={70}>
+                <Parallax distance={22}>
                 <motion.div
                   className="gk-quote"
                   initial={{ opacity: 0, y: 34, rotateX: 10 }}
@@ -463,22 +491,16 @@ export default function Home() {
                     <span>Free pickup from Sector-5 · today, 4:00 PM</span>
                   </div>
                 </motion.div>
-              </Parallax>
+                </Parallax>
+              </ScrollRecede>
 
-              {/* Two chips pinned to the card's corners. Floated on a slow
-                  loop so the composition breathes; both are decorative and
-                  hidden from assistive tech, since each repeats a claim the
-                  proof list on the left already makes. */}
-              <motion.div className="gk-float gk-float--a" aria-hidden="true"
-                animate={{ y: [0, -11, 0] }}
-                transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}>
-                <ShieldCheck size={15} /> 12-month warranty
-              </motion.div>
-              <motion.div className="gk-float gk-float--b" aria-hidden="true"
-                animate={{ y: [0, 12, 0] }}
-                transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}>
-                <MessageCircle size={15} /> Photos before we touch it
-              </motion.div>
+              {/* The two floating chips that used to sit here are gone. They
+                  were positioned against this container rather than against
+                  the card, so on a wide screen they drifted inward and landed
+                  on top of the estimate — one covering the "Approved" flag,
+                  the other the pickup row. They also only repeated claims the
+                  proof list on the left already makes, so there was nothing
+                  to save by repositioning them. */}
             </div>
           </div>
         </div>
@@ -510,6 +532,44 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
+          2b · PROMO BANNERS
+          Three things that are free or included, stated plainly and made
+          clickable. Deliberately placed high — above the services grid —
+          because "free pickup" and "we come to you when you break down" are
+          what actually differentiate this workshop from the one down the
+          road, and burying them under twelve price cards wastes them.
+
+          Every card is a real destination, not decoration: two go to the
+          booking flow, one dials the workshop.
+          ══════════════════════════════════════════════════════════════════ */}
+      <section className="gk-sec-sm" style={{ background: C.white }}>
+        <div className="gk-wrap">
+          <Stagger className="gk-promos" gap={0.09}>
+            {PROMOS.map(({ icon: Icon, kicker, title, desc, to, href, tone }) => {
+              const inner = (
+                <>
+                  <span className="gk-promo-ico"><Icon size={26} /></span>
+                  <span className="gk-promo-kicker">{kicker}</span>
+                  <span className="gk-promo-title">{title}</span>
+                  <span className="gk-promo-desc">{desc}</span>
+                  <span className="gk-promo-go"><ArrowRight size={16} /></span>
+                </>
+              );
+              return (
+                <StaggerItem key={title} depth={12} style={{ display: 'flex' }}>
+                  {/* An external tel: link cannot be a <Link> — that would push
+                      "tel:..." onto the router history instead of dialling. */}
+                  {href
+                    ? <a href={href} className="gk-promo" data-tone={tone}>{inner}</a>
+                    : <Link to={to} className="gk-promo" data-tone={tone}>{inner}</Link>}
+                </StaggerItem>
+              );
+            })}
+          </Stagger>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
           3 · SERVICES
           ══════════════════════════════════════════════════════════════════ */}
       <section id="services" className="gk-sec" style={{ background: C.white }}>
@@ -526,24 +586,43 @@ export default function Home() {
             </p>
           </Reveal>
 
-          <Stagger className="gk-svc-grid" gap={0.05}>
+          {/* The key is load-bearing, not decoration.
+              Stagger's entrance is `whileInView` with `once: true`, so once it
+              has fired it never fires again. Cards added afterwards by "Show
+              all 12" mounted into an already-finished parent, inherited its
+              `initial="hidden"` variant, and had nothing left to animate them
+              to "show" — so they sat at opacity 0, invisible but still taking
+              up a full grid row. That was the large blank gap between the
+              cards and the buttons below them.
+
+              Keying on the expanded flag remounts the group, which re-arms the
+              observer and replays the cascade over the full set. The replay is
+              a deliberate side effect: expanding is a direct user action, so
+              seeing the grid restage reads as a response to the click. */}
+          <Stagger
+            key={servicesExpanded ? 'svc-all' : 'svc-top'}
+            className="gk-svc-grid"
+            gap={0.045}
+          >
             {shownCategories.map(({ id, slug, label, desc, icon: Icon, price }) => (
-              <StaggerItem key={id} style={{ display: 'flex' }}>
-                <Tilt max={7} lift={1.03} style={{ display: 'flex', width: '100%', borderRadius: 18 }}>
-                  <Link to={`/services?category=${id}`} className="gk-card gk-svc" data-slug={slug}>
-                    <span className="gk-chip"><Icon size={23} /></span>
+              <StaggerItem key={id} depth={14} style={{ display: 'flex' }}>
+                {/* No pointer tilt. Twelve cards each rotating a few degrees
+                    under the cursor made the grid look knocked out of
+                    alignment rather than responsive. The lift and the drawn
+                    top edge carry the hover state on their own. */}
+                <Link to={`/services?category=${id}`} className="gk-card gk-svc" data-slug={slug}>
+                  <span className="gk-chip"><Icon size={23} /></span>
 
-                    <h3 className="gk-h3 gk-svc-title">{label}</h3>
-                    <p className="gk-svc-desc">{desc}</p>
+                  <h3 className="gk-h3 gk-svc-title">{label}</h3>
+                  <p className="gk-svc-desc">{desc}</p>
 
-                    <span className="gk-svc-foot">
-                      <span className="gk-svc-price">
-                        <small>from</small> ₹{price.toLocaleString('en-IN')}
-                      </span>
-                      <span className="gk-svc-go"><ArrowRight size={15} /></span>
+                  <span className="gk-svc-foot">
+                    <span className="gk-svc-price">
+                      <small>from</small> ₹{price.toLocaleString('en-IN')}
                     </span>
-                  </Link>
-                </Tilt>
+                    <span className="gk-svc-go"><ArrowRight size={15} /></span>
+                  </span>
+                </Link>
               </StaggerItem>
             ))}
           </Stagger>
@@ -574,84 +653,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
-          4 · WHY US — bento
-          An asymmetric grid rather than the previous flat blue slab of five
-          identical items. The two claims that actually win the job get double
-          width; the four supporting ones sit beneath at single width.
-          ══════════════════════════════════════════════════════════════════ */}
-      <section className="gk-sec" style={{ background: C.surface, borderBlock: `1px solid ${C.hairline}` }}>
-        <div className="gk-wrap">
-          <Reveal className="gk-head">
-            <p className="gk-eyebrow gk-eyebrow--center">Why GK Motors</p>
-            <h2 className="gk-h2">
-              The part most workshops{' '}
-              <span className="gk-grad">get wrong</span>
-            </h2>
-            <p className="gk-lede">
-              It is almost never the mechanics. It is the bill you did not agree to and
-              the part you never got to see.
-            </p>
-          </Reveal>
-
-          <Stagger className="gk-bento" gap={0.06}>
-            {WHY_US.map(({ icon: Icon, title, desc, span }) => (
-              <StaggerItem key={title} className="gk-bento-cell" style={{ '--span': span }}>
-                <div className="gk-card gk-bento-card">
-                  <span className="gk-chip gk-chip--sm"><Icon size={19} /></span>
-                  <h3 className="gk-h3">{title}</h3>
-                  <p className="gk-bento-desc">{desc}</p>
-                </div>
-              </StaggerItem>
-            ))}
-          </Stagger>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          5 · HOW IT WORKS
-          The spine between the steps fills as the section is scrolled, so the
-          four cards read as one journey being travelled rather than four
-          unrelated boxes.
-          ══════════════════════════════════════════════════════════════════ */}
-      <section id="how-it-works" className="gk-sec" style={{ background: C.white }}>
-        <div className="gk-wrap">
-          <Reveal className="gk-head">
-            <p className="gk-eyebrow gk-eyebrow--center">How it works</p>
-            <h2 className="gk-h2">
-              Four steps. <span className="gk-grad">No surprises.</span>
-            </h2>
-          </Reveal>
-
-          <div className="gk-steps">
-            {/* The rail sits behind the cards and is purely decorative — the
-                ordered numbers on each card carry the sequence for anyone who
-                cannot see it. */}
-            <div className="gk-steps-rail" aria-hidden="true">
-              <ScrollProgressLine
-                orientation="horizontal"
-                className="gk-steps-fill"
-                color={G.brand}
-              />
-            </div>
-
-            <Stagger className="gk-steps-grid" gap={0.11}>
-              {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
-                <StaggerItem key={step}>
-                  <div className="gk-card gk-step">
-                    <span className="gk-step-num">{step}</span>
-                    <span className="gk-chip gk-chip--sm"><Icon size={19} /></span>
-                    <h3 className="gk-h3 gk-step-title">{title}</h3>
-                    <p className="gk-step-desc">{desc}</p>
-                  </div>
-                </StaggerItem>
-              ))}
-            </Stagger>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          6 · SHOP STRIP
+          4 · SHOP STRIP — parts, directly after the services they belong to
           ══════════════════════════════════════════════════════════════════ */}
       <section
         ref={shopRef}
@@ -718,6 +720,83 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
+          5 · WHY US — bento
+          An asymmetric grid rather than the previous flat blue slab of five
+          identical items. The two claims that actually win the job get double
+          width; the four supporting ones sit beneath at single width.
+          ══════════════════════════════════════════════════════════════════ */}
+      <section className="gk-sec" style={{ background: C.surface, borderBlock: `1px solid ${C.hairline}` }}>
+        <div className="gk-wrap">
+          <Reveal className="gk-head">
+            <p className="gk-eyebrow gk-eyebrow--center">Why GK Motors</p>
+            <h2 className="gk-h2">
+              The part most workshops{' '}
+              <span className="gk-grad">get wrong</span>
+            </h2>
+            <p className="gk-lede">
+              It is almost never the mechanics. It is the bill you did not agree to and
+              the part you never got to see.
+            </p>
+          </Reveal>
+
+          <Stagger className="gk-bento" gap={0.06}>
+            {WHY_US.map(({ icon: Icon, title, desc, span }) => (
+              <StaggerItem key={title} className="gk-bento-cell" style={{ '--span': span }}>
+                <div className="gk-card gk-bento-card">
+                  <span className="gk-chip gk-chip--sm"><Icon size={19} /></span>
+                  <h3 className="gk-h3">{title}</h3>
+                  <p className="gk-bento-desc">{desc}</p>
+                </div>
+              </StaggerItem>
+            ))}
+          </Stagger>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          6 · HOW IT WORKS
+          The spine between the steps fills as the section is scrolled, so the
+          four cards read as one journey being travelled rather than four
+          unrelated boxes.
+          ══════════════════════════════════════════════════════════════════ */}
+      <section id="how-it-works" className="gk-sec" style={{ background: C.white }}>
+        <div className="gk-wrap">
+          <Reveal className="gk-head">
+            <p className="gk-eyebrow gk-eyebrow--center">How it works</p>
+            <h2 className="gk-h2">
+              Four steps. <span className="gk-grad">No surprises.</span>
+            </h2>
+          </Reveal>
+
+          <div className="gk-steps">
+            {/* The rail sits behind the cards and is purely decorative — the
+                ordered numbers on each card carry the sequence for anyone who
+                cannot see it. */}
+            <div className="gk-steps-rail" aria-hidden="true">
+              <ScrollProgressLine
+                orientation="horizontal"
+                className="gk-steps-fill"
+                color={G.brand}
+              />
+            </div>
+
+            <Stagger className="gk-steps-grid" gap={0.11}>
+              {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
+                <StaggerItem key={step} depth={16}>
+                  <div className="gk-card gk-step">
+                    <span className="gk-step-num">{step}</span>
+                    <span className="gk-chip gk-chip--sm"><Icon size={19} /></span>
+                    <h3 className="gk-h3 gk-step-title">{title}</h3>
+                    <p className="gk-step-desc">{desc}</p>
+                  </div>
+                </StaggerItem>
+              ))}
+            </Stagger>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
           7 · NUMBERS + REVIEWS
           ══════════════════════════════════════════════════════════════════ */}
       <section className="gk-sec" style={{ background: C.white, overflow: 'hidden' }}>
@@ -753,7 +832,7 @@ export default function Home() {
           <SectionBoundary name="reviews">
             <Stagger className="gk-reviews" gap={0.06}>
               {TESTIMONIALS.map(({ name, car, text, initial }) => (
-                <StaggerItem key={name} style={{ display: 'flex' }}>
+                <StaggerItem key={name} depth={12} style={{ display: 'flex' }}>
                   <figure className="gk-card gk-review">
                     <span className="gk-review-mark" aria-hidden="true">&rdquo;</span>
                     <blockquote className="gk-review-text">{text}</blockquote>
@@ -1039,25 +1118,6 @@ const HOME_STYLES = `
     color: var(--gk-cyan-soft); font-size: 0.74rem; font-weight: 600;
   }
 
-  /* Floating chips. Positioned against the visual, not the card, so they do
-     not move when the card parallaxes. */
-  .gk-float {
-    position: absolute; z-index: 2;
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.6rem 0.9rem; border-radius: 12px;
-    background: rgba(4,16,31,.72);
-    border: 1px solid rgba(255,255,255,.12);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    color: #E4EFF9; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
-    box-shadow: 0 14px 34px rgba(0,0,0,.4);
-  }
-  .gk-float svg { color: var(--gk-cyan-soft); flex-shrink: 0; }
-  .gk-float--a { top: 4%; right: -2%; }
-  .gk-float--b { bottom: 6%; left: -4%; }
-  /* They overlap the card badly once the column narrows, and they repeat
-     claims the proof list already makes — so they simply go. */
-  @media (max-width: 1100px) { .gk-float { display: none; } }
-
   /* ── Scroll cue ────────────────────────────────────────────────────────── */
   .gk-scroll-cue {
     position: absolute; bottom: 1.6rem; left: 50%; transform: translateX(-50%);
@@ -1100,6 +1160,98 @@ const HOME_STYLES = `
     font-size: 0.86rem; color: var(--gk-meta); margin-top: 0.45rem; max-width: 34rem;
   }
 
+  /* ── 2b · Promo banners ────────────────────────────────────────────────── */
+  .gk-promos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: clamp(0.9rem, 1.6vw, 1.3rem);
+  }
+
+  .gk-promo {
+    position: relative;
+    display: flex; flex-direction: column;
+    width: 100%; height: 100%;
+    padding: 1.6rem 1.5rem 1.5rem;
+    border-radius: 22px;
+    overflow: hidden;
+    text-decoration: none;
+    color: #FFFFFF;
+    isolation: isolate;
+    transition: transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s;
+  }
+  .gk-promo:hover { transform: translateY(-6px); box-shadow: 0 26px 60px rgba(10,34,70,.28); }
+  @media (hover: none) { .gk-promo:hover { transform: none; } }
+
+  /* Three tones from one family. The radial bloom on top of each linear base
+     is what stops a large flat panel from looking like a solid swatch. */
+  .gk-promo[data-tone="blue"] {
+    background:
+      radial-gradient(ellipse 90% 120% at 88% 8%, rgba(111,216,255,.42) 0%, transparent 60%),
+      linear-gradient(140deg, var(--gk-blue-deep) 0%, var(--gk-blue) 100%);
+  }
+  .gk-promo[data-tone="cyan"] {
+    background:
+      radial-gradient(ellipse 90% 120% at 88% 8%, rgba(255,255,255,.34) 0%, transparent 58%),
+      linear-gradient(140deg, var(--gk-blue) 0%, var(--gk-cyan) 100%);
+  }
+  .gk-promo[data-tone="navy"] {
+    background:
+      radial-gradient(ellipse 90% 120% at 88% 8%, rgba(21,103,211,.55) 0%, transparent 60%),
+      linear-gradient(140deg, var(--gk-ink) 0%, var(--gk-navy) 100%);
+  }
+
+  /* A faint technical grid inside each panel, masked so it fades out towards
+     the bottom where the text sits. */
+  .gk-promo::before {
+    content: '';
+    position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+    background-size: 34px 34px;
+    -webkit-mask-image: linear-gradient(160deg, #000 0%, transparent 62%);
+            mask-image: linear-gradient(160deg, #000 0%, transparent 62%);
+  }
+
+  .gk-promo-ico {
+    width: 52px; height: 52px; border-radius: 15px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.16);
+    border: 1px solid rgba(255,255,255,.24);
+    color: #FFFFFF;
+    margin-bottom: 1.2rem;
+    transition: background .35s, transform .35s cubic-bezier(.22,1,.36,1);
+  }
+  .gk-promo:hover .gk-promo-ico { background: rgba(255,255,255,.26); transform: translateY(-3px); }
+
+  .gk-promo-kicker {
+    font-family: var(--gk-font-display);
+    font-size: 0.66rem; font-weight: 700;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: rgba(255,255,255,.72);
+    margin-bottom: 0.4rem;
+  }
+  .gk-promo-title {
+    font-family: var(--gk-font-display);
+    font-size: clamp(1.15rem, 1.9vw, 1.4rem); font-weight: 700;
+    letter-spacing: -.025em; line-height: 1.15;
+  }
+  .gk-promo-desc {
+    font-size: 0.85rem; line-height: 1.62;
+    color: rgba(255,255,255,.82);
+    margin-top: 0.6rem; flex: 1;
+  }
+  .gk-promo-go {
+    width: 36px; height: 36px; border-radius: 50%; margin-top: 1.35rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.26);
+    transition: background .35s, transform .35s cubic-bezier(.22,1,.36,1);
+  }
+  .gk-promo:hover .gk-promo-go {
+    background: #FFFFFF; color: var(--gk-navy); transform: translateX(4px);
+  }
+
   /* ── 3 · Services ──────────────────────────────────────────────────────── */
   .gk-svc-grid {
     display: grid;
@@ -1115,6 +1267,8 @@ const HOME_STYLES = `
        the 3D transform pivots around a box larger than the visible card. */
     height: 100%;
   }
+  /* The lift Tilt used to supply, without the rotation. */
+  .gk-svc:hover { transform: translateY(-6px); }
   .gk-svc-title { margin-top: 1.15rem; }
   .gk-svc-desc {
     color: var(--gk-body); font-size: 0.83rem; line-height: 1.6;

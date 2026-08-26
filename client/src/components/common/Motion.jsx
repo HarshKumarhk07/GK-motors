@@ -83,7 +83,16 @@ export function Stagger({ children, className, style, gap = 0.07, delay = 0, amo
   );
 }
 
-export function StaggerItem({ children, className, style, y = 24, ...rest }) {
+/* `depth` is the 3D entrance: the card starts tipped back from the viewer and
+   flattens as it arrives, so a grid reads as physical cards being dealt onto
+   the page rather than boxes fading in.
+
+   `transformPerspective` is set per item rather than as a `perspective` on the
+   grid container. A container perspective shares one vanishing point across
+   every child, so cards at the edges of a wide grid skew outward and the row
+   looks bowed. Per-item perspective gives each card its own vanishing point
+   straight ahead of it, which is what keeps a twelve-card grid square. */
+export function StaggerItem({ children, className, style, y = 24, depth = 0, ...rest }) {
   const reduced = useReducedMotion();
 
   if (reduced) return <div className={className} style={style} {...rest}>{children}</div>;
@@ -91,15 +100,64 @@ export function StaggerItem({ children, className, style, y = 24, ...rest }) {
   return (
     <motion.div
       className={className}
-      style={style}
+      style={depth ? { ...style, transformPerspective: 1000 } : style}
       variants={{
-        hidden: { opacity: 0, y },
-        show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
+        hidden: { opacity: 0, y, rotateX: depth },
+        show: {
+          opacity: 1, y: 0, rotateX: 0,
+          transition: { duration: depth ? 0.75 : 0.6, ease: EASE },
+        },
       }}
       {...rest}
     >
       {children}
     </motion.div>
+  );
+}
+
+/* ── ScrollRecede ──────────────────────────────────────────────────────────
+   Lays an element back and pushes it away as it scrolls off the top of the
+   screen — the strongest single "3D scroll" moment on the page, used on the
+   hero card so leaving the hero feels like a physical exit rather than the
+   content merely sliding up.
+
+   Driven by the element's own crossing of the viewport ("start start" → the
+   moment its top hits the top of the screen; "end start" → the moment its
+   bottom does), so the effect is tied to where the card actually is rather
+   than to an absolute scroll distance that would be wrong at every other
+   viewport height.
+
+   `transformOrigin: 'center top'` matters: rotating about the centre would
+   swing the card's bottom edge upward into the text below it. Hinging at the
+   top edge makes it fall away instead. */
+export function ScrollRecede({ children, className, style, rotate = 26, lift = 90, minScale = 0.86 }) {
+  const ref = useRef(null);
+  const reduced = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start start', 'end start'],
+  });
+
+  const rotateX = useTransform(scrollYProgress, [0, 1], [0, rotate]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, minScale]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, -lift]);
+  const opacity = useTransform(scrollYProgress, [0, 0.75, 1], [1, 0.85, 0.4]);
+
+  if (reduced) return <div className={className} style={style}>{children}</div>;
+
+  return (
+    <div ref={ref} className={className} style={style}>
+      <motion.div
+        style={{
+          rotateX, scale, y, opacity,
+          transformPerspective: 1200,
+          transformOrigin: 'center top',
+          willChange: 'transform',
+        }}
+      >
+        {children}
+      </motion.div>
+    </div>
   );
 }
 
