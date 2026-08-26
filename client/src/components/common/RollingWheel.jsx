@@ -3,11 +3,11 @@
    A tyre that rolls across its section as you scroll past it — travelling, not
    just spinning on the spot.
 
-   WHY THE PREVIOUS ONE DID NOT READ AS A WHEEL
-   ScrollWheel rotates in a fixed position. A wheel that turns without moving
-   is a fan: the eye reads rotation-without-translation as a spinning disc, not
-   as something rolling. What sells "rolling" is the RELATIONSHIP between how
-   far it moves and how far it turns.
+   WHY THE FIRST ATTEMPT DID NOT READ AS A WHEEL
+   It rotated in a fixed position. A wheel that turns without moving is a fan:
+   the eye reads rotation-without-translation as a spinning disc, not as
+   something rolling. What sells "rolling" is the RELATIONSHIP between how far
+   it moves and how far it turns.
 
    So the rotation here is derived from the travel, using the real thing:
 

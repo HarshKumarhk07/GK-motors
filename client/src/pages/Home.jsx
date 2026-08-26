@@ -64,13 +64,13 @@ import PartCard, { PartCardSkeleton } from '../components/parts/PartCard';
 import SectionBoundary from '../components/common/SectionBoundary';
 import BrandRail from '../components/common/BrandRail';
 import AmbientVideo from '../components/common/AmbientVideo';
-import ScrollWheel from '../components/common/ScrollWheel';
 import ProcessFlow from '../components/common/ProcessFlow';
 import RollingWheel from '../components/common/RollingWheel';
 import {
   Reveal, Stagger, StaggerItem, Parallax, ScrollRecede, CountUp, ScrollProgressLine, motion,
 } from '../components/common/Motion';
 import { C, G, BIZ } from '../theme';
+import { nextPickupSlot } from '../utils/istTime';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTENT
@@ -421,6 +421,14 @@ export default function Home() {
     [serviceCategories, packages]
   );
 
+  /* The next collection the workshop could actually make, in Rohtak's own
+     time. This was hardcoded to "today, 4:00 PM", which at three in the
+     morning was advertising a pickup from a shut workshop. useMemo with no
+     deps: computed once per mount, which is right for a landing page nobody
+     leaves open across the boundary — and if they do, the page they came for
+     is the booking flow, which recalculates properly. */
+  const pickup = useMemo(() => nextPickupSlot(), []);
+
   const shownCategories = servicesExpanded ? categories : categories.slice(0, HOME_CATEGORY_COUNT);
   const quoteTotal = SAMPLE_QUOTE.reduce((sum, r) => sum + r.amount, 0);
 
@@ -439,13 +447,6 @@ export default function Home() {
         <div className="gk-bloom gk-bloom--b" />
         <div className="gk-mesh" />
 
-        {/* Two wheels at different weights, turning as the page scrolls. The
-            heavy one lags and coasts; the small one is eager and catches up
-            fast. Running them at different rates is what stops the pair
-            reading as one decal — they behave like two wheels rather than one
-            graphic rotated twice. */}
-        <ScrollWheel className="gk-wheel gk-wheel--lg" factor={0.13} idle={3} stiffness={28} />
-        <ScrollWheel className="gk-wheel gk-wheel--sm" factor={0.3} idle={9} stiffness={70} />
         <RollingWheel className="gk-roll gk-roll--dark" size={300} direction={1} bottom="-9%" />
 
         <div className="gk-wrap gk-hero-inner">
@@ -560,7 +561,6 @@ export default function Home() {
                           were meant to interact with. Now it says so. */}
                       <span>Example of the estimate we WhatsApp you</span>
                     </span>
-                    <span className="gk-quote-flag">Sample</span>
                   </header>
 
                   {/* A real route, not a decorative control. It goes to the
@@ -592,7 +592,10 @@ export default function Home() {
 
                   <div className="gk-quote-pickup">
                     <Truck size={14} />
-                    <span>Free pickup from Sector-5 · today, 4:00 PM</span>
+                    <span>
+                      <b>Free pickup from Rohtak &middot; {pickup.when}</b>
+                      <small>{pickup.readyBy}</small>
+                    </span>
                   </div>
                 </motion.div>
                 </Parallax>
@@ -681,8 +684,6 @@ export default function Home() {
           3 · SERVICES
           ══════════════════════════════════════════════════════════════════ */}
       <section id="services" className="gk-sec" style={{ background: C.white, position: 'relative', overflow: 'hidden' }}>
-        <ScrollWheel className="gk-wheel gk-wheel--light gk-wheel--svc" factor={0.1} idle={2.5} stiffness={24} />
-        <RollingWheel className="gk-roll gk-roll--light" size={240} direction={-1} bottom="-7%" />
         <div className="gk-wrap">
           <Reveal className="gk-head">
             <p className="gk-eyebrow gk-eyebrow--center">What we do</p>
@@ -852,7 +853,6 @@ export default function Home() {
             should claim that". */}
         <img className="gk-ins-bg" src="/insurance/damage.webp" alt="" aria-hidden="true"
           loading="lazy" decoding="async" />
-        <ScrollWheel className="gk-wheel gk-wheel--ins" factor={0.22} idle={6} stiffness={52} />
         <RollingWheel className="gk-roll gk-roll--dark" size={230} direction={1} bottom="-6%" />
         <div className="gk-bloom gk-bloom--b" />
         <div className="gk-mesh" />
@@ -986,8 +986,6 @@ export default function Home() {
           7 · NUMBERS + REVIEWS
           ══════════════════════════════════════════════════════════════════ */}
       <section className="gk-sec" style={{ background: C.white, overflow: 'hidden', position: 'relative' }}>
-        <ScrollWheel className="gk-wheel gk-wheel--light gk-wheel--rev" factor={0.14} idle={3.5} stiffness={34} />
-        <RollingWheel className="gk-roll gk-roll--light" size={260} direction={-1} top="4%" />
         <div className="gk-wrap">
 
           <Stagger className="gk-stats" gap={0.09}>
@@ -1060,8 +1058,6 @@ export default function Home() {
           poster="/workshop/bay-dark.webp"
         />
         <div className="gk-bloom gk-bloom--b" />
-        <ScrollWheel className="gk-wheel gk-wheel--visit" factor={0.12} idle={2.5} stiffness={26} />
-        <RollingWheel className="gk-roll gk-roll--dark" size={280} direction={1} bottom="-10%" />
 
         <div className="gk-wrap">
           <div className="gk-visit">
@@ -1245,72 +1241,6 @@ const HOME_STYLES = `
   .gk-ring-c { animation: gk-spin 28s linear infinite; }
   @keyframes gk-spin { to { transform: rotate(360deg); } }
 
-  /* ── Scroll wheels ─────────────────────────────────────────────────────
-     Ambient, behind everything, and clipped by the section's own overflow so
-     they can bleed past its edges without widening the document. */
-  .gk-wheel {
-    position: absolute; z-index: 0;
-    color: var(--gk-cyan-soft);
-    pointer-events: none;
-  }
-  .gk-wheel svg { width: 100%; height: 100%; display: block; }
-  .gk-wheel--lg {
-    width: min(680px, 68vw); aspect-ratio: 1;
-    left: -18%; bottom: -34%;
-    opacity: .12;
-  }
-  .gk-wheel--sm {
-    width: min(260px, 30vw); aspect-ratio: 1;
-    right: 4%; top: -8%;
-    opacity: .1;
-  }
-  /* ── Wheels beyond the hero ────────────────────────────────────────────
-     Wheels now run the length of the page rather than sitting only in the
-     hero, alternating side to side so scrolling feels like passing them.
-
-     Every host section needs position:relative and overflow:hidden — the
-     wheels are deliberately larger than their sections and offset off-edge,
-     and without the clip they would widen the document and summon a
-     horizontal scrollbar nothing appears to cause.
-
-     On light sections the wheel is navy at a very low opacity. Anything
-     stronger competes with the cards it sits behind; anything weaker is
-     invisible on a phone screen in daylight. */
-  .gk-wheel--light { color: var(--gk-navy); }
-
-  .gk-wheel--svc {
-    width: min(520px, 52vw); aspect-ratio: 1;
-    right: -14%; top: 6%;
-    opacity: .045;
-  }
-  .gk-wheel--rev {
-    width: min(600px, 58vw); aspect-ratio: 1;
-    left: -16%; bottom: -12%;
-    opacity: .04;
-  }
-  .gk-wheel--ins {
-    width: min(340px, 34vw); aspect-ratio: 1;
-    left: 4%; bottom: -12%;
-    opacity: .13;
-  }
-  .gk-wheel--visit {
-    width: min(560px, 55vw); aspect-ratio: 1;
-    right: -14%; top: -18%;
-    opacity: .1;
-  }
-
-  /* On a phone the large wheel sits directly behind the headline and costs
-     contrast for something nobody is looking at. The light-section wheels go
-     entirely: at 4% opacity on a small bright screen they are invisible
-     anyway, and each one is a compositor layer being blurred every frame. */
-  @media (max-width: 700px) {
-    .gk-wheel--sm { display: none; }
-    .gk-wheel--lg { opacity: .07; left: -34%; bottom: -18%; }
-    .gk-wheel--light { display: none; }
-    .gk-wheel--ins { width: 46vw; opacity: .1; left: -12%; }
-    .gk-wheel--visit { width: 60vw; opacity: .08; right: -24%; }
-  }
-
   /* ── Rolling wheels ────────────────────────────────────────────────────
      The travelling layer. Positioned by the component (top/bottom/size); all
      this does is pin it to the left edge so the component's own x transform
@@ -1472,11 +1402,18 @@ const HOME_STYLES = `
   }
 
   .gk-quote-pickup {
-    display: flex; align-items: center; gap: 0.55rem;
+    display: flex; align-items: flex-start; gap: 0.55rem;
     margin-top: 0.95rem; padding: 0.65rem 0.8rem;
     border-radius: 12px;
     background: rgba(0,178,240,.08); border: 1px solid rgba(0,178,240,.16);
     color: var(--gk-cyan-soft); font-size: 0.74rem; font-weight: 600;
+  }
+  .gk-quote-pickup svg { margin-top: 1px; flex-shrink: 0; }
+  .gk-quote-pickup span { display: flex; flex-direction: column; min-width: 0; }
+  .gk-quote-pickup b { font-weight: 700; }
+  .gk-quote-pickup small {
+    font-size: 0.68rem; font-weight: 500; margin-top: 2px;
+    color: var(--gk-body-dark);
   }
 
   /* ── Scroll cue ────────────────────────────────────────────────────────── */
