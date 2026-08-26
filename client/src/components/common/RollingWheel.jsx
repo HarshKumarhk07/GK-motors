@@ -30,7 +30,7 @@
    Decorative throughout: aria-hidden, pointer-events:none, and nothing renders
    at all under prefers-reduced-motion.
    ═══════════════════════════════════════════════════════════════════════════ */
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   motion, useScroll, useSpring, useTransform, useReducedMotion,
 } from 'framer-motion';
@@ -105,17 +105,34 @@ export default function RollingWheel({
 
   const smooth = useSpring(scrollYProgress, { stiffness: 70, damping: 26, mass: 0.5 });
 
-  const from = direction > 0 ? -size : `calc(100vw + ${size}px)`;
-  const to = direction > 0 ? `calc(100vw + ${size}px)` : -size;
-  const x = useTransform(smooth, [0, 1], [from, to]);
+  /* ── Why the viewport width is state, not a calc() string ────────────────
+     The endpoints used to be `-size` (a number) and `calc(100vw + 300px)` (a
+     string). useTransform interpolates between values of the SAME type — it
+     cannot blend a number into a calc() expression, so it fell back to
+     holding the first value and the wheel never moved an inch. It rotated,
+     which is why it looked like the earlier spinning version rather than
+     obviously broken.
 
-  /* The rolling equation. Travel across the journey is roughly one viewport
-     width plus two diameters; degrees = (distance / radius) * (180 / PI). The
-     viewport width is read once at render, which is fine — a resize mid-scroll
-     changes the constant by a few degrees over the whole journey and is not
-     perceptible. */
-  const viewport = typeof window !== 'undefined' ? window.innerWidth : 1280;
-  const distance = (viewport + size * 2) * travel;
+     Both endpoints are now plain pixel numbers, which means the viewport
+     width has to be known in JS. Kept in state and updated on resize so a
+     rotated phone does not leave the wheel travelling to the old width. */
+  const [vw, setVw] = useState(() => (typeof window === 'undefined' ? 1280 : window.innerWidth));
+
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const start = -size;
+  const end = vw + size;
+  const x = useTransform(smooth, [0, 1], direction > 0 ? [start, end] : [end, start]);
+
+  /* The rolling equation: degrees = (distance / radius) * (180 / PI), where
+     distance is the full journey across the viewport plus a diameter each
+     side. Derived from the same numbers the travel uses, so the turn and the
+     travel cannot disagree. */
+  const distance = (vw + size * 2) * travel;
   const degrees = (distance / (size / 2)) * (180 / Math.PI) * direction;
   const rotate = useTransform(smooth, [0, 1], [0, degrees]);
 

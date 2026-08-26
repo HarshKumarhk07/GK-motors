@@ -492,25 +492,43 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
   }
 }
 
-/* ── Global Mobile Typography ── */
+/* ── Global Mobile Typography ──────────────────────────────────────────────
+   ⚠ THIS BLOCK WAS SILENTLY CAPPING EVERY HEADING ON EVERY PHONE.
+
+   These were bare element selectors carrying !important, which beats any
+   class selector AND any inline style. So on a phone every h1 in the app was
+   forced to 1.35rem — 21.6px — no matter what the design system asked for.
+   The redesigned home page requests clamp(2.9rem, 14vw, 3.9rem) for its
+   headline; it was rendering at 21.6px, and no amount of raising that clamp
+   would ever have shown up. Same story for h2, h3 and h4 across every
+   redesigned page.
+
+   The rules are kept, because the legacy pages DO still need them: those
+   screens set their heading sizes with inline styles sized for desktop, and
+   an !important stylesheet rule is the only thing that was scaling them down
+   on a phone. Removing the block outright would blow those headings up.
+
+   Instead each selector now excludes anything carrying a design-system
+   class. Every heading in the new system has a gk- prefixed class, so the cap
+   still applies to the old screens and no longer touches the new ones. */
 @media (max-width: 640px) {
   body {
     font-size: 13px;
   }
 
-  h1 {
+  h1:not([class*="gk-"]) {
     font-size: 1.35rem !important;
   }
 
-  h2 {
+  h2:not([class*="gk-"]) {
     font-size: 1.15rem !important;
   }
 
-  h3 {
+  h3:not([class*="gk-"]) {
     font-size: 0.95rem !important;
   }
 
-  h4 {
+  h4:not([class*="gk-"]) {
     font-size: 0.85rem !important;
   }
 

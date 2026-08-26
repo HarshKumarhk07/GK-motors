@@ -558,10 +558,11 @@ export default function Home() {
                     </span>
                     <span className="gk-quote-title">
                       <b>Hyundai Creta</b>
-                      {/* It was not obvious this was an EXAMPLE of the message
-                          a customer receives rather than a live control they
-                          were meant to interact with. Now it says so. */}
-                      <span>Example of the estimate we WhatsApp you</span>
+                      {/* Says what the card is FOR — an estimate of price and
+                          of timing — rather than how it gets delivered. The
+                          pickup and ready-by lines at the foot are the part
+                          people actually want, so the header names them. */}
+                      <span>Estimated price &amp; timings</span>
                     </span>
                   </header>
 
@@ -1276,11 +1277,16 @@ const HOME_STYLES = `
     opacity: .045;
   }
 
+  /* Kept on phones, not hidden.
+     They were display:none below 700px on the reasoning that a 5% wash is
+     invisible on a small bright screen — which was true, but the answer to
+     "too faint to see" is to raise the opacity, not to delete the effect.
+     Each is one composited transform, which a phone handles fine. */
   @media (max-width: 700px) {
-    .gk-wheel--lg { opacity: .08; left: -32%; bottom: -18%; }
-    /* At 5% on a small bright screen these are invisible anyway, and each is
-       a compositor layer being blurred every frame. */
-    .gk-wheel--light { display: none; }
+    .gk-wheel--lg { opacity: .14; left: -30%; bottom: -16%; width: 92vw; }
+    .gk-wheel--light { opacity: .085; }
+    .gk-wheel--svc { width: 78vw; right: -26%; top: 3%; }
+    .gk-wheel--rev { width: 82vw; left: -30%; bottom: -8%; }
   }
 
   /* ── Rolling wheels ────────────────────────────────────────────────────
@@ -1302,9 +1308,9 @@ const HOME_STYLES = `
      static background wheels it is worth the compositor layer. Smaller and
      fainter so it never fights the text it passes behind. */
   @media (max-width: 700px) {
-    .gk-roll { transform: scale(.62); transform-origin: left center; }
-    .gk-roll--dark  { opacity: .13; }
-    .gk-roll--light { opacity: .06; }
+    .gk-roll { transform: scale(.8); transform-origin: left center; }
+    .gk-roll--dark  { opacity: .2; }
+    .gk-roll--light { opacity: .09; }
   }
 
   /* ── Hero car ────────────────────────────────────────────────────────────
