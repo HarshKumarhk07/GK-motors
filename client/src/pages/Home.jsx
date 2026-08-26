@@ -487,7 +487,8 @@ export default function Home() {
                   claim end to end. Itemised quote first, old parts handed back.
                 </p>
                 <p className="gk-lede gk-lede--dark gk-hero-lede gk-hero-lede--short">
-                  Every make serviced. Genuine parts. Insurance claims handled.
+                  Every make on the road, serviced in Rohtak. Genuine parts, an
+                  itemised quote before we start.
                 </p>
               </Reveal>
 
@@ -2177,19 +2178,31 @@ const HOME_STYLES = `
   .gk-hero-lede--short { display: none; }
 
   @media (max-width: 640px) {
+    /* The headline is the loudest thing on a phone screen or it is not doing
+       its job. 14vw, not the earlier 12.5: the longest line, "Sale. Spare.",
+       measures roughly 0.5em per character in Space Grotesk at this weight,
+       so at 360px it comes to about 300px inside a 328px column — filling the
+       measure with a little air, which is the point, without ever wrapping to
+       a third line. The tightened tracking buys the margin that makes it
+       safe. */
     .gk-hero-h1 {
-      font-size: clamp(2.75rem, 12.5vw, 3.4rem);
-      line-height: 0.98;
-      letter-spacing: -0.04em;
-      margin-top: 1.1rem;
+      font-size: clamp(2.9rem, 14vw, 3.9rem);
+      line-height: 0.95;
+      letter-spacing: -0.045em;
+      margin-top: 1rem;
     }
 
-    /* Swap the long lede for the eleven-word one. */
+    /* Swap the long lede for the short one. Not as terse as it was — three
+       clipped fragments read as a specification rather than a sentence, and
+       under a headline this size the page needs one line of actual voice. */
     .gk-hero-lede--long { display: none; }
     .gk-hero-lede--short {
       display: block;
-      font-size: 0.94rem; line-height: 1.55;
-      margin-top: 0.9rem; max-width: 21rem;
+      font-size: 0.95rem; line-height: 1.6;
+      /* A step brighter than the desktop body colour: at this size, on this
+         dark ground, --gk-body-dark sits too close to the background. */
+      color: #B8CCE2;
+      margin-top: 1rem; max-width: 22rem;
     }
 
     /* Two claims on one line, not three stacked.
