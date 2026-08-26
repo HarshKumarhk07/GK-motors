@@ -66,6 +66,7 @@ import BrandRail from '../components/common/BrandRail';
 import AmbientVideo from '../components/common/AmbientVideo';
 import ProcessFlow from '../components/common/ProcessFlow';
 import RollingWheel from '../components/common/RollingWheel';
+import ScrollWheel from '../components/common/ScrollWheel';
 import {
   Reveal, Stagger, StaggerItem, Parallax, ScrollRecede, CountUp, ScrollProgressLine, motion,
 } from '../components/common/Motion';
@@ -447,7 +448,7 @@ export default function Home() {
         <div className="gk-bloom gk-bloom--b" />
         <div className="gk-mesh" />
 
-        <RollingWheel className="gk-roll gk-roll--dark" size={300} direction={1} bottom="-9%" />
+        <ScrollWheel className="gk-wheel gk-wheel--lg" factor={0.16} idle={4} stiffness={30} />
 
         <div className="gk-wrap gk-hero-inner">
           <div className="gk-hero-grid">
@@ -684,6 +685,7 @@ export default function Home() {
           3 · SERVICES
           ══════════════════════════════════════════════════════════════════ */}
       <section id="services" className="gk-sec" style={{ background: C.white, position: 'relative', overflow: 'hidden' }}>
+        <ScrollWheel className="gk-wheel gk-wheel--light gk-wheel--svc" factor={0.12} idle={3} stiffness={26} />
         <div className="gk-wrap">
           <Reveal className="gk-head">
             <p className="gk-eyebrow gk-eyebrow--center">What we do</p>
@@ -986,6 +988,7 @@ export default function Home() {
           7 · NUMBERS + REVIEWS
           ══════════════════════════════════════════════════════════════════ */}
       <section className="gk-sec" style={{ background: C.white, overflow: 'hidden', position: 'relative' }}>
+        <ScrollWheel className="gk-wheel gk-wheel--light gk-wheel--rev" factor={0.15} idle={3.5} stiffness={34} />
         <div className="gk-wrap">
 
           <Stagger className="gk-stats" gap={0.09}>
@@ -1240,6 +1243,44 @@ const HOME_STYLES = `
   .gk-ring-b { animation: gk-spin 96s linear infinite reverse; }
   .gk-ring-c { animation: gk-spin 28s linear infinite; }
   @keyframes gk-spin { to { transform: rotate(360deg); } }
+
+  /* ── Turning wheels ────────────────────────────────────────────────────
+     Ambient, behind everything, clipped by the host section's own overflow so
+     they can bleed past its edges without widening the document.
+
+     These turn on the spot; RollingWheel below travels. ONE per section,
+     never both — running the two systems together is what made most sections
+     look like they had a duplicate wheel. */
+  .gk-wheel {
+    position: absolute; z-index: 0;
+    color: var(--gk-cyan-soft);
+    pointer-events: none;
+  }
+  .gk-wheel svg { width: 100%; height: 100%; display: block; }
+  .gk-wheel--light { color: var(--gk-navy); }
+
+  .gk-wheel--lg {
+    width: min(660px, 66vw); aspect-ratio: 1;
+    left: -17%; bottom: -32%;
+    opacity: .13;
+  }
+  .gk-wheel--svc {
+    width: min(520px, 52vw); aspect-ratio: 1;
+    right: -14%; top: 6%;
+    opacity: .05;
+  }
+  .gk-wheel--rev {
+    width: min(600px, 58vw); aspect-ratio: 1;
+    left: -16%; bottom: -12%;
+    opacity: .045;
+  }
+
+  @media (max-width: 700px) {
+    .gk-wheel--lg { opacity: .08; left: -32%; bottom: -18%; }
+    /* At 5% on a small bright screen these are invisible anyway, and each is
+       a compositor layer being blurred every frame. */
+    .gk-wheel--light { display: none; }
+  }
 
   /* ── Rolling wheels ────────────────────────────────────────────────────
      The travelling layer. Positioned by the component (top/bottom/size); all
