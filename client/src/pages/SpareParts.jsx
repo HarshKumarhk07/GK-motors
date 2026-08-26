@@ -6,6 +6,7 @@ import { SkeletonCard } from '../components/common/LoadingSpinner';
 import { ShoppingCart, Search, SlidersHorizontal, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
+import PageHero from '../components/common/PageHero';
 
 const formatCategoryLabel = (val) => String(val || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
@@ -114,53 +115,32 @@ export default function SpareParts() {
           .parts-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
       `}</style>
-       {/* ── HERO HEADER ── */}
-        <div style={{ background: '#FFFFFF', borderBottom: '1px solid #F1F5F9', padding: '3.5rem 0' }}>
-          {/* Decorative blue line */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: '#2563EB' }} />
- 
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ paddingTop: '2.5rem', paddingBottom: '1.5rem' }}>
-           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
- 
-             <div>
-               {/* Eyebrow */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
-                  <div style={{ width: 30, height: 4, background: '#2563EB', borderRadius: '4px' }} />
-                  <span style={{ color: '#2563EB', fontSize: '0.8rem', fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', fontFamily: "'Space Grotesk', sans-serif" }}>
-                    GK Motors Spares
-                  </span>
-                </div>
-                <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(1.8rem, 4.5vw, 3.5rem)', fontWeight: 950, color: '#0F172A', lineHeight: 1, margin: 0, letterSpacing: '0.05em' }}>
-                  GENUINE <span style={{ color: '#2563EB' }}>SPARES</span>
-                </h1>
-               <p style={{ color: '#94A3B8', marginTop: '0.5rem', fontSize: '0.88rem' }}>
-                 {total > 0 ? <><span style={{ color: '#0F172A', fontWeight: 700 }}>{total}</span> products available</> : 'Browse our collection'}
-                 {pincode.length === 6 && (
-                   <span style={{ color: '#2E7D32', marginLeft: '0.7rem', fontWeight: 700, fontSize: '0.82rem', background: 'rgba(46,125,50,0.05)', padding: '2px 8px', borderRadius: '4px' }}>
-                     📍 {pincode}
-                   </span>
-                 )}
-               </p>
-             </div>
- 
-             {/* Cart button */}
-              <Link to="/cart" style={{
-                display: 'flex', alignItems: 'center', gap: '0.7rem',
-                 padding: '0.8rem 1.8rem',
-                 background: '#2563EB',
-                 borderRadius: '14px', color: 'white', textDecoration: 'none',
-                 fontWeight: 900, fontSize: '0.95rem', position: 'relative',
-                 transition: 'all 0.3s',
-                 fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.08em',
-                 boxShadow: '0 10px 25px rgba(37, 99, 235, 0.3)'
-              }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#93C5FD'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#2563EB'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-                <ShoppingCart size={19} />
-                MY CART
+      {/* The page title moves to the shared PageHero so Shop opens the same
+          way Services, About and Contact do. What stays here is the toolbar —
+          the cart button and the search field — which are controls, not
+          decoration, and belong above the grid rather than in the banner. */}
+      <PageHero
+        crumb={{ label: 'Shop' }}
+        eyebrow="GK Motors spares"
+        title="Genuine parts,"
+        highlight="workshop prices."
+        lede={
+          total > 0
+            ? `${total} products in stock — oils, filters, batteries and accessories. Buy them for your own garage, or have us fit them during your service.`
+            : 'Oils, filters, batteries and accessories. Buy them for your own garage, or have us fit them during your service.'
+        }
+      />
+
+      <div style={{ background: '#FFFFFF', borderBottom: '1px solid #E4EBF7' }}>
+        <div className="gk-wrap" style={{ paddingTop: '1.6rem', paddingBottom: '1.2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            {/* Cart button */}
+              <Link to="/cart" className="gk-btn gk-btn--primary">
+                <ShoppingCart size={18} />
+                My cart
                 {itemCount > 0 && (
                    <span style={{
-                     background: 'white', color: '#2563EB',
+                     background: 'white', color: '#1567D3',
                      borderRadius: '999px', padding: '0 8px',
                      fontSize: '0.8rem', fontWeight: 950, marginLeft: '0.4rem'
                    }}>{itemCount}</span>
@@ -214,7 +194,7 @@ export default function SpareParts() {
                        flexShrink: 0,
                         padding: '1.2rem 1.5rem',
                         background: 'none', border: 'none',
-                        borderBottom: `4px solid ${isActive ? '#2563EB' : 'transparent'}`,
+                        borderBottom: `4px solid ${isActive ? '#1567D3' : 'transparent'}`,
                         color: isActive ? '#0F172A' : '#64748B',
                         cursor: 'pointer', fontSize: '0.9rem', fontWeight: isActive ? 900 : 700,
                         transition: 'all 0.3s', whiteSpace: 'nowrap',
@@ -239,7 +219,7 @@ export default function SpareParts() {
              <SlidersHorizontal size={14} style={{ color: '#888' }} />
              <span style={{ color: '#888', fontSize: '0.82rem', fontWeight: 600 }}>Filtering by:</span>
               {category && (
-                <span style={{ background: 'rgba(37, 99, 235, 0.08)', color: '#2563EB', border: '1px solid rgba(37, 99, 235, 0.15)', fontSize: '0.8rem', fontWeight: 800, padding: '4px 14px', borderRadius: '999px', fontFamily: "'Space Grotesk', sans-serif" }}>
+                <span style={{ background: 'rgba(21, 103, 211, 0.08)', color: '#1567D3', border: '1px solid rgba(21, 103, 211, 0.15)', fontSize: '0.8rem', fontWeight: 800, padding: '4px 14px', borderRadius: '999px', fontFamily: "'Space Grotesk', sans-serif" }}>
                   {activeCatLabel}
                 </span>
               )}
@@ -297,7 +277,7 @@ export default function SpareParts() {
              <p style={{ color: '#64748B', fontSize: '0.95rem', fontWeight: 600 }}>{loadError}</p>
              <button
                onClick={() => setReloadToken((t) => t + 1)}
-               style={{ marginTop: '2rem', minHeight: 48, background: '#2563EB', color: 'white', border: 'none', borderRadius: '12px', padding: '1rem 2.5rem', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', boxShadow: '0 8px 25px rgba(37, 99, 235, 0.3)', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em' }}>
+               style={{ marginTop: '2rem', minHeight: 48, background: '#1567D3', color: 'white', border: 'none', borderRadius: '12px', padding: '1rem 2.5rem', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', boxShadow: '0 8px 25px rgba(21, 103, 211, 0.3)', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em' }}>
                Retry
              </button>
            </div>
@@ -349,7 +329,7 @@ export default function SpareParts() {
              <p style={{ color: '#64748B', fontSize: '0.95rem', fontWeight: 600 }}>We couldn't find any parts matching your current filters.</p>
              {(category || search) && (
                 <button onClick={() => { setCategory(''); setSearch(''); }}
-                  style={{ marginTop: '2rem', background: '#2563EB', color: 'white', border: 'none', borderRadius: '12px', padding: '1rem 2.5rem', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', boxShadow: '0 8px 25px rgba(37, 99, 235, 0.3)', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em' }}>
+                  style={{ marginTop: '2rem', background: '#1567D3', color: 'white', border: 'none', borderRadius: '12px', padding: '1rem 2.5rem', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', boxShadow: '0 8px 25px rgba(21, 103, 211, 0.3)', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em' }}>
                  Clear All Filters
                </button>
              )}

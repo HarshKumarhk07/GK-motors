@@ -216,7 +216,7 @@ export default function RentalDetail() {
           email: user.email,
           contact: form.contactPhone
         },
-        theme: { color: '#1E3A8A' },
+        theme: { color: '#12315F' },
         readonly: {
           contact: true,
           email: true,
@@ -272,7 +272,7 @@ export default function RentalDetail() {
       `}</style>
       <div className="max-w-6xl mx-auto px-4 py-6">
         <button onClick={() => navigate('/rentals')}
-          style={{ background: 'none', border: 'none', color: '#1E3A8A', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontWeight: 700, marginBottom: '1.2rem' }}>
+          style={{ background: 'none', border: 'none', color: '#12315F', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontWeight: 700, marginBottom: '1.2rem' }}>
           <ArrowLeft size={16} /> BACK TO RENTALS
         </button>
 
@@ -293,7 +293,7 @@ export default function RentalDetail() {
                 <div style={{ display: 'flex', gap: '0.5rem', padding: '0.8rem', overflowX: 'auto' }}>
                   {car.images.map((img, idx) => (
                     <img key={idx} src={img} alt="" onClick={() => setActiveImage(idx)}
-                      style={{ width: '70px', height: '50px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', border: idx === activeImage ? '2px solid #1E3A8A' : '2px solid transparent' }} />
+                      style={{ width: '70px', height: '50px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', border: idx === activeImage ? '2px solid #12315F' : '2px solid transparent' }} />
                   ))}
                 </div>
               )}
@@ -322,7 +322,7 @@ export default function RentalDetail() {
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.8rem', flexWrap: 'wrap', margin: '1.2rem 0' }}>
                 {allowedUnits.includes('day') && car.pricePerDay > 0 && (
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
-                    <span className="rental-price-value" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.1rem', fontWeight: 950, color: '#1E3A8A' }}>₹{car.pricePerDay?.toLocaleString('en-IN')}</span>
+                    <span className="rental-price-value" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.1rem', fontWeight: 950, color: '#12315F' }}>₹{car.pricePerDay?.toLocaleString('en-IN')}</span>
                     <span className="rental-price-unit" style={{ color: '#64748B', fontWeight: 700, fontSize: '0.9rem' }}>/ day</span>
                   </div>
                 )}
@@ -331,7 +331,7 @@ export default function RentalDetail() {
                 )}
                 {allowedUnits.includes('hour') && car.pricePerHour > 0 && (
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
-                    <span className="rental-price-value" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.1rem', fontWeight: 950, color: '#1E3A8A' }}>₹{car.pricePerHour?.toLocaleString('en-IN')}</span>
+                    <span className="rental-price-value" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.1rem', fontWeight: 950, color: '#12315F' }}>₹{car.pricePerHour?.toLocaleString('en-IN')}</span>
                     <span className="rental-price-unit" style={{ color: '#64748B', fontWeight: 700, fontSize: '0.9rem' }}>/ hour</span>
                   </div>
                 )}
@@ -413,7 +413,7 @@ export default function RentalDetail() {
                     )}
                     {car.insuranceValidTill && (
                       <div style={{ background: '#EFF6FF', border: '1px solid rgba(30,58,138,0.15)', padding: '0.7rem 0.9rem', borderRadius: '10px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#1E3A8A', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#12315F', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           <Shield size={12} /> Insurance Valid Till
                         </div>
                         <div style={{ marginTop: '0.3rem', fontWeight: 800, color: '#0F172A', fontSize: '0.85rem' }}>{new Date(car.insuranceValidTill).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
@@ -437,12 +437,12 @@ export default function RentalDetail() {
                   <h3 style={{ fontWeight: 900, color: '#0F172A', marginBottom: '0.8rem', fontSize: '0.95rem' }}>Rental Policy</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {allowedUnits.includes('day') && (
-                      <span style={{ background: '#EFF6FF', color: '#1E3A8A', padding: '0.5rem 0.9rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ background: '#EFF6FF', color: '#12315F', padding: '0.5rem 0.9rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <Calendar size={12} /> {car.minRentalDays || 1}–{car.maxRentalDays || 30} day(s)
                       </span>
                     )}
                     {allowedUnits.includes('hour') && (
-                      <span style={{ background: '#EFF6FF', color: '#1E3A8A', padding: '0.5rem 0.9rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ background: '#EFF6FF', color: '#12315F', padding: '0.5rem 0.9rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <Clock size={12} /> {car.minRentalHours || 1}–{car.maxRentalHours || 24} hour(s)
                       </span>
                     )}
@@ -463,7 +463,7 @@ export default function RentalDetail() {
                       [car.powerWindows, CheckCircle, 'Power Windows'],
                       [car.powerSteering, CheckCircle, 'Power Steering'],
                     ].filter(([on]) => on).map(([, Icon, lbl], i) => (
-                      <span key={i} style={{ background: '#EFF6FF', color: '#1E3A8A', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <span key={i} style={{ background: '#EFF6FF', color: '#12315F', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                         <Icon size={12} /> {lbl}
                       </span>
                     ))}
@@ -483,7 +483,7 @@ export default function RentalDetail() {
                   <h3 style={{ fontWeight: 900, color: '#0F172A', marginBottom: '0.8rem', fontSize: '0.95rem' }}>Features</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {car.features.map((f, i) => (
-                      <span key={i} style={{ background: '#EFF6FF', color: '#1E3A8A', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <span key={i} style={{ background: '#EFF6FF', color: '#12315F', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                         <CheckCircle size={12} /> {f}
                       </span>
                     ))}
@@ -494,7 +494,7 @@ export default function RentalDetail() {
               {isSameLocation ? (
                 <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #F1F5F9' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: '#475569', fontWeight: 700 }}>
-                    <MapPin size={16} style={{ color: '#1E3A8A', flexShrink: 0, marginTop: '2px' }} />
+                    <MapPin size={16} style={{ color: '#12315F', flexShrink: 0, marginTop: '2px' }} />
                     <span><strong style={{ color: '#0F172A' }}>Pickup & Drop:</strong> {pickupFull}</span>
                   </div>
                 </div>
@@ -504,7 +504,7 @@ export default function RentalDetail() {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
                       {car.location?.city && (
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: '#475569', fontWeight: 700 }}>
-                          <MapPin size={16} style={{ color: '#1E3A8A', flexShrink: 0, marginTop: '2px' }} />
+                          <MapPin size={16} style={{ color: '#12315F', flexShrink: 0, marginTop: '2px' }} />
                           <span><strong style={{ color: '#0F172A' }}>Pickup:</strong> {pickupFull}</span>
                         </div>
                       )}
@@ -533,7 +533,7 @@ export default function RentalDetail() {
                   <button key={u} type="button" onClick={() => setForm({ ...form, rentalUnit: u })}
                     style={{
                       flex: 1, padding: '0.5rem 0.6rem', borderRadius: '7px', border: 'none', cursor: 'pointer',
-                      background: unit === u ? '#1E3A8A' : 'transparent',
+                      background: unit === u ? '#12315F' : 'transparent',
                       color: unit === u ? 'white' : '#475569',
                       fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em',
                       transition: 'all 0.2s'
@@ -629,7 +629,7 @@ export default function RentalDetail() {
             {/* Payment Plan picker */}
             <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '0.85rem', border: '1px solid #E2E8F0', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem' }}>
-                <Shield size={14} style={{ color: '#1E3A8A' }} />
+                <Shield size={14} style={{ color: '#12315F' }} />
                 <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#0F172A', letterSpacing: '0.04em' }}>PAYMENT PLAN</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
@@ -652,15 +652,15 @@ export default function RentalDetail() {
                         display: 'flex', alignItems: 'flex-start', gap: '0.5rem', cursor: 'pointer',
                         padding: '0.55rem 0.7rem', borderRadius: '10px',
                         background: active ? '#EFF6FF' : 'white',
-                        border: active ? '1.5px solid #1E3A8A' : '1px solid #E2E8F0',
+                        border: active ? '1.5px solid #12315F' : '1px solid #E2E8F0',
                         transition: 'all 0.15s',
                       }}>
                       <input type="radio" name="paymentPlan" value={opt.key}
                         checked={active}
                         onChange={() => setForm({ ...form, paymentPlan: opt.key })}
-                        style={{ marginTop: 3, accentColor: '#1E3A8A' }} />
+                        style={{ marginTop: 3, accentColor: '#12315F' }} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 800, color: active ? '#1E3A8A' : '#0F172A', fontSize: '0.82rem' }}>{opt.title}</div>
+                        <div style={{ fontWeight: 800, color: active ? '#12315F' : '#0F172A', fontSize: '0.82rem' }}>{opt.title}</div>
                         <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>{opt.sub}</div>
                       </div>
                     </label>
@@ -669,7 +669,7 @@ export default function RentalDetail() {
               </div>
               {form.paymentPlan !== 'on_drop' && (
                 <p style={{ fontSize: '0.65rem', color: '#64748B', marginTop: '0.6rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <Shield size={11} style={{ color: '#1E3A8A' }} /> Razorpay encrypted checkout
+                  <Shield size={11} style={{ color: '#12315F' }} /> Razorpay encrypted checkout
                 </p>
               )}
             </div>
@@ -682,7 +682,7 @@ export default function RentalDetail() {
             {/* Price Summary */}
             <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '1rem', marginBottom: '1rem' }}>
               {car.carNumber && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 800, color: '#1E3A8A', marginBottom: '0.8rem', borderBottom: '1px dashed #E2E8F0', paddingBottom: '0.6rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 800, color: '#12315F', marginBottom: '0.8rem', borderBottom: '1px dashed #E2E8F0', paddingBottom: '0.6rem' }}>
                   <span>CAR NUMBER</span>
                   <span>{car.carNumber}</span>
                 </div>
@@ -699,10 +699,10 @@ export default function RentalDetail() {
                 <>
                   {/* Opt-in toggle when deposit is optional */}
                   {!depositCompulsory && (
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.7rem', marginBottom: '0.4rem', background: includeSecurityDeposit ? '#EFF6FF' : '#F8FAFC', border: '1.5px solid', borderColor: includeSecurityDeposit ? '#1E3A8A' : '#E2E8F0', borderRadius: '10px', cursor: 'pointer' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.7rem', marginBottom: '0.4rem', background: includeSecurityDeposit ? '#EFF6FF' : '#F8FAFC', border: '1.5px solid', borderColor: includeSecurityDeposit ? '#12315F' : '#E2E8F0', borderRadius: '10px', cursor: 'pointer' }}>
                       <input type="checkbox" checked={includeSecurityDeposit}
                         onChange={e => setIncludeSecurityDeposit(e.target.checked)}
-                        style={{ accentColor: '#1E3A8A', width: 16, height: 16 }} />
+                        style={{ accentColor: '#12315F', width: 16, height: 16 }} />
                       <span style={{ flex: 1, fontSize: '0.78rem', fontWeight: 800, color: '#0F172A' }}>
                         Add security deposit
                         <span style={{ fontSize: '0.6rem', fontWeight: 800, color: '#16A34A', background: '#DCFCE7', padding: '2px 6px', borderRadius: '999px', letterSpacing: '0.04em', marginLeft: '0.4rem' }}>OPTIONAL</span>
@@ -728,11 +728,11 @@ export default function RentalDetail() {
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '0.6rem', marginTop: '0.4rem' }}>
                 <span style={{ fontWeight: 900, color: '#0F172A', fontSize: '0.85rem' }}>TOTAL</span>
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.3rem', fontWeight: 950, color: '#1E3A8A' }}>₹{totalAmount.toLocaleString('en-IN')}</span>
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.3rem', fontWeight: 950, color: '#12315F' }}>₹{totalAmount.toLocaleString('en-IN')}</span>
               </div>
               {form.paymentPlan !== 'full' && (
                 <div style={{ marginTop: '0.6rem', paddingTop: '0.6rem', borderTop: '1px dashed #E2E8F0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 800, color: '#1E3A8A' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 800, color: '#12315F' }}>
                     <span>You pay now</span>
                     <span>₹{payNow.toLocaleString('en-IN')}</span>
                   </div>
@@ -745,7 +745,7 @@ export default function RentalDetail() {
             </div>
 
             <button type="submit" disabled={submitting || (car.status && car.status !== 'available')}
-              style={{ width: '100%', background: (!car.status || car.status === 'available') ? '#1E3A8A' : '#94A3B8', color: 'white', border: 'none', borderRadius: '12px', padding: '0.8rem', fontWeight: 900, fontSize: '0.9rem', cursor: (!car.status || car.status === 'available') && !submitting ? 'pointer' : 'not-allowed', letterSpacing: '0.1em', fontFamily: "'Space Grotesk', sans-serif" }}>
+              style={{ width: '100%', background: (!car.status || car.status === 'available') ? '#12315F' : '#94A3B8', color: 'white', border: 'none', borderRadius: '12px', padding: '0.8rem', fontWeight: 900, fontSize: '0.9rem', cursor: (!car.status || car.status === 'available') && !submitting ? 'pointer' : 'not-allowed', letterSpacing: '0.1em', fontFamily: "'Space Grotesk', sans-serif" }}>
               {(car.status && car.status !== 'available')
                 ? 'CURRENTLY UNAVAILABLE'
                 : submitting ? 'PROCESSING...'

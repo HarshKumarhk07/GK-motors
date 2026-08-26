@@ -531,7 +531,7 @@ export default function CheckoutModal({ open, onClose }) {
           description: services.map((s) => s.name).join(', ').slice(0, 240),
           order_id: pay.order.id,
           prefill: { name: user?.name || '', email: user?.email || '', contact: user?.phone || '' },
-          theme: { color: '#2563EB' },
+          theme: { color: '#1567D3' },
           modal: {
             ondismiss: () => {
               // Booking stays payable so the customer can retry — the id is
@@ -645,15 +645,15 @@ export default function CheckoutModal({ open, onClose }) {
   // Selectable card + radio dot, shared by every choice on the pickup step.
   const pickCardStyle = (sel) => ({
     display: 'flex', alignItems: 'flex-start', gap: '0.6rem', textAlign: 'left',
-    border: `1.5px solid ${sel ? '#2563EB' : '#E2E8F0'}`,
+    border: `1.5px solid ${sel ? '#1567D3' : '#E2E8F0'}`,
     background: sel ? '#FFF' : '#FFF',
-    boxShadow: sel ? 'inset 0 0 0 1px #2563EB' : 'none',
+    boxShadow: sel ? 'inset 0 0 0 1px #1567D3' : 'none',
     borderRadius: '10px', padding: '0.65rem 0.8rem', cursor: 'pointer', width: '100%',
   });
   const pickDotStyle = (sel) => ({
     width: 15, height: 15, borderRadius: '50%', marginTop: '0.12rem', flexShrink: 0,
-    border: `2px solid ${sel ? '#2563EB' : '#CBD5E1'}`,
-    background: sel ? '#2563EB' : 'transparent',
+    border: `2px solid ${sel ? '#1567D3' : '#CBD5E1'}`,
+    background: sel ? '#1567D3' : 'transparent',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   });
 
@@ -687,7 +687,7 @@ export default function CheckoutModal({ open, onClose }) {
               <div key={n} className="gk-co-step" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                  background: done ? '#DCFCE7' : active ? '#2563EB' : '#F1F5F9',
+                  background: done ? '#DCFCE7' : active ? '#1567D3' : '#F1F5F9',
                   color: done ? '#166534' : active ? '#FFF' : '#94A3B8',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
@@ -720,7 +720,7 @@ export default function CheckoutModal({ open, onClose }) {
 
               <label style={labelStyle}>Time Slot</label>
               {slotsLoading ? (
-                <div style={{ padding: '1.5rem 0' }}><Loader size={20} style={{ color: '#2563EB' }} /></div>
+                <div style={{ padding: '1.5rem 0' }}><Loader size={20} style={{ color: '#1567D3' }} /></div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))', gap: '0.6rem' }}>
                   {slots.map(({ time, available }) => {
@@ -732,8 +732,8 @@ export default function CheckoutModal({ open, onClose }) {
                         disabled={!available}
                         style={{
                           padding: '0.65rem 0.4rem', borderRadius: '10px',
-                          border: `1.5px solid ${sel ? '#2563EB' : available ? '#E2E8F0' : '#F1F5F9'}`,
-                          background: sel ? '#2563EB' : available ? '#FFF' : '#F8FAFC',
+                          border: `1.5px solid ${sel ? '#1567D3' : available ? '#E2E8F0' : '#F1F5F9'}`,
+                          background: sel ? '#1567D3' : available ? '#FFF' : '#F8FAFC',
                           color: sel ? '#FFF' : available ? '#0F172A' : '#CBD5E1',
                           fontWeight: 800, fontSize: '0.82rem',
                           cursor: available ? 'pointer' : 'not-allowed',
@@ -766,15 +766,15 @@ export default function CheckoutModal({ open, onClose }) {
                 style={{
                   width: '100%', textAlign: 'left', cursor: 'pointer',
                   display: 'flex', alignItems: 'flex-start', gap: '0.8rem',
-                  border: `1.5px solid ${!pickupDrop.enabled ? '#2563EB' : '#E2E8F0'}`,
+                  border: `1.5px solid ${!pickupDrop.enabled ? '#1567D3' : '#E2E8F0'}`,
                   background: !pickupDrop.enabled ? '#EFF6FF' : '#FFF',
                   borderRadius: '14px', padding: '1rem', marginBottom: '0.8rem',
                 }}
               >
                 <div style={{
                   width: 18, height: 18, borderRadius: '50%', marginTop: '0.15rem', flexShrink: 0,
-                  border: `2px solid ${!pickupDrop.enabled ? '#2563EB' : '#CBD5E1'}`,
-                  background: !pickupDrop.enabled ? '#2563EB' : 'transparent',
+                  border: `2px solid ${!pickupDrop.enabled ? '#1567D3' : '#CBD5E1'}`,
+                  background: !pickupDrop.enabled ? '#1567D3' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {!pickupDrop.enabled && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FFF' }} />}
@@ -783,7 +783,7 @@ export default function CheckoutModal({ open, onClose }) {
                   <div style={{ fontWeight: 900, fontSize: '0.9rem', color: '#0F172A', marginBottom: '0.2rem' }}>
                     I'll drop the car at the workshop
                   </div>
-                  <div style={{ color: '#2563EB', fontSize: '0.8rem', fontWeight: 600, lineHeight: 1.5 }}>
+                  <div style={{ color: '#1567D3', fontSize: '0.8rem', fontWeight: 600, lineHeight: 1.5 }}>
                     {SERVICE_CENTER.fullAddress}
                   </div>
                 </div>
@@ -792,7 +792,7 @@ export default function CheckoutModal({ open, onClose }) {
               {/* Doorstep pickup */}
               {isPickupDropAvailable(scheduledTime, scheduledDate) ? (
                 <div style={{
-                  border: `1.5px solid ${pickupDrop.enabled ? '#2563EB' : '#E2E8F0'}`,
+                  border: `1.5px solid ${pickupDrop.enabled ? '#1567D3' : '#E2E8F0'}`,
                   background: pickupDrop.enabled ? '#EFF6FF' : '#FFF',
                   borderRadius: '14px', padding: '1rem',
                 }}>
@@ -809,15 +809,15 @@ export default function CheckoutModal({ open, onClose }) {
                   >
                     <div style={{
                       width: 18, height: 18, borderRadius: '50%', marginTop: '0.15rem', flexShrink: 0,
-                      border: `2px solid ${pickupDrop.enabled ? '#2563EB' : '#CBD5E1'}`,
-                      background: pickupDrop.enabled ? '#2563EB' : 'transparent',
+                      border: `2px solid ${pickupDrop.enabled ? '#1567D3' : '#CBD5E1'}`,
+                      background: pickupDrop.enabled ? '#1567D3' : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       {pickupDrop.enabled && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FFF' }} />}
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
-                        <Truck size={15} style={{ color: '#2563EB' }} />
+                        <Truck size={15} style={{ color: '#1567D3' }} />
                         <span style={{ fontWeight: 900, fontSize: '0.9rem', color: '#0F172A' }}>Doorstep pickup &amp; drop</span>
                       </div>
                       <div style={{ color: '#64748B', fontSize: '0.8rem', fontWeight: 500, lineHeight: 1.5 }}>
@@ -869,7 +869,7 @@ export default function CheckoutModal({ open, onClose }) {
                         disabled={pickupLocating}
                         style={{
                           display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                          background: '#FFF', border: '1.5px solid #2563EB', color: '#2563EB',
+                          background: '#FFF', border: '1.5px solid #1567D3', color: '#1567D3',
                           borderRadius: '10px', padding: '0.55rem 0.9rem', fontSize: '0.78rem',
                           fontWeight: 800, cursor: pickupLocating ? 'wait' : 'pointer', marginBottom: '1.1rem',
                         }}
@@ -902,7 +902,7 @@ export default function CheckoutModal({ open, onClose }) {
                               </div>
                               <div style={{ minWidth: 0 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                                  <Icon size={13} style={{ color: '#2563EB' }} />
+                                  <Icon size={13} style={{ color: '#1567D3' }} />
                                   <span style={{ fontWeight: 900, fontSize: '0.8rem', color: '#0F172A' }}>{title}</span>
                                 </div>
                                 <div style={{ color: '#64748B', fontSize: '0.76rem', fontWeight: 500, lineHeight: 1.4 }}>{sub}</div>
@@ -963,7 +963,7 @@ export default function CheckoutModal({ open, onClose }) {
           {step === 3 && (
             <div>
               {addressesLoading ? (
-                <div style={{ padding: '1.5rem 0', textAlign: 'center' }}><Loader size={20} style={{ color: '#2563EB' }} /></div>
+                <div style={{ padding: '1.5rem 0', textAlign: 'center' }}><Loader size={20} style={{ color: '#1567D3' }} /></div>
               ) : (
                 <>
                   {addresses.length > 0 && !addingAddress && (
@@ -986,15 +986,15 @@ export default function CheckoutModal({ open, onClose }) {
                               onClick={() => setSelectedAddressId(a._id)}
                               style={{
                                 display: 'flex', alignItems: 'flex-start', gap: '0.7rem', textAlign: 'left',
-                                border: `1.5px solid ${sel ? '#2563EB' : '#E2E8F0'}`,
+                                border: `1.5px solid ${sel ? '#1567D3' : '#E2E8F0'}`,
                                 background: sel ? '#EFF6FF' : '#FFF',
                                 borderRadius: '12px', padding: '0.85rem 1rem', cursor: 'pointer',
                               }}
                             >
                               <div style={{
                                 width: 18, height: 18, borderRadius: '50%', marginTop: '0.1rem', flexShrink: 0,
-                                border: `2px solid ${sel ? '#2563EB' : '#CBD5E1'}`,
-                                background: sel ? '#2563EB' : 'transparent',
+                                border: `2px solid ${sel ? '#1567D3' : '#CBD5E1'}`,
+                                background: sel ? '#1567D3' : 'transparent',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                               }}>
                                 {sel && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FFF' }} />}
@@ -1011,7 +1011,7 @@ export default function CheckoutModal({ open, onClose }) {
                       </div>
                       <button
                         onClick={() => setAddingAddress(true)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: '1.5px dashed #2563EB', color: '#2563EB', borderRadius: '10px', padding: '0.65rem 1rem', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', width: '100%', justifyContent: 'center' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: '1.5px dashed #1567D3', color: '#1567D3', borderRadius: '10px', padding: '0.65rem 1rem', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', width: '100%', justifyContent: 'center' }}
                       >
                         <Plus size={14} /> Add New Address
                       </button>
@@ -1029,7 +1029,7 @@ export default function CheckoutModal({ open, onClose }) {
                       <button
                         onClick={fetchCurrentAddress}
                         disabled={locating}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', background: '#EBF0FF', border: 'none', color: '#2563EB', borderRadius: '10px', padding: '0.6rem 1rem', fontWeight: 800, fontSize: '0.8rem', cursor: locating ? 'wait' : 'pointer', marginBottom: '1rem' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', background: '#EBF0FF', border: 'none', color: '#1567D3', borderRadius: '10px', padding: '0.6rem 1rem', fontWeight: 800, fontSize: '0.8rem', cursor: locating ? 'wait' : 'pointer', marginBottom: '1rem' }}
                       >
                         <Crosshair size={14} /> {locating ? 'Locating…' : 'Fetch Current Address'}
                       </button>
@@ -1067,7 +1067,7 @@ export default function CheckoutModal({ open, onClose }) {
 
                       <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1.1rem' }}>
                         <button onClick={saveAddress} disabled={savingAddress}
-                          style={{ flex: 1, background: 'linear-gradient(135deg, #2563EB 0%, #0F172A 100%)', color: '#FFF', border: 'none', borderRadius: '10px', padding: '0.8rem', fontWeight: 900, fontSize: '0.85rem', cursor: savingAddress ? 'wait' : 'pointer', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                          style={{ flex: 1, background: 'linear-gradient(135deg, #1567D3 0%, #00B2F0 100%)', color: '#FFF', border: 'none', borderRadius: '10px', padding: '0.8rem', fontWeight: 900, fontSize: '0.85rem', cursor: savingAddress ? 'wait' : 'pointer', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                           {savingAddress ? 'Saving…' : 'Save Address'}
                         </button>
                         {addresses.length > 0 && (
@@ -1089,7 +1089,7 @@ export default function CheckoutModal({ open, onClose }) {
             <div>
               <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '1.1rem', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.85rem' }}>
-                  <CarIcon size={16} style={{ color: '#2563EB' }} />
+                  <CarIcon size={16} style={{ color: '#1567D3' }} />
                   <span style={{ fontWeight: 900, fontSize: '0.9rem', color: '#0F172A' }}>
                     {car?.brand} {car?.model} · {car?.year}
                   </span>
@@ -1110,21 +1110,21 @@ export default function CheckoutModal({ open, onClose }) {
 
               <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.82rem', color: '#475569', fontWeight: 600, marginBottom: '1.1rem' }}>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <Calendar size={14} style={{ color: '#2563EB', flexShrink: 0, marginTop: '0.1rem' }} />
+                  <Calendar size={14} style={{ color: '#1567D3', flexShrink: 0, marginTop: '0.1rem' }} />
                   <span>{formatIstDate(scheduledDate, { long: true })}{scheduledTime ? ` at ${prettyTime(scheduledTime)}` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <MapPin size={14} style={{ color: '#2563EB', flexShrink: 0, marginTop: '0.1rem' }} />
+                  <MapPin size={14} style={{ color: '#1567D3', flexShrink: 0, marginTop: '0.1rem' }} />
                   <span>{selectedAddress && [selectedAddress.street, selectedAddress.city, selectedAddress.pincode].filter(Boolean).join(', ')}</span>
                 </div>
                 {pickupDrop.enabled ? (
                   <>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <Truck size={14} style={{ color: '#2563EB', flexShrink: 0, marginTop: '0.1rem' }} />
+                      <Truck size={14} style={{ color: '#1567D3', flexShrink: 0, marginTop: '0.1rem' }} />
                       <span>We collect from {formatAddress(pickupDrop.pickupAddress)}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <Home size={14} style={{ color: '#2563EB', flexShrink: 0, marginTop: '0.1rem' }} />
+                      <Home size={14} style={{ color: '#1567D3', flexShrink: 0, marginTop: '0.1rem' }} />
                       <span>
                         {pickupDrop.dropType === 'service_center'
                           ? `You collect it from ${SERVICE_CENTER.fullAddress}`
@@ -1136,7 +1136,7 @@ export default function CheckoutModal({ open, onClose }) {
                   </>
                 ) : (
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <CarIcon size={14} style={{ color: '#2563EB', flexShrink: 0, marginTop: '0.1rem' }} />
+                    <CarIcon size={14} style={{ color: '#1567D3', flexShrink: 0, marginTop: '0.1rem' }} />
                     <span>You bring the car to {SERVICE_CENTER.fullAddress}</span>
                   </div>
                 )}
@@ -1155,7 +1155,7 @@ export default function CheckoutModal({ open, onClose }) {
                 disabled={paying}
                 style={{
                   width: '100%',
-                  background: paying ? '#94A3B8' : 'linear-gradient(135deg, #2563EB 0%, #0F172A 100%)',
+                  background: paying ? '#94A3B8' : 'linear-gradient(135deg, #1567D3 0%, #00B2F0 100%)',
                   color: '#FFF', border: 'none', borderRadius: '12px', padding: '1rem',
                   fontFamily: "'Space Grotesk', sans-serif", fontWeight: 950, fontSize: '0.95rem',
                   letterSpacing: '0.08em', textTransform: 'uppercase',
@@ -1199,7 +1199,7 @@ export default function CheckoutModal({ open, onClose }) {
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
                 background: canContinue
-                  ? 'linear-gradient(135deg, #2563EB 0%, #0F172A 100%)' : '#E2E8F0',
+                  ? 'linear-gradient(135deg, #1567D3 0%, #00B2F0 100%)' : '#E2E8F0',
                 color: canContinue ? '#FFF' : '#94A3B8',
                 border: 'none', borderRadius: '10px', padding: '0.8rem',
                 fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '0.88rem',

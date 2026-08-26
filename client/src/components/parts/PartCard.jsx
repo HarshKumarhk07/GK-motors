@@ -63,7 +63,7 @@ export default function PartCard({ part }) {
         display: 'flex',
         flexDirection: 'column',
         cursor: 'pointer',
-        boxShadow: hovered ? '0 30px 60px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(37, 99, 235, 0.12)' : '0 10px 30px rgba(0,0,0,0.04)',
+        boxShadow: hovered ? '0 30px 60px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(21, 103, 211, 0.12)' : '0 10px 30px rgba(0,0,0,0.04)',
         transform: hovered ? 'translateY(-12px)' : 'translateY(0)',
         transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
         height: '100%',
@@ -162,7 +162,7 @@ export default function PartCard({ part }) {
           {/* Category */}
           <div style={{ marginBottom: '0.3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{
-              fontSize: '0.65rem', color: '#2563EB',
+              fontSize: '0.65rem', color: '#1567D3',
               textTransform: 'uppercase', fontWeight: 950,
               letterSpacing: '0.08em', fontFamily: "'Space Grotesk', sans-serif"
             }}>
@@ -217,7 +217,7 @@ export default function PartCard({ part }) {
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateQty(part._id, cartItem.quantity - 1); }}
                     style={{ 
                       width: 24, height: 24, borderRadius: '4px', border: 'none', 
-                      background: '#2563EB', color: 'white', display: 'flex', 
+                      background: '#1567D3', color: 'white', display: 'flex', 
                       alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                       fontSize: '1rem', fontWeight: 900
                     }}
@@ -229,7 +229,7 @@ export default function PartCard({ part }) {
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateQty(part._id, cartItem.quantity + 1); }}
                     style={{ 
                       width: 24, height: 24, borderRadius: '4px', border: 'none', 
-                      background: '#2563EB', color: 'white', display: 'flex', 
+                      background: '#1567D3', color: 'white', display: 'flex', 
                       alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                       fontSize: '1rem', fontWeight: 900
                     }}
@@ -252,11 +252,11 @@ export default function PartCard({ part }) {
                   style={{
                     height: '32px', minWidth: 0,
                     padding: '0 0.75rem',
-                    background: effectiveStock === 0 || !hasPrice ? '#E2E8F0' : '#2563EB',
+                    background: effectiveStock === 0 || !hasPrice ? '#E2E8F0' : '#1567D3',
                     border: 'none', borderRadius: '8px', color: 'white',
                     cursor: effectiveStock === 0 || !hasPrice ? 'not-allowed' : 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: effectiveStock === 0 || !hasPrice ? 'none' : '0 4px 12px rgba(37, 99, 235, 0.28)',
+                    boxShadow: effectiveStock === 0 || !hasPrice ? 'none' : '0 4px 12px rgba(21, 103, 211, 0.28)',
                     transition: 'all 0.2s',
                     gap: '0.35rem', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.7rem', letterSpacing: '0.04em'
                   }}
@@ -372,7 +372,7 @@ const PART_CARD_STYLES = `
   .gk-pc-reviews { color: #94A3B8; font-weight: 600; }
   /* A price must never break mid-number ('₹3,1 / 99'), so it stays nowrap
      and the row wraps instead when the card is too narrow for both. */
-  .gk-pc-price { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 950; color: #2563EB; line-height: 1.1; white-space: nowrap; }
+  .gk-pc-price { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 950; color: #1567D3; line-height: 1.1; white-space: nowrap; }
   .gk-pc-priceRow { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.4rem 0.4rem; margin-top: auto; padding-top: 0.4rem; min-width: 0; }
 
   @media (max-width: 420px) {

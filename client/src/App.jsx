@@ -161,7 +161,7 @@ const RouteFallback = () => (
     </span>
     <svg width="40" height="40" viewBox="0 0 50 50" style={{ animation: 'spin 0.8s linear infinite' }} aria-hidden="true">
       <circle cx="25" cy="25" r="20" fill="none" stroke="#E2E8F0" strokeWidth="4" />
-      <circle cx="25" cy="25" r="20" fill="none" stroke="#1E3A8A" strokeWidth="4"
+      <circle cx="25" cy="25" r="20" fill="none" stroke="#12315F" strokeWidth="4"
         strokeDasharray="80" strokeDashoffset="60" strokeLinecap="round" />
     </svg>
   </div>
@@ -170,7 +170,7 @@ const RouteFallback = () => (
 const NotFound = () => (
   <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '1.5rem', background: '#FFFFFF', textAlign: 'center' }}>
     <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(5rem, 15vw, 10rem)', fontWeight: 950, color: '#111', lineHeight: 1, letterSpacing: '-0.05em' }}>404</div>
-    <div style={{ height: '6px', width: '80px', background: '#1E3A8A', borderRadius: '4px' }} />
+    <div style={{ height: '6px', width: '80px', background: '#12315F', borderRadius: '4px' }} />
     <h2 style={{ color: '#0F172A', fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 950, textTransform: 'uppercase', letterSpacing: '0.05em' }}>PAGE NOT FOUND</h2>
     <p style={{ color: '#64748B', fontSize: '1.2rem', maxWidth: '450px', fontWeight: 600 }}>The page you're looking for doesn't exist or has moved.</p>
     <a href="/" style={{ marginTop: '1.5rem', background: '#0F172A', color: 'white', padding: '1.2rem 3rem', borderRadius: '18px', textDecoration: 'none', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em', boxShadow: '0 15px 40px rgba(15, 23, 42, 0.2)', transition: 'all 0.3s' }}

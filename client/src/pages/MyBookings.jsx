@@ -104,11 +104,11 @@ const Timeline = ({ steps, current }) => {
         return (
           <div key={s} className="gk-dash-step">
             <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-              <span className="gk-dash-rail" style={{ background: done && i > 0 ? '#2563EB' : '#F1F5F9', visibility: i === 0 ? 'hidden' : 'visible' }} />
-              <span className="gk-dash-dot" style={{ background: done ? '#2563EB' : '#F1F5F9' }}>
+              <span className="gk-dash-rail" style={{ background: done && i > 0 ? '#1567D3' : '#F1F5F9', visibility: i === 0 ? 'hidden' : 'visible' }} />
+              <span className="gk-dash-dot" style={{ background: done ? '#1567D3' : '#F1F5F9' }}>
                 {done ? <CheckCircle size={13} color="white" /> : <span className="gk-dash-pip" />}
               </span>
-              <span className="gk-dash-rail" style={{ background: steps.indexOf(s) < currentIdx && !cancelled ? '#2563EB' : '#F1F5F9', visibility: i === steps.length - 1 ? 'hidden' : 'visible' }} />
+              <span className="gk-dash-rail" style={{ background: steps.indexOf(s) < currentIdx && !cancelled ? '#1567D3' : '#F1F5F9', visibility: i === steps.length - 1 ? 'hidden' : 'visible' }} />
             </div>
             <span className="gk-dash-step-label" style={{ color: done ? '#0F172A' : '#94A3B8' }}>
               {s.replace('_', ' ')}
@@ -229,7 +229,7 @@ export default function MyBookings() {
           description: bookingTitle(booking).slice(0, 240),
           order_id: pay.order.id,
           prefill: { name: user?.name || '', email: user?.email || '', contact: user?.phone || '' },
-          theme: { color: '#2563EB' },
+          theme: { color: '#1567D3' },
           modal: {
             ondismiss: () => {
               setPayingId('');
@@ -309,7 +309,7 @@ export default function MyBookings() {
 
       <header className="gk-dash-head">
         <div className="gk-dash-wrap">
-          <h1 className="gk-dash-title">MY <span style={{ color: '#2563EB' }}>DASHBOARD</span></h1>
+          <h1 className="gk-dash-title">MY <span style={{ color: '#1567D3' }}>DASHBOARD</span></h1>
           <p className="gk-dash-sub">Your service bookings and spare-parts orders in one place.</p>
 
           <div className="gk-dash-tabs" role="tablist">
@@ -350,7 +350,7 @@ export default function MyBookings() {
                   <div className="gk-dash-card-top">
                     <div className="gk-dash-card-main">
                       <div className="gk-dash-thumb gk-dash-thumb--icon">
-                        <Wrench size={19} style={{ color: '#2563EB' }} />
+                        <Wrench size={19} style={{ color: '#1567D3' }} />
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <h3 className="gk-dash-card-title">{bookingTitle(booking)}</h3>
@@ -547,14 +547,14 @@ const DASHBOARD_STYLES = `
     transition: color .2s, background .2s, border-color .2s;
     flex: 1 1 0; min-width: 0; justify-content: center;
   }
-  .gk-dash-tab.is-active { color: #2563EB; border-color: #BFD4F7; box-shadow: inset 0 3px 0 #2563EB; }
+  .gk-dash-tab.is-active { color: #1567D3; border-color: #BFD4F7; box-shadow: inset 0 3px 0 #1567D3; }
   .gk-dash-tab-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .gk-dash-tab-count {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 22px; height: 20px; padding: 0 6px; border-radius: 999px;
-    background: #EFF6FF; color: #2563EB; font-size: 0.72rem; font-weight: 900; flex-shrink: 0;
+    background: #EFF6FF; color: #1567D3; font-size: 0.72rem; font-weight: 900; flex-shrink: 0;
   }
-  .gk-dash-tab.is-active .gk-dash-tab-count { background: #2563EB; color: #FFFFFF; }
+  .gk-dash-tab.is-active .gk-dash-tab-count { background: #1567D3; color: #FFFFFF; }
 
   .gk-dash-card {
     background: #FFFFFF; border: 1px solid #E7EDF7; border-radius: 16px;
@@ -583,7 +583,7 @@ const DASHBOARD_STYLES = `
   .gk-dash-pay.is-failed { background: #FEF2F2; color: #B91C1C; }
   .gk-dash-paynow {
     display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-    background: linear-gradient(135deg, #2563EB 0%, #0F172A 100%); color: #FFF;
+    background: linear-gradient(135deg, #1567D3 0%, #00B2F0 100%); color: #FFF;
     border: none; border-radius: 9px; padding: 0.5rem 0.9rem; min-height: 38px;
     font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.78rem;
     letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; white-space: nowrap;
@@ -625,7 +625,7 @@ const DASHBOARD_STYLES = `
     font-weight: 800; font-size: 0.82rem; text-decoration: none; transition: all .2s;
   }
   .gk-dash-btn:hover { border-color: #CBD5E1; color: #0F172A; }
-  .gk-dash-btn.is-primary { background: #2563EB; border-color: #2563EB; color: #FFFFFF; }
+  .gk-dash-btn.is-primary { background: #1567D3; border-color: #1567D3; color: #FFFFFF; }
   .gk-dash-btn.is-primary:hover { background: #17306F; color: #FFFFFF; }
   .gk-dash-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -636,7 +636,7 @@ const DASHBOARD_STYLES = `
   .gk-dash-cta {
     display: inline-flex; align-items: center; gap: 0.45rem; min-height: 44px;
     padding: 0 1.5rem; border-radius: 11px; border: none; cursor: pointer;
-    background: #2563EB; color: #FFFFFF; font-weight: 800; font-size: 0.85rem;
+    background: #1567D3; color: #FFFFFF; font-weight: 800; font-size: 0.85rem;
   }
 
   .gk-dash-error {

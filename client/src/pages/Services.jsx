@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useServiceCart } from '../context/CartContext';
 import { getServiceCategories, getCategories } from '../api/serviceApi';
 import { reportApiError } from '../api/apiError';
+import PageHero from '../components/common/PageHero';
 import ServiceCategoryGrid from '../components/service/ServiceCategoryGrid';
 import CarSelector from '../components/service/CarSelector';
 import ServiceSelector from '../components/service/ServiceSelector';
@@ -324,13 +325,13 @@ export default function Services() {
         }
         .gk-svc-bar-cta {
           flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-          background: linear-gradient(135deg, #2563EB 0%, #0F172A 100%); color: #FFF;
+          background: linear-gradient(135deg, #1567D3 0%, #00B2F0 100%); color: #FFF;
           border: none; border-radius: 11px; padding: 0.8rem 1.15rem; min-height: 46px;
           font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.82rem;
           letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer;
         }
         .gk-svc-bar-cta:disabled { background: #E2E8F0; color: #94A3B8; cursor: not-allowed; }
-        .gk-svc-bar-cta:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+        .gk-svc-bar-cta:focus-visible { outline: 2px solid #1567D3; outline-offset: 2px; }
         @media (max-width: 359px) {
           .gk-svc-bar-cta { padding: 0.8rem 0.85rem; font-size: 0.76rem; }
         }
@@ -344,7 +345,7 @@ export default function Services() {
           font-weight: 800; font-size: 0.75rem; cursor: pointer;
           margin-bottom: 1.2rem; font-family: inherit;
         }
-        .gk-svc-back:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+        .gk-svc-back:focus-visible { outline: 2px solid #1567D3; outline-offset: 2px; }
 
         /* Selected-car strip. Sits at the top of the main column in every
            stage so the vehicle is always changeable before a service is
@@ -379,12 +380,12 @@ export default function Services() {
           display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
           flex-shrink: 0; min-height: 44px; padding: 0.6rem 0.95rem;
           background: #EFF6FF; border: 1.5px solid #BFDBFE; border-radius: 10px;
-          color: #2563EB; font-family: inherit; font-weight: 800; font-size: 0.76rem;
+          color: #1567D3; font-family: inherit; font-weight: 800; font-size: 0.76rem;
           cursor: pointer; white-space: nowrap;
           transition: background 0.15s ease, border-color 0.15s ease;
         }
-        .gk-svc-carbar-btn:hover { background: #DBEAFE; border-color: #93C5FD; }
-        .gk-svc-carbar-btn:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+        .gk-svc-carbar-btn:hover { background: #DBEAFE; border-color: #6FD8FF; }
+        .gk-svc-carbar-btn:focus-visible { outline: 2px solid #1567D3; outline-offset: 2px; }
 
         /* Confirm-the-saved-car screen. The vehicle itself is already shown in
            the strip directly above, which also carries the Change car control,
@@ -404,12 +405,12 @@ export default function Services() {
         .gk-svc-confirm-cta {
           display: inline-flex; align-items: center; justify-content: center;
           min-height: 48px; padding: 0.8rem 2.2rem;
-          background: linear-gradient(135deg, #2563EB 0%, #0F172A 100%);
+          background: linear-gradient(135deg, #1567D3 0%, #00B2F0 100%);
           color: #FFF; border: none; border-radius: 10px;
           font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.85rem;
           letter-spacing: 0.09em; text-transform: uppercase; cursor: pointer;
         }
-        .gk-svc-confirm-cta:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+        .gk-svc-confirm-cta:focus-visible { outline: 2px solid #1567D3; outline-offset: 2px; }
         @media (max-width: 640px) {
           .gk-svc-confirm-cta { width: 100%; }
         }
@@ -429,17 +430,18 @@ export default function Services() {
         .gk-svc-skel { min-height: 178px; border-radius: 16px; background: #EFF3FA; border: 1px solid #E4EBF7; }
       `}</style>
 
-      {/* Header */}
-      <div className="gk-svc-head" style={{ background: 'linear-gradient(135deg, #2563EB 0%, #0F172A 100%)', padding: '2rem 0 2.4rem' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 1.5rem' }}>
-          <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(1.5rem, 3vw, 2.1rem)', fontWeight: 900, color: '#FFF', letterSpacing: '-0.01em', marginBottom: '0.35rem' }}>
-            Book a Service
-          </h1>
-          <p style={{ color: '#94A3B8', fontSize: '0.85rem', fontWeight: 500 }}>
-            Pick what your car needs, choose a slot, and we'll take it from there.
-          </p>
-        </div>
-      </div>
+      {/* The shared banner, so this page opens the way Shop, About and
+          Contact do. The previous header was a flat blue-to-navy bar with its
+          own type scale, and the muted slate it used for the subheading was
+          barely legible against it. */}
+      <PageHero
+        crumb={{ label: 'Services' }}
+        eyebrow="Book a service"
+        title="Tell us what it needs."
+        highlight="We do the rest."
+        lede="Pick a service, choose a slot, and we collect the car from your door anywhere in Rohtak. You approve an itemised quote before anything is opened."
+        image="/workshop/bay-dark.webp"
+      />
 
       <div className="gk-svc-page" style={{ maxWidth: '1400px', margin: '0 auto', padding: '1.5rem 1.5rem 3rem' }}>
         {loadError && (
@@ -475,7 +477,7 @@ export default function Services() {
                 <div className="gk-svc-carbar-thumb">
                   {car.image
                     ? <img src={car.image} alt="" />
-                    : <CarIcon size={18} style={{ color: '#2563EB' }} />}
+                    : <CarIcon size={18} style={{ color: '#1567D3' }} />}
                 </div>
                 <div className="gk-svc-carbar-text">
                   <span className="gk-svc-carbar-label">Selected car</span>

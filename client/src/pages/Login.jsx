@@ -120,9 +120,9 @@ export default function Login() {
               style={{
                 flex: 1, padding: '0.7rem', borderRadius: '8px', border: 'none', cursor: 'pointer',
                 background: mode === m ? '#FFF' : 'transparent',
-                color: mode === m ? '#2563EB' : '#888',
+                color: mode === m ? '#1567D3' : '#888',
                 fontWeight: 700, fontSize: '0.9rem', transition: 'all 0.25s',
-                boxShadow: mode === m ? '0 4px 12px rgba(37, 99, 235, 0.1)' : 'none'
+                boxShadow: mode === m ? '0 4px 12px rgba(21, 103, 211, 0.1)' : 'none'
               }}>
               {m === 'password' ? 'Password' : 'OTP Login'}
             </button>
@@ -202,12 +202,12 @@ export default function Login() {
                   </span>
                   <div style={{ display: 'flex', gap: '0.9rem' }}>
                     <button type="button" onClick={resend} disabled={resendIn > 0}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'none', border: 'none', padding: 0, fontSize: '0.78rem', fontWeight: 700, cursor: resendIn > 0 ? 'default' : 'pointer', color: resendIn > 0 ? '#94A3B8' : '#2563EB' }}>
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'none', border: 'none', padding: 0, fontSize: '0.78rem', fontWeight: 700, cursor: resendIn > 0 ? 'default' : 'pointer', color: resendIn > 0 ? '#94A3B8' : '#1567D3' }}>
                       <RotateCw size={13} />
                       {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
                     </button>
                     <button type="button" onClick={changeEmail}
-                      style={{ background: 'none', border: 'none', padding: 0, fontSize: '0.78rem', fontWeight: 700, color: '#2563EB', cursor: 'pointer' }}>
+                      style={{ background: 'none', border: 'none', padding: 0, fontSize: '0.78rem', fontWeight: 700, color: '#1567D3', cursor: 'pointer' }}>
                       Change email
                     </button>
                   </div>
@@ -228,7 +228,7 @@ export default function Login() {
  
         <p className="signup-text" style={{ textAlign: 'center', color: '#666', marginTop: '1.2rem', fontSize: '0.9rem', fontWeight: 500 }}>
           Don't have an account?{' '}
-          <Link to={redirectTo !== '/' ? `/register?redirect=${encodeURIComponent(redirectTo)}` : "/register"} style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 700 }}>Sign Up Now</Link>
+          <Link to={redirectTo !== '/' ? `/register?redirect=${encodeURIComponent(redirectTo)}` : "/register"} style={{ color: '#1567D3', textDecoration: 'none', fontWeight: 700 }}>Sign Up Now</Link>
         </p>
       </div>
     </div>

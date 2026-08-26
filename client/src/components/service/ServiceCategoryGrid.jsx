@@ -245,9 +245,9 @@ const SERVICE_CARD_STYLES = `
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
     transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s, border-color .22s;
   }
-  .gk-sc:hover { border-color: #BFD4F7; box-shadow: 0 14px 28px rgba(37, 99, 235, 0.14); transform: translateY(-3px); }
+  .gk-sc:hover { border-color: #BFD4F7; box-shadow: 0 14px 28px rgba(21, 103, 211, 0.14); transform: translateY(-3px); }
   .gk-sc:active { transform: translateY(-1px); }
-  .gk-sc:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+  .gk-sc:focus-visible { outline: 2px solid #1567D3; outline-offset: 2px; }
 
   /* ── Size variants ────────────────────────────────────────────────────
      Only padding, min-height and type scale differ. Every structural rule —
@@ -342,7 +342,7 @@ const SERVICE_CARD_STYLES = `
     min-width: 0;
   }
   .gk-sc-price {
-    color: #2563EB;
+    color: #1567D3;
     font-weight: 800;
     font-size: 0.83rem;
     min-width: 0;
@@ -354,10 +354,10 @@ const SERVICE_CARD_STYLES = `
     width: 32px; height: 32px; border-radius: 50%;
     border: 1.5px solid #BFD4F7;
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; color: #2563EB;
+    flex-shrink: 0; color: #1567D3;
     transition: background .2s, color .2s, border-color .2s;
   }
-  .gk-sc:hover .gk-sc-arrow { background: #2563EB; border-color: #2563EB; color: #FFFFFF; }
+  .gk-sc:hover .gk-sc-arrow { background: #1567D3; border-color: #1567D3; color: #FFFFFF; }
 
   @media (max-width: 640px) {
     /* Type and chrome only. Sizing belongs to the --lg / --sm variants above:
@@ -403,7 +403,7 @@ const SERVICE_CARD_STYLES = `
       box-shadow: 0 3px 8px rgba(15, 23, 42, 0.07);
       border-color: #E4EBF7;
     }
-    .gk-sc:hover .gk-sc-arrow { background: transparent; border-color: #BFD4F7; color: #2563EB; }
+    .gk-sc:hover .gk-sc-arrow { background: transparent; border-color: #BFD4F7; color: #1567D3; }
   }
 
   /* The lift is decoration; hold still for anyone who asked for less motion. */

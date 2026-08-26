@@ -42,7 +42,7 @@ export default function FeaturedParts() {
           .featured-products-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.6rem !important; }
         }
       `}</style>
-      <div style={{ height: '4px', background: 'linear-gradient(90deg, #2563EB, #93C5FD, transparent)' }} />
+      <div style={{ height: '4px', background: 'linear-gradient(90deg, #1567D3, #6FD8FF, transparent)' }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ paddingTop: '3.5rem', paddingBottom: '5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '3.5rem' }}>
           <Link to="/parts" style={{ background: '#F9F9F9', border: '1px solid #EEE', borderRadius: '12px', padding: '0.6rem 1.2rem', color: '#111', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: 800, transition: 'all 0.2s' }}
@@ -51,9 +51,9 @@ export default function FeaturedParts() {
             <ArrowLeft size={16} /> SHOP ALL
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: 6, height: 32, background: '#2563EB', borderRadius: '3px' }} />
+            <div style={{ width: 6, height: 32, background: '#1567D3', borderRadius: '3px' }} />
             <h1 style={{ color: '#111', fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 950, margin: 0, letterSpacing: '-0.02em', textTransform: 'uppercase' }}>
-              FEATURED <span style={{ color: '#2563EB' }}>PRODUCTS</span>
+              FEATURED <span style={{ color: '#1567D3' }}>PRODUCTS</span>
             </h1>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function FeaturedParts() {
             <div style={{ fontSize: '4.5rem', marginBottom: '1.5rem', opacity: 0.2 }}>⭐</div>
             <h3 style={{ color: '#111', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', fontWeight: 900, textTransform: 'uppercase' }}>NO FEATURED PRODUCTS FOUND</h3>
             <p style={{ color: '#666', fontSize: '1.1rem', fontWeight: 600, marginTop: '0.6rem', maxWidth: '400px', margin: '0.6rem auto' }}>Our exclusive selection of high-performance parts is currently being updated. Check back shortly!</p>
-            <Link to="/parts" style={{ display: 'inline-block', marginTop: '2.5rem', color: '#2563EB', fontWeight: 900, textDecoration: 'none', borderBottom: '2.5px solid #2563EB', paddingBottom: '3px' }}>BROWSE SHOP →</Link>
+            <Link to="/parts" style={{ display: 'inline-block', marginTop: '2.5rem', color: '#1567D3', fontWeight: 900, textDecoration: 'none', borderBottom: '2.5px solid #1567D3', paddingBottom: '3px' }}>BROWSE SHOP →</Link>
           </div>
         )}
       </div>

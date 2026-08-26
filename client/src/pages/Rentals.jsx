@@ -42,13 +42,13 @@ export default function Rentals() {
         }
       `}</style>
       {/* Hero */}
-      <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%)', padding: '4rem 1rem 5rem', color: 'white' }}>
+      <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #12315F 100%)', padding: '4rem 1rem 5rem', color: 'white' }}>
         <div className="max-w-6xl mx-auto">
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.4rem 1rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.1em', marginBottom: '1.2rem' }}>
             <Sparkles size={14} /> SELF-DRIVE RENTALS
           </div>
           <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(2.4rem, 6vw, 4rem)', fontWeight: 950, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
-            RENT A CAR <span style={{ color: '#93C5FD' }}>YOUR WAY</span>
+            RENT A CAR <span style={{ color: '#6FD8FF' }}>YOUR WAY</span>
           </h1>
           <p style={{ color: '#CBD5E1', fontSize: '1.1rem', maxWidth: '560px', fontWeight: 500 }}>
             From compact hatchbacks to luxury SUVs — reserve in minutes, drive worry-free, pay by the day.
@@ -57,7 +57,7 @@ export default function Rentals() {
           {/* Search Bar */}
           <form onSubmit={onFilter} style={{ marginTop: '2rem', background: 'white', borderRadius: '18px', padding: '0.6rem', display: 'flex', gap: '0.5rem', maxWidth: '720px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', minWidth: '200px' }}>
-              <Search size={18} style={{ color: '#1E3A8A' }} />
+              <Search size={18} style={{ color: '#12315F' }} />
               <input
                 placeholder="Search by brand or model..."
                 value={filters.search}
@@ -65,7 +65,7 @@ export default function Rentals() {
                 style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}
               />
             </div>
-            <button type="submit" style={{ background: '#1E3A8A', color: 'white', border: 'none', borderRadius: '12px', padding: '0.7rem 1.6rem', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <button type="submit" style={{ background: '#12315F', color: 'white', border: 'none', borderRadius: '12px', padding: '0.7rem 1.6rem', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               SEARCH <ArrowRight size={16} />
             </button>
           </form>

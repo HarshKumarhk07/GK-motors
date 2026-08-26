@@ -70,7 +70,7 @@ export default function CarCard({ car, bike, hideBadges = false }) {
         {/* Top Image Section (Light background) */}
         <div style={{ position: 'relative', height: '180px', background: '#F5F5F5', overflow: 'hidden' }}>
           <img
-            src={target?.images?.[0] || 'https://via.placeholder.com/400x300/F8FAFC/2563EB?text=No+Image'}
+            src={target?.images?.[0] || '/part-images/_placeholder.svg'}
             alt={target?.title}
             style={{
               width: '100%', height: '100%', objectFit: 'contain', padding: '1.2rem',
@@ -117,7 +117,7 @@ export default function CarCard({ car, bike, hideBadges = false }) {
           {/* Metadata Row 1 */}
           <div style={{ marginBottom: '0.3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '0.6rem' }}>
-              <span style={{ color: '#1E3A8A', fontSize: '0.6rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: "'Space Grotesk', sans-serif" }}>
+              <span style={{ color: '#12315F', fontSize: '0.6rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: "'Space Grotesk', sans-serif" }}>
                 <Calendar size={11} /> {target?.year}
               </span>
               <span style={{ color: '#64748B', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -156,12 +156,12 @@ export default function CarCard({ car, bike, hideBadges = false }) {
 
           {/* Price row + Action */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-            <span className="product-card-price" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.05rem', fontWeight: 950, color: '#1E3A8A', lineHeight: 1 }}>
+            <span className="product-card-price" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.05rem', fontWeight: 950, color: '#12315F', lineHeight: 1 }}>
               ₹{effectivePrice?.toLocaleString('en-IN')}
             </span>
             <div className="product-card-btn" style={{
               height: '28px', padding: '0 0.75rem',
-              background: '#1E3A8A', borderRadius: '6px', color: 'white',
+              background: '#12315F', borderRadius: '6px', color: 'white',
               display: 'flex', alignItems: 'center', gap: '0.3rem',
               fontSize: '0.65rem', fontWeight: 800, fontFamily: "'Space Grotesk', sans-serif",
               letterSpacing: '0.05em', boxShadow: '0 4px 10px rgba(30, 58, 138, 0.15)',

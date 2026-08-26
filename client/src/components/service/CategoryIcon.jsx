@@ -51,7 +51,7 @@ export default function CategoryIcon({ slug, image, icon: Icon, size = 40, iconS
 
   return (
     <div style={box}>
-      {Icon ? <Icon size={iconSize} style={{ color: '#2563EB' }} /> : null}
+      {Icon ? <Icon size={iconSize} style={{ color: '#1567D3' }} /> : null}
     </div>
   );
 }

@@ -110,11 +110,11 @@ export default function OrderDetail() {
                 return (
                   <div key={s} className="gk-od-track-step">
                     <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                      <span className="gk-od-rail" style={{ background: done && i > 0 ? '#2563EB' : '#F1F5F9', visibility: i === 0 ? 'hidden' : 'visible' }} />
-                      <span className="gk-od-dot" style={{ background: done ? '#2563EB' : '#F1F5F9' }}>
+                      <span className="gk-od-rail" style={{ background: done && i > 0 ? '#1567D3' : '#F1F5F9', visibility: i === 0 ? 'hidden' : 'visible' }} />
+                      <span className="gk-od-dot" style={{ background: done ? '#1567D3' : '#F1F5F9' }}>
                         {done ? <CheckCircle size={14} color="white" /> : <span className="gk-od-pip" />}
                       </span>
-                      <span className="gk-od-rail" style={{ background: i < currentIdx ? '#2563EB' : '#F1F5F9', visibility: i === STEPS.length - 1 ? 'hidden' : 'visible' }} />
+                      <span className="gk-od-rail" style={{ background: i < currentIdx ? '#1567D3' : '#F1F5F9', visibility: i === STEPS.length - 1 ? 'hidden' : 'visible' }} />
                     </div>
                     <span className="gk-od-track-label" style={{ color: done ? '#0F172A' : '#94A3B8' }}>{s}</span>
                   </div>
@@ -223,11 +223,11 @@ const STYLES = `
   .gk-od-back { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 40px; color: #475569; text-decoration: none; font-weight: 700; font-size: 0.85rem; }
   .gk-od-back:hover { color: #0F172A; }
   .gk-od-head { display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; margin: 0.75rem 0 1.5rem; }
-  .gk-od-eyebrow { color: #2563EB; font-weight: 800; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; margin: 0 0 0.25rem; }
+  .gk-od-eyebrow { color: #1567D3; font-weight: 800; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; margin: 0 0 0.25rem; }
   .gk-od-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.4rem, 5vw, 2.1rem); font-weight: 900; color: #0F172A; margin: 0; overflow-wrap: anywhere; }
   .gk-od-date { color: #64748B; font-size: 0.82rem; font-weight: 600; margin: 0.3rem 0 0; }
   .gk-od-headside { display: flex; flex-direction: column; align-items: flex-end; gap: 0.45rem; }
-  .gk-od-status { text-transform: capitalize; background: #EFF6FF; color: #2563EB; border-radius: 999px; padding: 0.3rem 0.8rem; font-weight: 800; font-size: 0.78rem; }
+  .gk-od-status { text-transform: capitalize; background: #EFF6FF; color: #1567D3; border-radius: 999px; padding: 0.3rem 0.8rem; font-weight: 800; font-size: 0.78rem; }
   .gk-od-status.is-cancelled { background: #FEF2F2; color: #B91C1C; }
   .gk-od-pay { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 800; padding: 0.24rem 0.6rem; border-radius: 999px; background: #FFF7ED; color: #C2410C; white-space: nowrap; }
   .gk-od-pay.is-paid { background: #ECFDF5; color: #047857; }
@@ -242,7 +242,7 @@ const STYLES = `
   .gk-od-items { list-style: none; margin: 0; padding: 0; }
   .gk-od-items li + li { border-top: 1px solid #F1F5F9; }
   .gk-od-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 0; text-decoration: none; color: inherit; }
-  a.gk-od-item:hover .gk-od-itemname { color: #2563EB; }
+  a.gk-od-item:hover .gk-od-itemname { color: #1567D3; }
   .gk-od-img { width: 54px; height: 54px; border-radius: 10px; object-fit: contain; background: #F8FAFC; border: 1px solid #EEF2F8; flex-shrink: 0; }
   .gk-od-itemtext { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; flex: 1; }
   .gk-od-itemname { font-weight: 800; font-size: 0.9rem; color: #0F172A; overflow-wrap: anywhere; }
@@ -269,7 +269,7 @@ const STYLES = `
   .gk-od-track-label { font-size: 0.7rem; margin-top: 0.45rem; font-weight: 800; text-transform: capitalize; font-family: 'Space Grotesk', sans-serif; text-align: center; overflow-wrap: anywhere; }
 
   .gk-od-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: 44px; padding: 0 1.2rem; border-radius: 11px; border: 1.5px solid #E2E8F0; background: #FFFFFF; color: #475569; font-weight: 800; font-size: 0.85rem; cursor: pointer; text-decoration: none; }
-  .gk-od-btn.is-primary { background: #2563EB; border-color: #2563EB; color: #FFFFFF; }
+  .gk-od-btn.is-primary { background: #1567D3; border-color: #1567D3; color: #FFFFFF; }
   .gk-od-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .gk-od-error { display: flex; align-items: center; gap: 0.6rem; background: #FEF2F2; border: 1.5px solid #FECACA; border-radius: 12px; padding: 1rem; color: #991B1B; font-weight: 600; font-size: 0.85rem; }
 

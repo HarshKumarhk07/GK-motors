@@ -105,7 +105,7 @@ export default function SellBike() {
         <div className="max-w-3xl mx-auto px-4">
           <div className="animate-fadeInUp sell-header" style={{ textAlign: 'center' }}>
             <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(2rem, 5vw, 3.8rem)', fontWeight: 900, color: '#0F172A', lineHeight: 1.1, marginBottom: '0.8rem' }}>
-              SELL YOUR <span style={{ color: '#1E3A8A' }}>CAR INSTANTLY</span>
+              SELL YOUR <span style={{ color: '#12315F' }}>CAR INSTANTLY</span>
             </h1>
             <p style={{ color: '#64748B', fontSize: '1.15rem', fontWeight: 600, letterSpacing: '0.02em', maxWidth: '550px', margin: '0 auto' }}>Get a premium market appraisal and sell your vehicle in under 60 minutes.</p>
           </div>
@@ -123,7 +123,7 @@ export default function SellBike() {
                 { title: 'Instant Settlement', desc: 'Funds cleared within 60 minutes' },
               ].map(({ title, desc }) => (
                 <div key={title} style={{ textAlign: 'center', padding: '1.2rem 1rem', background: '#FFF', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', transition: 'all 0.3s' }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.borderColor = '#1E3A8A'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(30, 58, 138, 0.08)'; }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.borderColor = '#12315F'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(30, 58, 138, 0.08)'; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.02)'; }}>
                   <div style={{ color: '#111', fontWeight: 800, fontSize: '0.85rem', fontFamily: "'Space Grotesk', sans-serif", marginBottom: '0.1rem' }}>{title.toUpperCase()}</div>
                   <div style={{ color: '#888', fontSize: '0.75rem', fontWeight: 600 }}>{desc}</div>
@@ -133,7 +133,7 @@ export default function SellBike() {
  
             <form onSubmit={handleSubmit(onSubmit)} style={{ background: '#FFF', border: '1px solid #E2E8F0', borderRadius: '24px', padding: '2rem', boxShadow: '0 20px 60px rgba(15, 23, 42, 0.05)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '2rem' }}>
-                <div style={{ width: 5, height: 26, background: '#1E3A8A', borderRadius: '4px' }} />
+                <div style={{ width: 5, height: 26, background: '#12315F', borderRadius: '4px' }} />
                 <h3 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.6rem', fontWeight: 900, margin: 0, letterSpacing: '0.05em' }}>VEHICLE SPECIFICATIONS</h3>
               </div>
  
@@ -208,13 +208,13 @@ export default function SellBike() {
 
               <div style={{ marginTop: '2rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1.2rem' }}>
-                  <div style={{ width: 5, height: 26, background: '#1E3A8A', borderRadius: '4px' }} />
+                  <div style={{ width: 5, height: 26, background: '#12315F', borderRadius: '4px' }} />
                   <h3 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.4rem', fontWeight: 900, margin: 0, letterSpacing: '0.05em' }}>PREMIUM FEATURES</h3>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem', background: '#F8FAFC', padding: '1.2rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
                   {['Airbags', 'ABS', 'Sunroof', 'Touchscreen', 'Parking Camera', 'Alloy Wheels'].map(feature => (
                     <label key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
-                      <input type="checkbox" {...register(`features.${feature.toLowerCase().replace(' ', '')}`)} style={{ accentColor: '#1E3A8A', width: 18, height: 18 }} />
+                      <input type="checkbox" {...register(`features.${feature.toLowerCase().replace(' ', '')}`)} style={{ accentColor: '#12315F', width: 18, height: 18 }} />
                       <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569' }}>{feature}</span>
                     </label>
                   ))}
@@ -254,7 +254,7 @@ export default function SellBike() {
                     )}
                   </div>
                   <button type="button" onClick={handleEstimate}
-                    style={{ height: '44px', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0 1.2rem', background: '#1E3A8A', borderRadius: '10px', color: 'white', cursor: 'pointer', fontWeight: 800, border: 'none', transition: 'all 0.3s', fontSize: '0.8rem', boxShadow: '0 6px 12px rgba(30, 58, 138, 0.15)' }}>
+                    style={{ height: '44px', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0 1.2rem', background: '#12315F', borderRadius: '10px', color: 'white', cursor: 'pointer', fontWeight: 800, border: 'none', transition: 'all 0.3s', fontSize: '0.8rem', boxShadow: '0 6px 12px rgba(30, 58, 138, 0.15)' }}>
                     <IndianRupee size={14} /> GET ESTIMATE
                   </button>
                 </div>
@@ -270,9 +270,9 @@ export default function SellBike() {
                   padding: '1rem 0.8rem', border: '2px dashed #EEE', borderRadius: '14px', cursor: 'pointer',
                   background: '#F9F9F9', transition: 'all 0.3s',
                 }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#1E3A8A'; e.currentTarget.style.background = '#FFF'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#12315F'; e.currentTarget.style.background = '#FFF'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.background = '#F8FAFC'; }}>
-                  <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'rgba(30, 58, 138, 0.1)', color: '#1E3A8A', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'rgba(30, 58, 138, 0.1)', color: '#12315F', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
                     <Camera size={22} />
                   </div>
                   <span style={{ color: '#111', fontSize: '0.85rem', fontWeight: 800 }}>Browse Photos</span>
@@ -298,7 +298,7 @@ export default function SellBike() {
               {/* Pickup Address */}
               <div style={{ marginTop: '1rem', padding: '1rem', background: '#FFF', borderRadius: '16px', border: '1.5px solid #EEE' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem' }}>
-                  <Truck size={14} style={{ color: '#1E3A8A' }} />
+                  <Truck size={14} style={{ color: '#12315F' }} />
                   <span style={{ color: '#111', fontWeight: 800, fontSize: '0.85rem', fontFamily: "'Space Grotesk', sans-serif" }}>PICKUP DETAILS</span>
                 </div>
                 <div className="sell-pickup-grid" style={{ display: 'grid', gridTemplateColumns: '1.7fr 1.5fr 0.8fr', gap: '0.5rem' }}>
@@ -310,7 +310,7 @@ export default function SellBike() {
 
               <div style={{ marginTop: '1rem', padding: '0.8rem 1rem', background: '#F8FAFC', borderRadius: '14px', border: '1px solid rgba(30, 58, 138, 0.1)', display: 'flex', alignItems: 'center' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', width: '100%' }}>
-                  <input type="checkbox" {...register('isOneHourSell')} style={{ accentColor: '#1E3A8A', width: 20, height: 20, cursor: 'pointer' }} />
+                  <input type="checkbox" {...register('isOneHourSell')} style={{ accentColor: '#12315F', width: 20, height: 20, cursor: 'pointer' }} />
                   <div>
                     <div style={{ color: '#0F172A', fontWeight: 900, fontSize: '0.85rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.05em' }}>ACTIVATE EXPRESS SALE</div>
                     <div style={{ color: '#64748B', fontSize: '0.65rem', fontWeight: 600 }}>Get priority appraisal within 15 minutes</div>
@@ -318,7 +318,7 @@ export default function SellBike() {
                 </label>
               </div>
 
-              <button type="submit" className="btn-primary" style={{ height: '48px', width: '100%', justifyContent: 'center', padding: '0.4rem', marginTop: '1.2rem', fontSize: '1.05rem', fontWeight: 900, borderRadius: '12px', letterSpacing: '0.05em', background: 'linear-gradient(135deg, #1E3A8A, #172554)', border: 'none', boxShadow: '0 6px 15px rgba(30, 58, 138, 0.2)', fontFamily: "'Space Grotesk', sans-serif" }} disabled={submitting}>
+              <button type="submit" className="btn-primary" style={{ height: '48px', width: '100%', justifyContent: 'center', padding: '0.4rem', marginTop: '1.2rem', fontSize: '1.05rem', fontWeight: 900, borderRadius: '12px', letterSpacing: '0.05em', background: 'linear-gradient(135deg, #12315F, #172554)', border: 'none', boxShadow: '0 6px 15px rgba(30, 58, 138, 0.2)', fontFamily: "'Space Grotesk', sans-serif" }} disabled={submitting}>
                 {submitting ? <Loader size={18} style={{ animation: 'spin 0.8s linear infinite' }} /> : <><Upload size={16} /> SUBMIT REQUEST</>}
               </button>
             </form>
@@ -327,14 +327,14 @@ export default function SellBike() {
  
         {step === 3 && (
           <div className="animate-scaleIn" style={{ textAlign: 'center', padding: '5rem 2rem', background: '#FFF', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 25px 80px rgba(0,0,0,0.05)', maxWidth: '600px', margin: '0 auto' }}>
-            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(30, 58, 138, 0.08)', color: '#1E3A8A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(30, 58, 138, 0.08)', color: '#12315F', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
               <CheckCircle size={48} />
             </div>
             <h2 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.2rem', fontWeight: 950, marginBottom: '0.6rem', lineHeight: 1, letterSpacing: '0.02em' }}>SUCCESSFULLY LISTED!</h2>
-            <p style={{ color: '#64748B', fontSize: '1rem', fontWeight: 600, maxWidth: '440px', margin: '0 auto 2rem', lineHeight: 1.5 }}>Our experts are reviewing your submission. You will receive a premium offer within <span style={{ color: '#1E3A8A', fontWeight: 900 }}>30 minutes</span>.</p>
+            <p style={{ color: '#64748B', fontSize: '1rem', fontWeight: 600, maxWidth: '440px', margin: '0 auto 2rem', lineHeight: 1.5 }}>Our experts are reviewing your submission. You will receive a premium offer within <span style={{ color: '#12315F', fontWeight: 900 }}>30 minutes</span>.</p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <button onClick={() => navigate('/my-bookings')} className="btn-primary" style={{ height: '52px', padding: '0 2rem', borderRadius: '12px', fontWeight: 900, background: '#1E3A8A', border: 'none', boxShadow: '0 6px 15px rgba(30, 58, 138, 0.15)', fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.9rem', letterSpacing: '0.05em' }}>MY SELL REQUESTS</button>
-              <button onClick={() => navigate('/')} className="btn-outline" style={{ height: '52px', padding: '0 2rem', borderRadius: '12px', fontWeight: 900, border: '2px solid #1E3A8A', color: '#1E3A8A', background: 'transparent', fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.9rem', letterSpacing: '0.05em' }}>BACK TO HOME</button>
+              <button onClick={() => navigate('/my-bookings')} className="btn-primary" style={{ height: '52px', padding: '0 2rem', borderRadius: '12px', fontWeight: 900, background: '#12315F', border: 'none', boxShadow: '0 6px 15px rgba(30, 58, 138, 0.15)', fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.9rem', letterSpacing: '0.05em' }}>MY SELL REQUESTS</button>
+              <button onClick={() => navigate('/')} className="btn-outline" style={{ height: '52px', padding: '0 2rem', borderRadius: '12px', fontWeight: 900, border: '2px solid #12315F', color: '#12315F', background: 'transparent', fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.9rem', letterSpacing: '0.05em' }}>BACK TO HOME</button>
             </div>
           </div>
         )}

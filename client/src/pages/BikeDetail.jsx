@@ -107,7 +107,7 @@ export default function BikeDetail() {
             <ArrowLeft size={16} /> Back to Showroom
           </button>
           <span>/</span>
-          <span style={{ color: '#1E3A8A', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{bike.brand} {bike.model}</span>
+          <span style={{ color: '#12315F', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{bike.brand} {bike.model}</span>
         </div>
       </div>
  
@@ -205,7 +205,7 @@ export default function BikeDetail() {
               <div className="hide-scrollbar bike-thumb-row" style={{ display: 'flex', gap: '0.8rem', overflowX: 'auto', paddingBottom: '0.8rem', marginBottom: '2rem' }}>
                 {media.map((src, i) => (
                   <button key={i} onClick={() => { setSelectedImage(i); setZoomed(false); }}
-                    style={{ flexShrink: 0, width: 85, height: 85, borderRadius: '16px', overflow: 'hidden', border: '3px solid', borderColor: selectedImage === i ? '#1E3A8A' : 'transparent', cursor: 'pointer', padding: 0, position: 'relative', transition: 'all 0.3s', background: '#F5F5F5', opacity: selectedImage === i ? 1 : 0.7, boxShadow: selectedImage === i ? '0 6px 15px rgba(30, 58, 138, 0.2)' : 'none' }}
+                    style={{ flexShrink: 0, width: 85, height: 85, borderRadius: '16px', overflow: 'hidden', border: '3px solid', borderColor: selectedImage === i ? '#12315F' : 'transparent', cursor: 'pointer', padding: 0, position: 'relative', transition: 'all 0.3s', background: '#F5F5F5', opacity: selectedImage === i ? 1 : 0.7, boxShadow: selectedImage === i ? '0 6px 15px rgba(30, 58, 138, 0.2)' : 'none' }}
                     onMouseEnter={e => { if (selectedImage !== i) e.currentTarget.style.opacity = '1'; }}
                     onMouseLeave={e => { if (selectedImage !== i) e.currentTarget.style.opacity = '0.6'; }}>
                     {isVideo(src) ? (
@@ -224,7 +224,7 @@ export default function BikeDetail() {
             {bike.specifications && Object.keys(bike.specifications).some(k => bike.specifications[k]) && (
               <div style={{ marginTop: '0.8rem', background: '#FFF', border: '1px solid #EEE', borderRadius: '20px', padding: '1.2rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
                 <h3 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.4rem', fontWeight: 950, marginBottom: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <div style={{ width: 6, height: 24, background: '#1E3A8A', borderRadius: '4px' }} />
+                  <div style={{ width: 6, height: 24, background: '#12315F', borderRadius: '4px' }} />
                   Technical Specifications
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
@@ -242,7 +242,7 @@ export default function BikeDetail() {
             {bike.description && (
               <div style={{ marginTop: '1.2rem', background: '#FFF', border: '1px solid #EEE', borderRadius: '20px', padding: '1.2rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
                 <h3 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.4rem', fontWeight: 950, marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <div style={{ width: 6, height: 24, background: '#1E3A8A', borderRadius: '4px' }} />
+                  <div style={{ width: 6, height: 24, background: '#12315F', borderRadius: '4px' }} />
                   Vehicle Overview
                 </h3>
                 <p style={{ color: '#555', lineHeight: 1.6, fontSize: '0.95rem', fontWeight: 500 }}>{bike.description}</p>
@@ -264,12 +264,12 @@ export default function BikeDetail() {
  
               <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem' }}>
-                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.8rem', fontWeight: 950, color: '#1E3A8A', lineHeight: 1 }}>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.8rem', fontWeight: 950, color: '#12315F', lineHeight: 1 }}>
                     ₹{effectivePrice?.toLocaleString('en-IN')}
                   </div>
                   {discount > 0 && (
                     <div style={{
-                      background: 'rgba(30, 58, 138, 0.1)', color: '#1E3A8A',
+                      background: 'rgba(30, 58, 138, 0.1)', color: '#12315F',
                       fontSize: '0.8rem', fontWeight: 900,
                       padding: '2px 8px', borderRadius: '6px',
                       fontFamily: "'Space Grotesk', sans-serif"
@@ -296,7 +296,7 @@ export default function BikeDetail() {
                   <div key={label} style={{ padding: '0.6rem 0.8rem', background: '#F9F9F9', borderRadius: '12px', border: '1px solid #EEE' }}>
                     <div style={{ color: '#888', fontSize: '0.65rem', marginBottom: '0.2rem', fontWeight: 800, textTransform: 'uppercase' }}>{label}</div>
                     <div style={{ color: '#0F172A', fontWeight: 900, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: "'Space Grotesk', sans-serif" }}>
-                      <Icon size={16} style={{ color: '#1E3A8A' }} /> {value}
+                      <Icon size={16} style={{ color: '#12315F' }} /> {value}
                     </div>
                   </div>
                 ))}
@@ -333,7 +333,7 @@ export default function BikeDetail() {
               {/* Status if already enquired */}
               {bike.userEnquiry && (
                 <div style={{ marginBottom: '1.2rem', padding: '1rem', background: 'rgba(30, 58, 138, 0.05)', border: '1px solid rgba(30, 58, 138, 0.1)', borderRadius: '14px' }}>
-                  <div style={{ color: '#1E3A8A', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.3rem', letterSpacing: '0.1em' }}>ENQUIRY STATUS</div>
+                  <div style={{ color: '#12315F', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.3rem', letterSpacing: '0.1em' }}>ENQUIRY STATUS</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0F172A', fontWeight: 900, fontSize: '1rem', fontFamily: "'Space Grotesk', sans-serif" }}>
                     <CheckCircle size={16} style={{ color: '#10B981' }} /> 
                     {bike.userEnquiry.status?.toUpperCase() || 'REQUESTED'}
@@ -343,7 +343,7 @@ export default function BikeDetail() {
  
               {/* Action Buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-                <button onClick={handleEnquire} disabled={enquirySending} className="btn-primary" style={{ height: '56px', borderRadius: '14px', fontSize: '1.1rem', fontWeight: 950, background: '#1E3A8A', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em' }}>
+                <button onClick={handleEnquire} disabled={enquirySending} className="btn-primary" style={{ height: '56px', borderRadius: '14px', fontSize: '1.1rem', fontWeight: 950, background: '#12315F', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em' }}>
                   <MessageCircle size={22} /> {enquirySending ? 'SENDING...' : 'ENQUIRE NOW'}
                 </button>
                 {bike.seller?.phone && (
@@ -359,7 +359,7 @@ export default function BikeDetail() {
               <div className="animate-fadeIn" style={{ background: '#F9F9F9', border: '1px solid #EEE', borderRadius: '20px', padding: '1.5rem', animationDelay: '0.3s' }}>
                 <p style={{ color: '#888', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.2rem' }}>LISTED BY</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
-                  <div style={{ width: 56, height: 56, borderRadius: '16px', background: '#1E3A8A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 950, color: 'white', fontSize: '1.5rem', boxShadow: '0 8px 20px rgba(30, 58, 138, 0.2)', fontFamily: "'Space Grotesk', sans-serif" }}>
+                  <div style={{ width: 56, height: 56, borderRadius: '16px', background: '#12315F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 950, color: 'white', fontSize: '1.5rem', boxShadow: '0 8px 20px rgba(30, 58, 138, 0.2)', fontFamily: "'Space Grotesk', sans-serif" }}>
                     {bike.seller.name?.charAt(0).toUpperCase()}
                   </div>
                   <div>

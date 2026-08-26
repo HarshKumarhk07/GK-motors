@@ -56,7 +56,7 @@ export default function RentalCard({ car, onClick }) {
       <div style={{ padding: '0.75rem', flex: 1, display: 'flex', flexDirection: 'column', background: '#FFFFFF', borderTop: '1px solid #EEE' }}>
         <div style={{ marginBottom: '0.3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: '0.6rem' }}>
-            <span style={{ color: '#1E3A8A', fontSize: '0.6rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span style={{ color: '#12315F', fontSize: '0.6rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: "'Space Grotesk', sans-serif" }}>
               <Calendar size={11} /> {car.year}
             </span>
             <span style={{ color: '#64748B', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -88,7 +88,7 @@ export default function RentalCard({ car, onClick }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-              <span className="product-card-price" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.05rem', fontWeight: 950, color: '#1E3A8A' }}>
+              <span className="product-card-price" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.05rem', fontWeight: 950, color: '#12315F' }}>
                 ₹{car.pricePerDay?.toLocaleString('en-IN')}
               </span>
               <span style={{ color: '#64748B', fontSize: '0.6rem', fontWeight: 800 }}>/day</span>
@@ -104,7 +104,7 @@ export default function RentalCard({ car, onClick }) {
           </div>
           <div className="product-card-btn" style={{
             height: '28px', padding: '0 0.75rem',
-            background: '#1E3A8A', borderRadius: '6px', color: 'white',
+            background: '#12315F', borderRadius: '6px', color: 'white',
             display: 'flex', alignItems: 'center', gap: '0.3rem',
             fontSize: '0.65rem', fontWeight: 800, fontFamily: "'Space Grotesk', sans-serif",
             letterSpacing: '0.05em', boxShadow: '0 4px 10px rgba(30, 58, 138, 0.15)',

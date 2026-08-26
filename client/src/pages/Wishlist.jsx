@@ -42,7 +42,7 @@ function WishlistItemLoader({ partId, pincode, toggleWishlist, addToCart }) {
  
   if (loading) return (
     <div style={{ background: '#FFF', border: '1px solid rgba(156, 163, 175, 0.15)', borderRadius: '24px', height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 40px rgba(0,0,0,0.03)' }}>
-      <div style={{ width: 44, height: 44, border: '4px solid rgba(156, 163, 175, 0.1)', borderTopColor: '#2563EB', borderRadius: '50%', animation: 'spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite' }} />
+      <div style={{ width: 44, height: 44, border: '4px solid rgba(156, 163, 175, 0.1)', borderTopColor: '#1567D3', borderRadius: '50%', animation: 'spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite' }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -50,7 +50,7 @@ function WishlistItemLoader({ partId, pincode, toggleWishlist, addToCart }) {
   if (!item) return (
     <div style={{ background: '#FFF', border: '1px solid rgba(156, 163, 175, 0.15)', borderRadius: '24px', height: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
       <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: 700 }}>This item is no longer available</p>
-      <button onClick={() => toggleWishlist(partId)} style={{ background: '#2563EB', border: 'none', borderRadius: '12px', color: '#FFF', cursor: 'pointer', fontSize: '0.8rem', padding: '0.6rem 1.2rem', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif" }}>
+      <button onClick={() => toggleWishlist(partId)} style={{ background: '#1567D3', border: 'none', borderRadius: '12px', color: '#FFF', cursor: 'pointer', fontSize: '0.8rem', padding: '0.6rem 1.2rem', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif" }}>
         REMOVE FROM LIST
       </button>
     </div>
@@ -100,7 +100,7 @@ function WishlistItemLoader({ partId, pincode, toggleWishlist, addToCart }) {
         <div style={{ position: 'relative', height: '180px', background: '#F5F5F5', overflow: 'hidden' }}>
           {/* ... images ... */}
           <img
-            src={images[0] || 'https://via.placeholder.com/400x300/F8FAFC/2563EB?text=No+Image'}
+            src={images[0] || '/part-images/_placeholder.svg'}
             alt={title}
             style={{
               width: '100%', height: '100%', objectFit: 'contain', padding: '1rem',
@@ -132,7 +132,7 @@ function WishlistItemLoader({ partId, pincode, toggleWishlist, addToCart }) {
           {/* Top-left: Type Badge */}
           <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: '0.5rem' }}>
             <span style={{
-              background: isCar ? '#0F172A' : '#2563EB', color: 'white',
+              background: isCar ? '#0F172A' : '#1567D3', color: 'white',
               fontSize: '0.65rem', fontWeight: 950,
               padding: '3px 12px', borderRadius: '30px',
               letterSpacing: '0.04em', textTransform: 'uppercase'
@@ -153,7 +153,7 @@ function WishlistItemLoader({ partId, pincode, toggleWishlist, addToCart }) {
           <div style={{ marginBottom: '0.3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '0.6rem' }}>
               <span style={{ color: '#64748B', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '3px', fontFamily: "'Space Grotesk', sans-serif" }}>
-                 {isCar ? <Calendar size={11} /> : <div style={{width: 5, height: 5, background: '#2563EB', borderRadius: '50%'}} />} 
+                 {isCar ? <Calendar size={11} /> : <div style={{width: 5, height: 5, background: '#1567D3', borderRadius: '50%'}} />} 
                  {isCar ? item.year : brand?.toUpperCase()}
               </span>
             </div>
@@ -179,7 +179,7 @@ function WishlistItemLoader({ partId, pincode, toggleWishlist, addToCart }) {
           {/* Price row + Action */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '4px' }}>
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', fontWeight: 950, color: '#2563EB', lineHeight: 1 }}>
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', fontWeight: 950, color: '#1567D3', lineHeight: 1 }}>
                 ₹{price?.toLocaleString('en-IN')}
               </span>
               {discount > 0 && (
@@ -190,10 +190,10 @@ function WishlistItemLoader({ partId, pincode, toggleWishlist, addToCart }) {
             <div style={{ display: 'flex', gap: '4px' }}>
               <div style={{
                 height: '28px', padding: '0 0.7rem',
-                background: '#2563EB', borderRadius: '8px', color: 'white',
+                background: '#1567D3', borderRadius: '8px', color: 'white',
                 display: 'flex', alignItems: 'center', gap: '0.3rem',
                 fontSize: '0.65rem', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif",
-                letterSpacing: '0.04em', boxShadow: '0 4px 10px rgba(37, 99, 235, 0.2)'
+                letterSpacing: '0.04em', boxShadow: '0 4px 10px rgba(21, 103, 211, 0.2)'
               }}>
                 VIEW <ArrowRight size={12} />
               </div>
@@ -224,10 +224,10 @@ export default function Wishlist() {
           <Heart size={60} style={{ color: '#0F172A', opacity: 0.15 }} />
         </div>
         <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-          <h2 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.5rem', fontWeight: 950, margin: 0, lineHeight: 1.1 }}>READY TO SAVE <span style={{ color: '#2563EB' }}>YOUR WISHLIST?</span></h2>
+          <h2 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.5rem', fontWeight: 950, margin: 0, lineHeight: 1.1 }}>READY TO SAVE <span style={{ color: '#1567D3' }}>YOUR WISHLIST?</span></h2>
           <p style={{ color: '#64748B', marginTop: '1rem', fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.5 }}>Login to your GK Motors account to view and manage your personalized wishlist.</p>
         </div>
-        <Link to="/login" style={{ background: '#2563EB', color: 'white', padding: '1.2rem 3.5rem', borderRadius: '20px', fontWeight: 950, textDecoration: 'none', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.15em', fontSize: '1.1rem', boxShadow: '0 15px 40px rgba(37, 99, 235, 0.3)', transition: 'all 0.4s' }}>
+        <Link to="/login" style={{ background: '#1567D3', color: 'white', padding: '1.2rem 3.5rem', borderRadius: '20px', fontWeight: 950, textDecoration: 'none', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.15em', fontSize: '1.1rem', boxShadow: '0 15px 40px rgba(21, 103, 211, 0.3)', transition: 'all 0.4s' }}>
           MEMBER LOGIN
         </Link>
       </div>
@@ -244,11 +244,11 @@ export default function Wishlist() {
           <div style={{ position: 'absolute', top: -10, right: -10, width: 44, height: 44, background: '#0F172A', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', color: 'white', fontWeight: 950, boxShadow: '0 8px 25px rgba(0,0,0,0.1)', border: '4px solid #FFFFFF', fontFamily: "'Space Grotesk', sans-serif" }}>0</div>
         </div>
         <div style={{ textAlign: 'center', maxWidth: '480px' }}>
-          <h2 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.8rem', fontWeight: 950, margin: 0, letterSpacing: '0.04em', lineHeight: 1.1 }}>YOUR WISHLIST <span style={{ color: '#2563EB' }}>IS EMPTY</span></h2>
+          <h2 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.8rem', fontWeight: 950, margin: 0, letterSpacing: '0.04em', lineHeight: 1.1 }}>YOUR WISHLIST <span style={{ color: '#1567D3' }}>IS EMPTY</span></h2>
           <p style={{ color: '#64748B', marginTop: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Explore our catalog of certified spare parts and car services to save what you love!</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Link to="/parts" style={{ background: '#2563EB', color: 'white', padding: '1rem 2.5rem', borderRadius: '18px', fontWeight: 950, textDecoration: 'none', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em', fontSize: '1rem', boxShadow: '0 12px 35px rgba(37, 99, 235, 0.25)', transition: 'all 0.4s' }}>
+          <Link to="/parts" style={{ background: '#1567D3', color: 'white', padding: '1rem 2.5rem', borderRadius: '18px', fontWeight: 950, textDecoration: 'none', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em', fontSize: '1rem', boxShadow: '0 12px 35px rgba(21, 103, 211, 0.25)', transition: 'all 0.4s' }}>
             EXPLORE SPARE PARTS
           </Link>
           <Link to="/services" style={{ background: '#0F172A', color: 'white', padding: '1rem 2.5rem', borderRadius: '18px', fontWeight: 950, textDecoration: 'none', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em', fontSize: '1rem', boxShadow: '0 12px 35px rgba(15, 23, 42, 0.25)', transition: 'all 0.4s' }}>
@@ -280,28 +280,28 @@ export default function Wishlist() {
           .wishlist-grid { gap: 0.5rem !important; }
         }
       `}</style>
-      <div style={{ height: '5px', background: 'linear-gradient(90deg, #2563EB, #93C5FD, transparent)' }} />
+      <div style={{ height: '5px', background: 'linear-gradient(90deg, #1567D3, #6FD8FF, transparent)' }} />
  
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ paddingTop: '3rem', paddingBottom: '4rem' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '3rem' }}>
           <button onClick={() => navigate('/')}
             style={{ 
-              background: '#2563EB', border: 'none', borderRadius: '10px', 
+              background: '#1567D3', border: 'none', borderRadius: '10px', 
               padding: '0.6rem 1.2rem', color: 'white', cursor: 'pointer', 
               display: 'flex', alignItems: 'center', gap: '0.5rem', 
               fontSize: '0.8rem', fontWeight: 900, transition: 'all 0.3s', 
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)', fontFamily: "'Space Grotesk', sans-serif", 
+              boxShadow: '0 4px 12px rgba(21, 103, 211, 0.2)', fontFamily: "'Space Grotesk', sans-serif", 
               letterSpacing: '0.08em', textTransform: 'uppercase'
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = '#93C5FD'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#2563EB'; }}>
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = '#6FD8FF'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#1567D3'; }}>
             <ArrowLeft size={14} /> BACK
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-            <div style={{ width: 5, height: 36, background: '#2563EB', borderRadius: '4px' }} />
+            <div style={{ width: 5, height: 36, background: '#1567D3', borderRadius: '4px' }} />
             <h1 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.8rem', fontWeight: 950, margin: 0, letterSpacing: '0.04em' }}>
-              YOUR <span style={{ color: '#2563EB' }}>WISHLIST</span>
+              YOUR <span style={{ color: '#1567D3' }}>WISHLIST</span>
             </h1>
           </div>
         </div>
@@ -310,7 +310,7 @@ export default function Wishlist() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: '#FFF', borderRadius: '10px', border: '1px solid rgba(156, 163, 175, 0.1)', width: 'fit-content', marginBottom: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
             <span style={{ fontSize: '1.1rem' }}>📍</span>
             <span style={{ color: '#475569', fontSize: '0.9rem', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.04em' }}>
-              CHECKING AVAILABILITY FOR <span style={{ color: '#2563EB' }}>{pincode}</span>
+              CHECKING AVAILABILITY FOR <span style={{ color: '#1567D3' }}>{pincode}</span>
             </span>
           </div>
         )}
