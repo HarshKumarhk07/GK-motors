@@ -53,7 +53,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Wrench, Sparkles, Zap, PaintBucket, Droplets, CircleDot, Battery,
-  Disc, Settings, Shield, ShieldCheck, Award, Car, CheckCircle, Clock,
+  Disc, Settings, Shield, ShieldCheck, Award, Car, Check, CheckCircle, Clock,
   Star, Phone, Calendar, Users, MapPin, AlertCircle, RefreshCw, ChevronDown,
   ChevronRight, Truck, Navigation, IndianRupee, Headset, MessageCircle,
 } from 'lucide-react';
