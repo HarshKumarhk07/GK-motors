@@ -62,3 +62,7 @@ client/.env.backup*
 # project — it exists because the remote session can move files but not delete
 # them, so anything on its way out gets parked here first. Safe to empty.
 _to_delete/
+
+# Full-resolution generated artwork. Kept for re-encoding, never deployed —
+# anything under client/public is copied verbatim into the build.
+client/design-source/

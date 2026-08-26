@@ -63,6 +63,7 @@ import { getFeaturedParts, getRecentParts } from '../api/storeApi';
 import PartCard, { PartCardSkeleton } from '../components/parts/PartCard';
 import SectionBoundary from '../components/common/SectionBoundary';
 import BrandRail from '../components/common/BrandRail';
+import AmbientVideo from '../components/common/AmbientVideo';
 import {
   Reveal, Stagger, StaggerItem, Parallax, ScrollRecede, CountUp, ScrollProgressLine, motion,
 } from '../components/common/Motion';
@@ -181,21 +182,21 @@ const TESTIMONIALS = [
    close enough that it still reads as one set. */
 const PROMOS = [
   {
-    icon: Truck, tone: 'blue',
+    icon: Truck, tone: 'blue', img: '/promos/pickup.webp',
     kicker: 'Included, always',
     title: 'Free pickup & drop',
     desc: 'We collect the car from your door anywhere in Rohtak and bring it back washed. No delivery charge, no minimum bill.',
     to: '/services',
   },
   {
-    icon: Headset, tone: 'cyan',
+    icon: Headset, tone: 'cyan', img: '/promos/roadside.webp',
     kicker: 'One call',
     title: 'Roadside breakdown',
     desc: 'Flat battery, puncture, or it simply will not start. Call the workshop and somebody comes out to you.',
     href: `tel:${BIZ.phoneTel}`,
   },
   {
-    icon: Shield, tone: 'navy',
+    icon: Shield, tone: 'navy', img: '/promos/claims.webp',
     kicker: 'We handle it',
     title: 'Cashless insurance claims',
     desc: 'Surveyor coordination, paperwork and follow-up done for you. You pay the excess, we deal with the insurer.',
@@ -485,8 +486,29 @@ export default function Home() {
             <div className="gk-hero-visual">
               <LogoRing />
 
+              {/* The SUV. mix-blend-mode: screen is what dissolves the
+                  render's black backdrop into the hero: screen leaves any
+                  pixel that is already black exactly as the layer beneath it,
+                  so the corners become the hero gradient with no visible
+                  bounding box, while the silver body and the blue glow stay
+                  bright. That is why the artwork does not need a real alpha
+                  channel to sit cleanly on this section. */}
+              <ScrollRecede className="gk-hero-car-wrap" rotate={16} lift={55}>
+                <Parallax distance={26}>
+                  <img
+                    className="gk-hero-car"
+                    src="/hero/car.webp"
+                    alt="A modern SUV of the kind serviced daily at GK Motors, Rohtak"
+                    width={1200}
+                    height={800}
+                    fetchPriority="high"
+                    decoding="async"
+                  />
+                </Parallax>
+              </ScrollRecede>
+
               <ScrollRecede className="gk-quote-wrap" rotate={24} lift={70}>
-                <Parallax distance={22}>
+                <Parallax distance={12}>
                 <motion.div
                   className="gk-quote"
                   initial={{ opacity: 0, y: 34, rotateX: 10 }}
@@ -580,9 +602,13 @@ export default function Home() {
       <section className="gk-sec-sm" style={{ background: C.white }}>
         <div className="gk-wrap">
           <Stagger className="gk-promos" gap={0.09}>
-            {PROMOS.map(({ icon: Icon, kicker, title, desc, to, href, tone }) => {
+            {PROMOS.map(({ icon: Icon, kicker, title, desc, to, href, tone, img }) => {
               const inner = (
                 <>
+                  {/* Decorative: the card's own heading already says what this
+                      is, so an alt string here would just be read twice. */}
+                  <img className="gk-promo-img" src={img} alt="" aria-hidden="true"
+                    loading="lazy" decoding="async" width={800} height={533} />
                   <span className="gk-promo-ico"><Icon size={26} /></span>
                   <span className="gk-promo-kicker">{kicker}</span>
                   <span className="gk-promo-title">{title}</span>
@@ -764,8 +790,12 @@ export default function Home() {
           treatment, which is deliberate: a claim is the biggest single job
           that comes through the door.
           ══════════════════════════════════════════════════════════════════ */}
-      <section id="insurance" className="gk-dark gk-sec">
-        <div className="gk-bloom gk-bloom--a" />
+      <section id="insurance" className="gk-dark gk-sec gk-ins-sec">
+        {/* Deliberately a scuffed panel and not a wreck. A crash photo makes
+            people anxious; a kerbed door makes them think "that is my car, I
+            should claim that". */}
+        <img className="gk-ins-bg" src="/insurance/damage.webp" alt="" aria-hidden="true"
+          loading="lazy" decoding="async" />
         <div className="gk-bloom gk-bloom--b" />
         <div className="gk-mesh" />
 
@@ -981,10 +1011,15 @@ export default function Home() {
           A local workshop's strongest card is that it is a real place you can
           drive to, so the page ends by saying exactly where.
           ══════════════════════════════════════════════════════════════════ */}
-      <section className="gk-dark gk-sec-lg">
-        <div className="gk-bloom gk-bloom--a" />
+      <section className="gk-dark gk-sec-lg gk-visit-sec">
+        {/* Footage of the bays, behind everything. "Come and see" is a much
+            stronger invitation when you can already see it. */}
+        <AmbientVideo
+          className="gk-visit-media"
+          src="/hero/video1.mp4"
+          poster="/workshop/bay-dark.webp"
+        />
         <div className="gk-bloom gk-bloom--b" />
-        <div className="gk-mesh" />
 
         <div className="gk-wrap">
           <div className="gk-visit">
@@ -1129,12 +1164,18 @@ const HOME_STYLES = `
   }
 
   /* ── Hero visual ───────────────────────────────────────────────────────── */
+  /* A column, not a centred row: the car sits on top and the estimate card
+     tucks under its front wing. align-items:flex-start keeps the card at its
+     own width rather than stretching it to the car's. */
   .gk-hero-visual {
     position: relative;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column;
+    align-items: flex-start; justify-content: center;
     min-height: 400px;
   }
-  @media (max-width: 960px) { .gk-hero-visual { min-height: 360px; } }
+  @media (max-width: 960px) {
+    .gk-hero-visual { min-height: 0; align-items: center; }
+  }
 
   /* The logo ring, sitting behind the estimate card. Larger than its parent on
      purpose, with the parent NOT clipping — the dark section's own
@@ -1157,7 +1198,43 @@ const HOME_STYLES = `
   .gk-ring-c { animation: gk-spin 28s linear infinite; }
   @keyframes gk-spin { to { transform: rotate(360deg); } }
 
-  .gk-quote-wrap { position: relative; z-index: 1; width: 100%; max-width: 420px; }
+  /* ── Hero car ────────────────────────────────────────────────────────────
+     The car is the layer the whole right column is built around; the estimate
+     card overlaps its lower-left corner. */
+  .gk-hero-car-wrap {
+    position: relative; z-index: 1;
+    width: 100%;
+    display: flex; justify-content: center;
+    /* Pulled up so the card below can overlap it without the column growing
+       by the card's full height. */
+    margin-bottom: -3.5rem;
+  }
+  .gk-hero-car {
+    width: 100%; max-width: 620px; height: auto;
+    display: block;
+    /* See the note at the markup: this is what removes the render's black
+       backdrop without an alpha channel. */
+    mix-blend-mode: screen;
+    /* A wide, soft drop shadow in brand blue reads as the car sitting in a
+       lit space rather than being pasted onto one. */
+    filter: drop-shadow(0 30px 45px rgba(0, 40, 90, .55));
+  }
+
+  .gk-quote-wrap {
+    position: relative; z-index: 2;
+    width: 100%; max-width: 380px;
+    /* Offset left so it overlaps the car's front wing rather than sitting
+       dead centre under it. */
+    margin-right: auto;
+    margin-left: 0;
+  }
+  /* Once the hero is a single column the overlap has nowhere to go: the car
+     and the card stack, and the negative margin has to be given back or the
+     card lands on top of the bodywork. */
+  @media (max-width: 960px) {
+    .gk-hero-car-wrap { margin-bottom: -1.5rem; }
+    .gk-quote-wrap { margin-inline: auto; }
+  }
 
   .gk-quote {
     background: linear-gradient(158deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.045) 100%);
@@ -1331,6 +1408,31 @@ const HOME_STYLES = `
             mask-image: linear-gradient(160deg, #000 0%, transparent 62%);
   }
 
+  /* The artwork sits in the card's lower-right corner, under the text.
+     Two things make it read as part of the panel rather than pasted on:
+     mix-blend-mode screen dissolves the render's black backdrop into the
+     gradient, and the mask fades the image out towards the top-left so it
+     never runs under the headline. */
+  .gk-promo-img {
+    position: absolute; z-index: -1;
+    right: -12%; bottom: -6%;
+    width: 78%; height: auto;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: .85;
+    -webkit-mask-image: linear-gradient(300deg, #000 30%, transparent 78%);
+            mask-image: linear-gradient(300deg, #000 30%, transparent 78%);
+    transition: transform .55s cubic-bezier(.22,1,.36,1), opacity .45s;
+  }
+  .gk-promo:hover .gk-promo-img { transform: scale(1.06) translateX(-2%); opacity: 1; }
+  @media (hover: none) { .gk-promo:hover .gk-promo-img { transform: none; } }
+
+  /* Narrow cards put the text over the busiest part of the artwork, so it
+     steps back rather than competing. */
+  @media (max-width: 520px) {
+    .gk-promo-img { width: 92%; right: -18%; opacity: .55; }
+  }
+
   .gk-promo-ico {
     width: 52px; height: 52px; border-radius: 15px;
     display: inline-flex; align-items: center; justify-content: center;
@@ -1422,6 +1524,26 @@ const HOME_STYLES = `
   }
 
   /* ── 4b · Insurance ────────────────────────────────────────────────────── */
+  .gk-ins-sec { isolation: isolate; }
+  /* Anchored to the right half and masked away towards the left, so the
+     headline and the cost table both sit on flat navy while the photograph
+     fills the space that would otherwise be empty gradient. */
+  .gk-ins-bg {
+    position: absolute; z-index: 0;
+    top: 50%; right: -6%;
+    transform: translateY(-50%);
+    width: min(760px, 62%); height: auto;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: .5;
+    -webkit-mask-image: radial-gradient(ellipse 72% 78% at 62% 50%, #000 18%, transparent 76%);
+            mask-image: radial-gradient(ellipse 72% 78% at 62% 50%, #000 18%, transparent 76%);
+  }
+  /* Once the section is a single column the photo would sit directly under
+     the cost table's small type. */
+  @media (max-width: 1100px) { .gk-ins-bg { opacity: .22; right: -22%; } }
+  @media (max-width: 700px)  { .gk-ins-bg { display: none; } }
+
   .gk-ins-top {
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
@@ -1727,6 +1849,42 @@ const HOME_STYLES = `
   @media (max-width: 420px) { .gk-review-stars { display: none; } }
 
   /* ── 8 · Visit ─────────────────────────────────────────────────────────── */
+
+  /* The footage layer. Both the poster and the video fill the section and are
+     darkened hard — this sits behind body copy, and legible text over moving
+     footage needs far more contrast than it does over a still. The scrim is a
+     separate ::after rather than a filter on the media, because filtering a
+     playing video is a per-frame GPU cost for something a static overlay does
+     for free. */
+  .gk-visit-sec { isolation: isolate; }
+  .gk-visit-media {
+    position: absolute; inset: 0; z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .gk-visit-media::after {
+    content: '';
+    position: absolute; inset: 0; z-index: 2;
+    background:
+      linear-gradient(100deg, var(--gk-ink) 8%, rgba(4,16,31,.86) 42%, rgba(10,34,70,.66) 100%),
+      linear-gradient(180deg, var(--gk-ink) 0%, transparent 22%, transparent 78%, var(--gk-ink) 100%);
+  }
+  .gk-av-poster, .gk-av-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    /* Nudged right so the composition's interesting half sits under the
+       address card rather than under the headline. */
+    object-position: 62% 50%;
+  }
+  .gk-av-poster { z-index: 0; }
+  .gk-av-video {
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 1.1s ease;
+  }
+  .gk-av-video[data-ready="true"] { opacity: 1; }
+
   .gk-visit {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
