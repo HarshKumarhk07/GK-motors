@@ -64,6 +64,7 @@ import PartCard, { PartCardSkeleton } from '../components/parts/PartCard';
 import SectionBoundary from '../components/common/SectionBoundary';
 import BrandRail from '../components/common/BrandRail';
 import AmbientVideo from '../components/common/AmbientVideo';
+import ScrollWheel from '../components/common/ScrollWheel';
 import {
   Reveal, Stagger, StaggerItem, Parallax, ScrollRecede, CountUp, ScrollProgressLine, motion,
 } from '../components/common/Motion';
@@ -430,6 +431,14 @@ export default function Home() {
         <div className="gk-bloom gk-bloom--b" />
         <div className="gk-mesh" />
 
+        {/* Two wheels at different weights, turning as the page scrolls. The
+            heavy one lags and coasts; the small one is eager and catches up
+            fast. Running them at different rates is what stops the pair
+            reading as one decal — they behave like two wheels rather than one
+            graphic rotated twice. */}
+        <ScrollWheel className="gk-wheel gk-wheel--lg" factor={0.13} idle={3} stiffness={28} />
+        <ScrollWheel className="gk-wheel gk-wheel--sm" factor={0.3} idle={9} stiffness={70} />
+
         <div className="gk-wrap gk-hero-inner">
           <div className="gk-hero-grid">
 
@@ -445,17 +454,23 @@ export default function Home() {
               </Reveal>
 
               <Reveal y={24} delay={0.06}>
+                {/* NOT "Sale. Spare. Service." — that is what the physical
+                    logo says, but GK Motors does not sell cars, and leading
+                    with a service the business does not offer is the fastest
+                    way to lose a visitor who came for the one it does. The
+                    three things it actually sells, in the order it sells
+                    them. */}
                 <h1 className="gk-h1 gk-hero-h1">
-                  Sale. Spare.<br />
-                  <span className="gk-grad gk-grad--dark">Service.</span>
+                  Service. Spares.<br />
+                  <span className="gk-grad gk-grad--dark">Insurance.</span>
                 </h1>
               </Reveal>
 
               <Reveal y={24} delay={0.13}>
                 <p className="gk-lede gk-lede--dark gk-hero-lede">
-                  Rohtak&rsquo;s workshop for every make on the road — from a Swift on its
-                  third owner to a 3-Series still under warranty. Itemised quote first,
-                  genuine parts only, old parts handed back.
+                  One workshop on Sheela Bypass for all three: we service every make on
+                  the road, stock the genuine parts to do it, and handle your insurance
+                  claim end to end. Itemised quote first, old parts handed back.
                 </p>
               </Reveal>
 
@@ -723,19 +738,30 @@ export default function Home() {
       >
         <div className="gk-wrap">
           <Reveal className="gk-shop-head">
-            <div>
+            <div className="gk-shop-copy">
               <p className="gk-eyebrow">The counter</p>
               <h2 className="gk-h2">
-                Parts &amp; oils, <span className="gk-grad">at workshop price</span>
+                Genuine parts, <span className="gk-grad">at workshop price</span>
               </h2>
-              <p className="gk-lede" style={{ marginTop: '0.75rem', maxWidth: 440 }}>
-                Buy them for your own garage, or have us fit them during your service —
-                same price either way.
+              <p className="gk-lede" style={{ marginTop: '0.85rem' }}>
+                Oils, filters, batteries, brake pads and accessories — the same stock we
+                fit in the bays, on the same shelf, at the same price. Buy them for your
+                own garage or have us fit them during your service.
               </p>
+              <Link to="/parts" className="gk-btn gk-btn--primary gk-btn--sm" style={{ marginTop: '1.4rem' }}>
+                Browse everything <ArrowRight size={15} />
+              </Link>
             </div>
-            <Link to="/parts" className="gk-btn gk-btn--outline gk-btn--sm">
-              Browse everything <ArrowRight size={15} />
-            </Link>
+
+            {/* ► Swap for a dedicated shot of the parts shelf when there is
+                one — a prompt for it is in the handover notes. This is the
+                workshop render standing in, and it at least shows real stock
+                on a real wall rather than a stock photo of somebody else's. */}
+            <div className="gk-shop-shot">
+              <img src="/workshop/bay-real.webp"
+                alt="The parts and tool wall at the GK Motors workshop"
+                width={1600} height={1067} loading="lazy" decoding="async" />
+            </div>
           </Reveal>
 
           <SectionBoundary name="shop strip">
@@ -1104,7 +1130,12 @@ const HOME_STYLES = `
   }
 
   /* ── 1 · Hero ──────────────────────────────────────────────────────────── */
-  .gk-hero { padding-block: clamp(3rem, 7vw, 6rem) clamp(4rem, 8vw, 7rem); }
+  /* Tighter than it was. The right column (car + estimate card stacked) is
+     the tallest thing in the grid, and with align-items:center the shorter
+     copy column was being centred against it — which is where the large band
+     of empty navy above the location pill came from. Less padding here plus a
+     capped car below closes it up. */
+  .gk-hero { padding-block: clamp(2rem, 4vw, 3.25rem) clamp(2.5rem, 5vw, 4rem); }
   .gk-hero-inner { position: relative; z-index: 1; }
 
   .gk-hero-grid {
@@ -1198,6 +1229,32 @@ const HOME_STYLES = `
   .gk-ring-c { animation: gk-spin 28s linear infinite; }
   @keyframes gk-spin { to { transform: rotate(360deg); } }
 
+  /* ── Scroll wheels ─────────────────────────────────────────────────────
+     Ambient, behind everything, and clipped by the section's own overflow so
+     they can bleed past its edges without widening the document. */
+  .gk-wheel {
+    position: absolute; z-index: 0;
+    color: var(--gk-cyan-soft);
+    pointer-events: none;
+  }
+  .gk-wheel svg { width: 100%; height: 100%; display: block; }
+  .gk-wheel--lg {
+    width: min(680px, 68vw); aspect-ratio: 1;
+    left: -18%; bottom: -34%;
+    opacity: .12;
+  }
+  .gk-wheel--sm {
+    width: min(260px, 30vw); aspect-ratio: 1;
+    right: 4%; top: -8%;
+    opacity: .1;
+  }
+  /* On a phone the large wheel sits directly behind the headline and costs
+     contrast for something nobody is looking at. */
+  @media (max-width: 700px) {
+    .gk-wheel--sm { display: none; }
+    .gk-wheel--lg { opacity: .07; left: -34%; bottom: -18%; }
+  }
+
   /* ── Hero car ────────────────────────────────────────────────────────────
      The car is the layer the whole right column is built around; the estimate
      card overlaps its lower-left corner. */
@@ -1207,10 +1264,13 @@ const HOME_STYLES = `
     display: flex; justify-content: center;
     /* Pulled up so the card below can overlap it without the column growing
        by the card's full height. */
-    margin-bottom: -3.5rem;
+    margin-bottom: -4.5rem;
   }
   .gk-hero-car {
-    width: 100%; max-width: 620px; height: auto;
+    width: 100%; max-width: 540px; height: auto;
+    /* The cap that stops the right column running past the fold and taking
+       the estimate card off the bottom of the screen with it. */
+    max-height: 46vh; object-fit: contain;
     display: block;
     /* See the note at the markup: this is what removes the render's black
        backdrop without an alpha channel. */
@@ -1222,7 +1282,7 @@ const HOME_STYLES = `
 
   .gk-quote-wrap {
     position: relative; z-index: 2;
-    width: 100%; max-width: 380px;
+    width: 100%; max-width: 340px;
     /* Offset left so it overlaps the car's front wing rather than sitting
        dead centre under it. */
     margin-right: auto;
@@ -1240,7 +1300,7 @@ const HOME_STYLES = `
     background: linear-gradient(158deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.045) 100%);
     border: 1px solid rgba(255,255,255,.14);
     border-radius: 22px;
-    padding: 1.35rem 1.35rem 1.15rem;
+    padding: 1.1rem 1.15rem 0.95rem;
     box-shadow: 0 30px 70px rgba(0,0,0,.42);
     /* The blur is what sells this as glass over the mesh and blooms. Kept to
        one element on the page: backdrop-filter is expensive and repeating it
@@ -1277,7 +1337,7 @@ const HOME_STYLES = `
   .gk-quote-rows { list-style: none; margin: 0; padding: 0.55rem 0 0; }
   .gk-quote-rows li {
     display: flex; align-items: center; gap: 0.9rem;
-    padding: 0.62rem 0;
+    padding: 0.48rem 0;
   }
   .gk-quote-row-txt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
   .gk-quote-row-txt b { font-size: 0.82rem; font-weight: 600; color: #E4EFF9; }
@@ -1298,7 +1358,7 @@ const HOME_STYLES = `
   }
   .gk-quote-total-lab { font-size: 0.76rem; color: var(--gk-body-dark); font-weight: 600; }
   .gk-quote-total {
-    font-family: var(--gk-font-display); font-size: 1.55rem; font-weight: 700;
+    font-family: var(--gk-font-display); font-size: 1.35rem; font-weight: 700;
     letter-spacing: -.03em;
     background: linear-gradient(100deg, var(--gk-cyan) 0%, var(--gk-cyan-soft) 60%, #FFF 100%);
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
@@ -1740,9 +1800,26 @@ const HOME_STYLES = `
 
   /* ── 6 · Shop ──────────────────────────────────────────────────────────── */
   .gk-shop-head {
-    display: flex; flex-wrap: wrap; gap: 1.4rem;
-    align-items: flex-end; justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.82fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: center;
     margin-bottom: clamp(1.8rem, 3.5vw, 2.6rem);
+  }
+  .gk-shop-copy .gk-lede { max-width: 34rem; }
+  .gk-shop-shot img {
+    width: 100%; height: auto; aspect-ratio: 16 / 10;
+    object-fit: cover; display: block;
+    border-radius: 22px;
+    border: 1px solid var(--gk-hairline);
+    box-shadow: var(--gk-sh-card-hover);
+  }
+  @media (max-width: 860px) {
+    .gk-shop-head { grid-template-columns: minmax(0, 1fr); }
+    /* The photo goes first on a phone: it is what makes the section read as a
+       real counter rather than another block of type. */
+    .gk-shop-shot { order: -1; }
+    .gk-shop-shot img { aspect-ratio: 2 / 1; border-radius: 18px; }
   }
   .gk-parts-grid > * { min-width: 0; }
   .gk-parts-grid {
@@ -1929,6 +2006,87 @@ const HOME_STYLES = `
   }
   .gk-visit-tel { color: #FFF; text-decoration: none; transition: color .25s; }
   .gk-visit-tel:hover { color: var(--gk-cyan-soft); }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     PHONE DENSITY — two up
+     Every card grid on this page used a minmax(min(100%, 240px), 1fr)
+     track. On a 360px screen that floor resolves to the full width, so each
+     grid collapsed to ONE column and every card became a full-width slab.
+     Scrolling the home page on a phone meant scrolling past twelve of them.
+
+     Below 640px the grids are pinned to exactly two columns instead, and the
+     type, padding and chips inside step down to match — a card at half width
+     cannot carry desktop padding and a 52px icon without the text being
+     squeezed into a two-word-per-line column.
+
+     These rules live at the END of this stylesheet, after every base rule
+     they override, because they share the same specificity and the cascade
+     is what decides.
+     ══════════════════════════════════════════════════════════════════════ */
+  @media (max-width: 640px) {
+    .gk-svc-grid,
+    .gk-steps-grid,
+    .gk-ins-steps,
+    .gk-reviews,
+    .gk-parts-grid,
+    .gk-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem;
+    }
+
+    /* Cards */
+    .gk-svc, .gk-step, .gk-ins-step, .gk-review { padding: 1rem 0.85rem 0.9rem; }
+    .gk-card { border-radius: 14px; }
+
+    /* Chips shrink so they do not eat half the card. */
+    .gk-chip { width: 40px; height: 40px; border-radius: 11px; }
+    .gk-chip--sm { width: 34px; height: 34px; border-radius: 10px; }
+    .gk-chip svg, .gk-chip--sm svg { width: 18px; height: 18px; }
+
+    .gk-h3 { font-size: 0.92rem; line-height: 1.3; }
+    .gk-svc-title, .gk-step-title { margin-top: 0.75rem; }
+    .gk-svc-desc, .gk-step-desc, .gk-ins-step-desc { font-size: 0.72rem; line-height: 1.5; }
+
+    .gk-svc-foot { margin-top: 0.9rem; padding-top: 0.7rem; gap: 0.4rem; }
+    .gk-svc-price { font-size: 0.88rem; }
+    .gk-svc-price small { font-size: 0.6rem; margin-right: 0.2rem; }
+    .gk-svc-go { width: 26px; height: 26px; }
+    .gk-svc-go svg { width: 13px; height: 13px; }
+
+    .gk-step-num, .gk-ins-step-n { font-size: 2rem; top: .35rem; right: .6rem; }
+
+    /* Reviews at half width: the quote mark is decoration the card can no
+       longer afford, and the star row would wrap under the name. */
+    .gk-review-mark { display: none; }
+    .gk-review-text { font-size: 0.75rem; line-height: 1.55; }
+    .gk-review-by { margin-top: 0.85rem; padding-top: 0.7rem; gap: 0.5rem; }
+    .gk-review-avatar { width: 30px; height: 30px; font-size: 0.8rem; }
+    .gk-review-who b { font-size: 0.76rem; }
+    .gk-review-who span { font-size: 0.66rem; }
+
+    .gk-stat { padding: 1rem 0.6rem; border-radius: 14px; }
+    .gk-stat-ico { width: 30px; height: 30px; border-radius: 9px; }
+    .gk-stat-ico svg { width: 15px; height: 15px; }
+    .gk-stat-val { font-size: 1.4rem; }
+    .gk-stat-lab { font-size: 0.66rem; line-height: 1.3; }
+
+    /* The promo banners stay full width. They are feature panels with artwork
+       behind the text — at half a phone's width the copy would sit on top of
+       the busiest part of the image and neither would be readable. */
+    .gk-promos { grid-template-columns: minmax(0, 1fr); }
+
+    /* Section rhythm tightens too, or two-up cards just mean more scrolling
+       between the same number of headings. */
+    .gk-sec { padding-block: 2.5rem; }
+    .gk-sec-sm { padding-block: 2rem; }
+    .gk-head { margin-bottom: 1.6rem; }
+  }
+
+  /* Very narrow phones cannot carry two columns of a review, so that one
+     grid alone drops back to a single column. */
+  @media (max-width: 380px) {
+    .gk-reviews { grid-template-columns: minmax(0, 1fr); }
+  }
 
   /* ── Reduced motion ────────────────────────────────────────────────────
      The JS primitives handle their own opt-out; these are the CSS-only

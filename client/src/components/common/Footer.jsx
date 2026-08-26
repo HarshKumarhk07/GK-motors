@@ -56,30 +56,18 @@ export default function Footer() {
     <footer className="gk-foot">
       <style>{FOOTER_STYLES}</style>
 
-      {/* ── Closing CTA ────────────────────────────────────────────────────
-          Sits inside the footer rather than as its own page section, so every
-          route gets the same last word without each page having to render
-          one. */}
-      <div className="gk-wrap">
-        <div className="gk-foot-cta">
-          <div>
-            <h2 className="gk-foot-cta-title">Car making a noise you don&rsquo;t like?</h2>
-            <p className="gk-foot-cta-sub">
-              Bring it in, or let us come and get it. Either way you&rsquo;ll know what it
-              costs before we start.
-            </p>
-          </div>
-          <div className="gk-foot-cta-btns">
-            <Link to="/services" className="gk-btn gk-btn--primary">
-              Book a service <ArrowRight size={16} />
-            </Link>
-            <a href={`tel:${BIZ.phoneTel}`} className="gk-btn gk-btn--ghost">
-              <Phone size={16} /> {BIZ.phoneDisplay}
-            </a>
-          </div>
-        </div>
-      </div>
+      {/* ── No CTA band here ────────────────────────────────────────────
+          There used to be a "Car making a noise you don't like?" panel at the
+          top of this footer. It ran on EVERY page, directly beneath whatever
+          closing section that page already had — so the home page ended with
+          "We're on Sheela Bypass" and then immediately asked again, and the
+          About page ended with "Come and see the place" and then immediately
+          asked again. Two stacked calls to action read as a template repeating
+          itself, and the second one dilutes the first.
 
+          Each page now owns its own ending. The footer's job is the address,
+          the number and the links, and the nav's "Book Now" is on screen at
+          every scroll position regardless. */}
       <div className="gk-wrap gk-foot-body">
         <div className="gk-foot-grid">
 
@@ -179,34 +167,7 @@ const FOOTER_STYLES = `
     color: var(--gk-body-dark);
     width: 100%;
     flex-shrink: 0;
-    padding-top: clamp(2.5rem, 5vw, 3.5rem);
-  }
-
-  /* ── Closing CTA band ──────────────────────────────────────────────────── */
-  .gk-foot-cta {
-    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-    gap: 1.6rem;
-    padding: clamp(1.6rem, 3.5vw, 2.4rem) clamp(1.4rem, 3.5vw, 2.6rem);
-    border-radius: 24px;
-    background:
-      radial-gradient(ellipse 80% 140% at 88% 50%, rgba(0,178,240,.22) 0%, transparent 62%),
-      linear-gradient(120deg, rgba(21,103,211,.20) 0%, rgba(255,255,255,.045) 100%);
-    border: 1px solid rgba(255,255,255,.12);
-  }
-  .gk-foot-cta-title {
-    font-family: var(--gk-font-display);
-    font-size: clamp(1.25rem, 2.6vw, 1.8rem);
-    font-weight: 700; letter-spacing: -.025em; line-height: 1.15;
-    color: #FFFFFF; margin: 0;
-  }
-  .gk-foot-cta-sub {
-    font-size: 0.9rem; line-height: 1.6; color: var(--gk-body-dark);
-    margin: 0.55rem 0 0; max-width: 34rem;
-  }
-  .gk-foot-cta-btns { display: flex; flex-wrap: wrap; gap: 0.75rem; flex-shrink: 0; }
-  @media (max-width: 480px) {
-    .gk-foot-cta-btns { width: 100%; flex-direction: column; }
-    .gk-foot-cta-btns .gk-btn { width: 100%; }
+    padding-top: clamp(1rem, 2vw, 1.5rem);
   }
 
   /* ── Columns ───────────────────────────────────────────────────────────── */

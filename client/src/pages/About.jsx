@@ -282,6 +282,28 @@ const ABOUT_STYLES = `
     color: var(--gk-body); font-size: 0.855rem; line-height: 1.65; margin: 0.55rem 0 0;
   }
 
+  /* ── Phone density ─────────────────────────────────────────────────────
+     The stats row is already two-up at this width; what needed shrinking was
+     everything inside it. The values cards deliberately stay one column: each
+     carries a full paragraph, and at half a phone's width that becomes a
+     column of two or three words per line. Two-up is for cards with short
+     labels, not prose. */
+  @media (max-width: 640px) {
+    .gk-ab-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+    .gk-ab-stat { padding: 1rem 0.6rem; border-radius: 14px; }
+    .gk-ab-stat-ico { width: 30px; height: 30px; border-radius: 9px; }
+    .gk-ab-stat-ico svg { width: 15px; height: 15px; }
+    .gk-ab-stat-val { font-size: 1.4rem; }
+    .gk-ab-stat-lab { font-size: 0.66rem; line-height: 1.3; }
+
+    .gk-ab-value { padding: 1.15rem 1rem 1rem; }
+    .gk-ab-value-n { font-size: 2.2rem; top: .35rem; right: .7rem; }
+    .gk-ab-value-desc { font-size: 0.8rem; }
+
+    .gk-ab-shot img { border-radius: 16px; }
+    .gk-ab-callout { padding: 0.95rem 1rem; border-radius: 14px; }
+  }
+
   /* ── CTA ───────────────────────────────────────────────────────────────── */
   .gk-ab-cta {
     display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
