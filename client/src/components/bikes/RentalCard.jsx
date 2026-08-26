@@ -56,10 +56,10 @@ export default function RentalCard({ car, onClick }) {
       <div style={{ padding: '0.75rem', flex: 1, display: 'flex', flexDirection: 'column', background: '#FFFFFF', borderTop: '1px solid #EEE' }}>
         <div style={{ marginBottom: '0.3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: '0.6rem' }}>
-            <span style={{ color: '#1E3A8A', fontSize: '0.6rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: 'Rajdhani, sans-serif' }}>
+            <span style={{ color: '#1E3A8A', fontSize: '0.6rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: "'Space Grotesk', sans-serif" }}>
               <Calendar size={11} /> {car.year}
             </span>
-            <span style={{ color: '#64748B', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: 'Rajdhani, sans-serif' }}>
+            <span style={{ color: '#64748B', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: "'Space Grotesk', sans-serif" }}>
               <Settings size={11} /> {car.transmission?.toUpperCase()}
             </span>
           </div>
@@ -68,7 +68,7 @@ export default function RentalCard({ car, onClick }) {
         <h3 className="product-card-title" style={{
           color: '#111', fontWeight: 900, fontSize: '0.85rem',
           lineHeight: 1.2, marginBottom: '0.3rem',
-          fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.02em',
+          fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.02em',
           textTransform: 'uppercase',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
         }}>
@@ -88,14 +88,14 @@ export default function RentalCard({ car, onClick }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-              <span className="product-card-price" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.05rem', fontWeight: 950, color: '#1E3A8A' }}>
+              <span className="product-card-price" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.05rem', fontWeight: 950, color: '#1E3A8A' }}>
                 ₹{car.pricePerDay?.toLocaleString('en-IN')}
               </span>
               <span style={{ color: '#64748B', fontSize: '0.6rem', fontWeight: 800 }}>/day</span>
             </div>
             {car.pricePerHour > 0 && (
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '2px' }}>
-                <span style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '0.85rem', fontWeight: 800, color: '#475569' }}>
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.85rem', fontWeight: 800, color: '#475569' }}>
                   ₹{car.pricePerHour?.toLocaleString('en-IN')}
                 </span>
                 <span style={{ color: '#94A3B8', fontSize: '0.55rem', fontWeight: 800 }}>/hour</span>
@@ -106,7 +106,7 @@ export default function RentalCard({ car, onClick }) {
             height: '28px', padding: '0 0.75rem',
             background: '#1E3A8A', borderRadius: '6px', color: 'white',
             display: 'flex', alignItems: 'center', gap: '0.3rem',
-            fontSize: '0.65rem', fontWeight: 800, fontFamily: 'Rajdhani, sans-serif',
+            fontSize: '0.65rem', fontWeight: 800, fontFamily: "'Space Grotesk', sans-serif",
             letterSpacing: '0.05em', boxShadow: '0 4px 10px rgba(30, 58, 138, 0.15)',
             transition: 'all 0.3s'
           }}>

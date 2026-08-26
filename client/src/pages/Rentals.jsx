@@ -47,7 +47,7 @@ export default function Rentals() {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.4rem 1rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.1em', marginBottom: '1.2rem' }}>
             <Sparkles size={14} /> SELF-DRIVE RENTALS
           </div>
-          <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(2.4rem, 6vw, 4rem)', fontWeight: 950, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
+          <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(2.4rem, 6vw, 4rem)', fontWeight: 950, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
             RENT A CAR <span style={{ color: '#93C5FD' }}>YOUR WAY</span>
           </h1>
           <p style={{ color: '#CBD5E1', fontSize: '1.1rem', maxWidth: '560px', fontWeight: 500 }}>

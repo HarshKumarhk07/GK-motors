@@ -206,7 +206,7 @@ export default function PartDetail() {
             <ArrowRight size={16} style={{ transform: 'rotate(180deg)' }} /> Back to Spares
           </button>
           <span>/</span>
-          <span style={{ color: '#1E3A8A', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{part.name}</span>
+          <span style={{ color: '#2563EB', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{part.name}</span>
         </div>
       </div>
 
@@ -299,7 +299,7 @@ export default function PartDetail() {
               {/* Sold Out Overlay */}
               {effectiveStock === 0 && !isCheckingPincode && (
                 <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-                  <span style={{ background: '#1E3A8A', color: 'white', fontWeight: 950, padding: '0.7rem 2.5rem', borderRadius: '14px', fontSize: '0.95rem', transform: 'rotate(-8deg)', border: '4px solid white', boxShadow: '0 12px 35px rgba(30, 58, 138, 0.25)', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em' }}>
+                  <span style={{ background: '#2563EB', color: 'white', fontWeight: 950, padding: '0.7rem 2.5rem', borderRadius: '14px', fontSize: '0.95rem', transform: 'rotate(-8deg)', border: '4px solid white', boxShadow: '0 12px 35px rgba(37, 99, 235, 0.25)', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em' }}>
                     {selectedPincode.length === 6 && isUnavailable ? 'NOT AVAILABLE' : 'OUT OF STOCK'}
                   </span>
                 </div>
@@ -311,7 +311,7 @@ export default function PartDetail() {
               <div className="hide-scrollbar part-thumb-row" style={{ display: 'flex', gap: '0.8rem', overflowX: 'auto', paddingBottom: '0.8rem', marginBottom: '2rem' }}>
                 {images.map((src, i) => (
                   <button key={i} onClick={() => { setActiveImg(i); setZoomed(false); }}
-                    style={{ flexShrink: 0, width: 85, height: 85, borderRadius: '18px', overflow: 'hidden', border: '3.5px solid', borderColor: activeImg === i ? '#1E3A8A' : 'transparent', cursor: 'pointer', padding: 0, position: 'relative', transition: 'all 0.3s', background: '#F5F5F5', opacity: activeImg === i ? 1 : 0.7, boxShadow: activeImg === i ? '0 8px 20px rgba(30, 58, 138, 0.2)' : 'none' }}
+                    style={{ flexShrink: 0, width: 85, height: 85, borderRadius: '18px', overflow: 'hidden', border: '3.5px solid', borderColor: activeImg === i ? '#2563EB' : 'transparent', cursor: 'pointer', padding: 0, position: 'relative', transition: 'all 0.3s', background: '#F5F5F5', opacity: activeImg === i ? 1 : 0.7, boxShadow: activeImg === i ? '0 8px 20px rgba(37, 99, 235, 0.2)' : 'none' }}
                     onMouseEnter={e => { if (activeImg !== i) e.currentTarget.style.opacity = '1'; }}
                     onMouseLeave={e => { if (activeImg !== i) e.currentTarget.style.opacity = '0.6'; }}>
                     {isVideoUrl(src) ? (
@@ -329,8 +329,8 @@ export default function PartDetail() {
             {/* Description */}
             {part.description && (
               <div style={{ marginTop: '0.8rem', background: '#FFF', border: '1px solid #EEE', borderRadius: '20px', padding: '1.2rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
-                <h3 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.4rem', fontWeight: 950, marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <div style={{ width: 6, height: 24, background: '#1E3A8A', borderRadius: '4px' }} />
+                <h3 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.4rem', fontWeight: 950, marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <div style={{ width: 6, height: 24, background: '#2563EB', borderRadius: '4px' }} />
                   Component Overview
                 </h3>
                 <p style={{ color: '#555', lineHeight: 1.6, fontSize: '0.95rem', fontWeight: 500 }}>{part.description}</p>
@@ -344,7 +344,7 @@ export default function PartDetail() {
             
             {/* Header */}
             <div style={{ marginBottom: '0.3rem' }}>
-              <h1 className="text-2xl lg:text-3xl font-extrabold font-rajdhani tracking-tight leading-tight" style={{ color: '#1E3A8A', fontWeight: 800 }}>
+              <h1 className="text-2xl lg:text-3xl font-extrabold font-rajdhani tracking-tight leading-tight" style={{ color: '#2563EB', fontWeight: 800 }}>
                 {part.name}
               </h1>
             </div>
@@ -444,17 +444,17 @@ export default function PartDetail() {
               {cartItem ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#F8FAFC', padding: '1rem', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
                   <button onClick={() => updateQty(id, cartItem.quantity - 1)}
-                    style={{ width: 44, height: 44, borderRadius: '12px', border: 'none', background: '#1E3A8A', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.4rem', fontWeight: 950 }}>-</button>
+                    style={{ width: 44, height: 44, borderRadius: '12px', border: 'none', background: '#2563EB', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.4rem', fontWeight: 950 }}>-</button>
                   <div style={{ flex: 1, textAlign: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: '0.2rem', fontFamily: 'Rajdhani, sans-serif' }}>Qty in Cart</span>
-                    <span style={{ fontSize: '1.8rem', fontWeight: 950, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', lineHeight: 1 }}>{cartItem.quantity}</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: '0.2rem', fontFamily: "'Space Grotesk', sans-serif" }}>Qty in Cart</span>
+                    <span style={{ fontSize: '1.8rem', fontWeight: 950, color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1 }}>{cartItem.quantity}</span>
                   </div>
                   <button onClick={() => updateQty(id, cartItem.quantity + 1)}
-                    style={{ width: 44, height: 44, borderRadius: '12px', border: 'none', background: '#1E3A8A', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.4rem', fontWeight: 950 }}>+</button>
+                    style={{ width: 44, height: 44, borderRadius: '12px', border: 'none', background: '#2563EB', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.4rem', fontWeight: 950 }}>+</button>
                 </div>
               ) : (
                  <button disabled={isUnavailable || effectiveStock === 0} onClick={handleAddToCart}
-                  className="btn-primary" style={{ width: '100%', height: '60px', borderRadius: '14px', fontSize: '1.1rem', fontWeight: 950, background: isUnavailable || effectiveStock === 0 ? '#E2E8F0' : '#1E3A8A', color: isUnavailable || effectiveStock === 0 ? '#94A3B8' : 'white', cursor: isUnavailable || effectiveStock === 0 ? 'not-allowed' : 'pointer', justifyContent: 'center', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em', boxShadow: isUnavailable || effectiveStock === 0 ? 'none' : '0 12px 30px rgba(30, 58, 138, 0.2)' }}>
+                  className="btn-primary" style={{ width: '100%', height: '60px', borderRadius: '14px', fontSize: '1.1rem', fontWeight: 950, background: isUnavailable || effectiveStock === 0 ? '#E2E8F0' : '#2563EB', color: isUnavailable || effectiveStock === 0 ? '#94A3B8' : 'white', cursor: isUnavailable || effectiveStock === 0 ? 'not-allowed' : 'pointer', justifyContent: 'center', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em', boxShadow: isUnavailable || effectiveStock === 0 ? 'none' : '0 12px 30px rgba(37, 99, 235, 0.2)' }}>
                   <ShoppingCart size={22} /> {effectiveStock === 0 ? 'OUT OF STOCK' : 'ADD TO CART'}
                 </button>
               )}
@@ -467,8 +467,8 @@ export default function PartDetail() {
         {similar.length > 0 && (
           <div style={{ marginTop: '4rem', marginBottom: '4rem', borderTop: '1px solid #EEE', paddingTop: '3rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2rem', fontWeight: 950, color: '#0F172A', letterSpacing: '0.02em' }}>RECOMMENDED <span style={{ color: '#1E3A8A' }}>SPARES</span></h3>
-              <Link to="/parts" style={{ color: '#1E3A8A', fontWeight: 900, fontSize: '0.95rem', textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.05em' }}>EXPLORE ALL</Link>
+              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2rem', fontWeight: 950, color: '#0F172A', letterSpacing: '0.02em' }}>RECOMMENDED <span style={{ color: '#2563EB' }}>SPARES</span></h3>
+              <Link to="/parts" style={{ color: '#2563EB', fontWeight: 900, fontSize: '0.95rem', textDecoration: 'none', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.05em' }}>EXPLORE ALL</Link>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
               {similar.map(p => <PartCard key={p._id || p.id} part={p} />)}

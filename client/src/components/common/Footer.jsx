@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Wrench } from 'lucide-react';
-import { FaFacebook, FaInstagram, FaYoutube, FaTwitter } from 'react-icons/fa';
+import { Phone, Mail, MapPin } from 'lucide-react';
+import { FaFacebook, FaInstagram, FaYoutube, FaWhatsapp } from 'react-icons/fa';
 
 // [label, categoryId] — the id deep-links straight to that category on the
 // services page. Ids match ServiceCategory.categoryId (see
@@ -20,6 +20,16 @@ const QUICK_LINKS = [
   ['My Profile', '/profile'],
   ['About Us', '/about'],
   ['Contact Us', '/contact'],
+];
+
+/* href '#' means "no handle on file yet" — the three profile links are
+   placeholders for the client to fill in. WhatsApp is wired to the service
+   number that already appears in the contact column and the CTA above it. */
+const SOCIALS = [
+  { icon: FaFacebook,  href: '#',                          label: 'Facebook' },
+  { icon: FaInstagram, href: '#',                          label: 'Instagram' },
+  { icon: FaYoutube,   href: '#',                          label: 'YouTube' },
+  { icon: FaWhatsapp,  href: 'https://wa.me/919253625099', label: 'WhatsApp' },
 ];
 
 const LOCATIONS = [
@@ -72,9 +82,11 @@ export default function Footer() {
               transparent pricing — with doorstep pickup and drop across our service network.
             </p>
             <div className="flex items-center gap-3 mt-4">
-              {[FaFacebook, FaInstagram, FaYoutube, FaTwitter].map((Icon, i) => (
-                <a key={i} href="#" style={{ width: 40, height: 40, borderRadius: '12px', background: '#1E293B', border: '1px solid #334155', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', transition: 'all 0.3s' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#1E3A8A'; e.currentTarget.style.color = 'white'; e.currentTarget.style.background = '#1E3A8A'; }}
+              {SOCIALS.map(({ icon: Icon, href, label }) => (
+                <a key={label} href={href} aria-label={label}
+                  {...(href.startsWith('http') ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
+                  style={{ width: 40, height: 40, borderRadius: '12px', background: '#1E293B', border: '1px solid #334155', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', transition: 'all 0.3s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#2563EB'; e.currentTarget.style.color = 'white'; e.currentTarget.style.background = '#2563EB'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#334155'; e.currentTarget.style.color = '#94A3B8'; e.currentTarget.style.background = '#1E293B'; }}>
                   <Icon size={16} />
                 </a>
@@ -84,7 +96,7 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h4 style={{ color: 'white', fontWeight: 600, marginBottom: '1rem', fontSize: '1rem', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Our Services</h4>
+            <h4 style={{ color: 'white', fontWeight: 600, marginBottom: '1rem', fontSize: '1rem', fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase', letterSpacing: '0.1em' }}>Our Services</h4>
             {SERVICE_LINKS.map(([s, id]) => (
               <Link key={s} to={`/services?category=${id}`} style={{ display: 'block', color: '#94A3B8', textDecoration: 'none', fontSize: '0.9rem', marginBottom: '0.5rem', transition: 'all 0.3s', fontWeight: 500 }}
                 onMouseEnter={(e) => (e.target.style.color = '#93C5FD')}
@@ -96,7 +108,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 style={{ color: 'white', fontWeight: 600, marginBottom: '1rem', fontSize: '1rem', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Quick Links</h4>
+            <h4 style={{ color: 'white', fontWeight: 600, marginBottom: '1rem', fontSize: '1rem', fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase', letterSpacing: '0.1em' }}>Quick Links</h4>
             {QUICK_LINKS.map(([label, href]) => (
               <Link key={href} to={href} style={{ display: 'block', color: '#94A3B8', textDecoration: 'none', fontSize: '0.9rem', marginBottom: '0.5rem', transition: 'all 0.3s', fontWeight: 500 }}
                 onMouseEnter={(e) => (e.target.style.color = '#93C5FD')}
@@ -108,34 +120,33 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 style={{ color: 'white', fontWeight: 600, marginBottom: '1rem', fontSize: '1rem', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Contact Us</h4>
+            <h4 style={{ color: 'white', fontWeight: 600, marginBottom: '1rem', fontSize: '1rem', fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase', letterSpacing: '0.1em' }}>Contact Us</h4>
             {LOCATIONS.map(({ icon: Icon, text }, idx) => (
               <div key={idx} className="flex items-start gap-2" style={{ marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: 500 }}>
-                <Icon size={16} style={{ flexShrink: 0, color: '#93C5FD', marginTop: '0.15rem' }} />
+                <Icon size={16} style={{ flexShrink: 0, color: '#60A5FA', marginTop: '0.15rem' }} />
                 <span>{text}</span>
               </div>
             ))}
             <div style={{ marginTop: '2rem', padding: '1.2rem', background: '#1E293B', borderRadius: '12px', border: '1px solid #334155' }}>
               <p style={{ fontSize: '0.75rem', color: '#64748B', marginBottom: '0.6rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>24/7 ROADSIDE ASSISTANCE</p>
-              <a href="tel:+919253625099" className="flex items-center gap-2" style={{ color: 'white', fontWeight: 950, fontSize: '1.25rem', textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif' }}>
+              <a href="tel:+919253625099" className="flex items-center gap-2" style={{ color: 'white', fontWeight: 950, fontSize: '1.25rem', textDecoration: 'none', fontFamily: "'Space Grotesk', sans-serif" }}>
                 <Phone size={20} /> +91 9253625099
               </a>
             </div>
           </div>
         </div>
 
-        {/* Book service strip */}
-        <div style={{ marginTop: '2.5rem', padding: '1.25rem 1.5rem', background: 'linear-gradient(135deg, #1E3A8A 0%, #1E293B 100%)', borderRadius: '16px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-          <div>
-            <p style={{ color: 'white', fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1.25rem', letterSpacing: '0.03em' }}>Car due for a service?</p>
-            <p style={{ color: '#CBD5E1', fontSize: '0.9rem', fontWeight: 500 }}>Book online in under two minutes — free pickup and drop.</p>
-          </div>
-          <Link to="/services" className="flex items-center gap-2" style={{ background: 'white', color: '#0F172A', padding: '0.75rem 1.75rem', borderRadius: '12px', textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-            <Wrench size={16} /> Book Service
-          </Link>
-        </div>
+        {/* The "Car due for a service?" mini-CTA that used to sit here has
+            been removed on request. Nothing actionable is lost: the contact
+            column above still carries the 24/7 assistance number, and the nav
+            bar's "Book Now" is on screen at every scroll position. (On the
+            home page the full "Give Your Car The Care It Deserves" section
+            also sits directly above this footer.)
 
-        <div style={{ borderTop: '1px solid #1E293B', marginTop: '2rem', paddingTop: '1.25rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+            marginTop is 2.5rem rather than the 2rem it was: the strip used to
+            supply that separation from the column grid, and without it the
+            copyright rule sat too close to the last link. */}
+        <div style={{ borderTop: '1px solid #1E293B', marginTop: '2.5rem', paddingTop: '1.25rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
           <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>© {new Date().getFullYear()} GK Motors · Avani Enterprises. All rights reserved.</p>
           <div className="flex items-center gap-4" style={{ fontSize: '0.83rem' }}>
             <Link to="/privacy" style={{ color: '#64748B', textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</Link>

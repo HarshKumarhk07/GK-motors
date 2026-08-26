@@ -31,41 +31,37 @@ const isActive = (pathname, href) =>
   href === '/' ? pathname === '/' : pathname.startsWith(href);
 
 const NAV_STYLES = `
-  /* ── Sticky bar background ───────────────────────────────────────────────
-     A backdrop-filter on a position:sticky element is the single most
-     expensive thing this page does while scrolling: the compositor has to
-     re-sample and re-blur the full width of the viewport behind the bar on
-     every frame, for the whole length of the page, and it cannot be skipped
-     because the bar is pinned by design.
+  /* ── Floating card bar ───────────────────────────────────────────────────
+     The bar is a white rounded card inset from the viewport edges, sitting on
+     a slate-900 band that runs edge to edge. The band is what makes the card
+     read as floating: at the top of the page it runs straight into the hero
+     below with no seam, and once the bar is pinned it keeps that same
+     figure/ground over the page's light sections — where a bare white card
+     would otherwise dissolve into a white background.
 
-     Desktop GPUs absorb that, so the frosted look is kept there. Phones and
-     tablets get a near-opaque background instead — same bar, same height,
-     same border, same stickiness, no per-frame blur. At 0.97 alpha over the
-     page's white/#F8FAFC sections the difference is not perceptible in
-     normal use; what goes away is the stutter.
+     The backdrop-filter that used to frost this bar is gone. The card is fully
+     opaque, so there was nothing left to see through, and dropping it removes
+     two things at once: the per-frame blur that made scrolling stutter on
+     phones, and the containing block it created for position:fixed children,
+     which is what constrained the mobile drawer below. */
+  .gk-nav { background: #0F172A; padding: 0.55rem 0; }
 
-     Declared here rather than inline because an inline style cannot carry a
-     media query, and the inline value would win over any stylesheet rule. */
-  .gk-nav {
-    background: rgba(255, 255, 255, 0.85);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+  .gk-nav-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.28);
+    padding: 0 0.75rem;
   }
-  @media (max-width: 1023px) {
-    .gk-nav {
-      background: rgba(255, 255, 255, 0.97);
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-    }
-  }
-  /* Same reasoning for anyone who has asked for less motion/effects, and for
-     devices that report a low-power or slow compositor path. */
-  @media (prefers-reduced-motion: reduce) {
-    .gk-nav {
-      background: rgba(255, 255, 255, 0.97);
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-    }
+  @media (min-width: 640px) { .gk-nav-card { padding: 0 1.25rem; } }
+
+  /* ── Active link underline ───────────────────────────────────────────────
+     Inset to the link's text rather than its padding box, so the rule sits
+     under the word and not under the hover target's full width. */
+  .gk-nav-links a { position: relative; }
+  .gk-nav-links a[data-active="true"]::after {
+    content: '';
+    position: absolute; left: 0.6rem; right: 0.6rem; bottom: 0.05rem;
+    height: 2px; border-radius: 2px; background: #2563EB;
   }
 
   .gk-burger { display: inline-flex; align-items: center; justify-content: center; }
@@ -88,18 +84,23 @@ const NAV_STYLES = `
      sticky resolves badly the drawer goes with it. Anchored to the viewport
      instead, the panel is visible whatever the bar does.
 
-     top: 64px matches the bar's h-16, so the panel opens directly beneath
-     it and the bar (z-50, above both) stays usable with its close button.
+     The offset is MEASURED from the bar rather than hard-coded. It used to
+     be a literal 64px, which matched the bar's h-16 only while the bar was
+     the first thing on the page. The announcement strip now sits above it, so
+     at scroll-top the bar occupies 36..100 and a panel pinned at 64px would
+     have opened over its bottom half. The 64px below is only a pre-mount
+     fallback; the --gk-drawer-top custom property set on this bar overrides
+     it the moment the panel opens.
 
-     ONE DEPENDENCY WORTH KNOWING: a backdrop-filter creates a containing
-     block for position:fixed descendants, which would re-anchor this panel to
-     the bar instead of the viewport. That is safe here only because the two
-     rules complement exactly — .gk-nav carries the blur from 1024px up, and
-     the panel is display:none from 1024px up. If the blur is ever restored on
-     mobile, move this markup out of <nav> at the same time. */
+     ONE THING TO KEEP IN MIND: a backdrop-filter (or a transform, or a
+     filter) on .gk-nav would create a containing block for position:fixed
+     descendants and re-anchor this panel to the bar instead of the viewport.
+     The bar carried a blur until the floating-card restyle removed it, so
+     nothing does that today — but if one is ever reintroduced, move this
+     markup out of <nav> in the same change. */
   .gk-nav-backdrop {
     position: fixed;
-    top: 64px; left: 0; right: 0; bottom: 0;
+    top: var(--gk-drawer-top, 64px); left: 0; right: 0; bottom: 0;
     z-index: 48;
     background: rgba(15, 23, 42, 0.55);
     border: 0; padding: 0; margin: 0;
@@ -112,11 +113,11 @@ const NAV_STYLES = `
 
   .gk-nav-drawer {
     position: fixed;
-    top: 64px; left: 0; right: 0;
+    top: var(--gk-drawer-top, 64px); left: 0; right: 0;
     z-index: 49;
     background: #0F172A;
-    max-height: calc(100vh - 64px);
-    max-height: calc(100dvh - 64px);
+    max-height: calc(100vh - var(--gk-drawer-top, 64px));
+    max-height: calc(100dvh - var(--gk-drawer-top, 64px));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     /* A scroll that reaches the panel's end stops there instead of handing the
@@ -140,6 +141,13 @@ export default function Navbar() {
   const totalCartCount = (itemCount || 0) + (serviceCount || 0);
 
   const [mobileOpen, setMobileOpen] = useState(false);
+  /* Where the drawer's top edge belongs: the bar's own bottom edge in viewport
+     coordinates. Read once when the panel opens — the backdrop's
+     `touch-action: none` and the panel's `overscroll-behavior: contain` keep
+     the page behind from scrolling while it is open, so a single measurement
+     stays correct for the panel's lifetime and no scroll listener is needed. */
+  const navRef = useRef(null);
+  const [drawerTop, setDrawerTop] = useState(64);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
@@ -177,6 +185,19 @@ export default function Navbar() {
     if (mobileOpen) drawerRef.current?.focus();
   }, [mobileOpen]);
 
+  /* Opening the panel: pin its top edge to wherever the bar's bottom edge
+     currently is. At scroll-top that is below the announcement strip; once the
+     strip has scrolled away and the bar is pinned, it is the bar's own height. */
+  const toggleMenu = () => {
+    setMobileOpen((open) => {
+      if (!open) {
+        const bottom = navRef.current?.getBoundingClientRect().bottom;
+        if (typeof bottom === 'number') setDrawerTop(Math.max(0, Math.round(bottom)));
+      }
+      return !open;
+    });
+  };
+
   // Escape is the expected way out of anything overlaying the page.
   useEffect(() => {
     if (!mobileOpen) return undefined;
@@ -192,9 +213,14 @@ export default function Navbar() {
   };
 
   return (
-    <nav style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.05)' }} className="gk-nav sticky top-0 z-50">
+    <nav
+      ref={navRef}
+      style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.05)', '--gk-drawer-top': `${drawerTop}px` }}
+      className="gk-nav sticky top-0 z-50"
+    >
       <style>{NAV_STYLES}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="gk-nav-card">
         <div className="flex items-center justify-between h-16 gap-2 min-w-0 gk-nav-row">
           {/* Logo — text based for now */}
           <Link to="/" className="flex items-center gap-2 mr-2 sm:mr-0 min-w-0 flex-shrink" style={{ textDecoration: 'none' }}>
@@ -214,20 +240,24 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-1 gk-nav-links">
+          {/* flex-1 + centred: the row is logo | links | controls, and the
+              links take the slack so they sit centred in the card rather than
+              tucked against the logo. */}
+          <div className="hidden lg:flex flex-1 items-center justify-center gap-1 gk-nav-links">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
+                data-active={isActive(location.pathname, link.href)}
                 style={{
-                  color: isActive(location.pathname, link.href) ? '#1E3A8A' : '#475569',
+                  color: isActive(location.pathname, link.href) ? '#2563EB' : '#475569',
                   padding: '0.4rem 0.6rem',
                   borderRadius: '6px',
                   fontSize: '0.82rem',
                   fontWeight: 600,
                   textDecoration: 'none',
                   transition: 'all 0.2s',
-                  fontFamily: 'Rajdhani, sans-serif',
+                  fontFamily: "'Space Grotesk', sans-serif",
                   letterSpacing: '0.04em'
                 }}
                 onMouseEnter={(e) => { if (!isActive(location.pathname, link.href)) e.target.style.color = '#0F172A'; }}
@@ -240,25 +270,6 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-3 sm:gap-4 md:gap-5 flex-shrink-0 gk-nav-right">
-            {/* Book Service CTA */}
-            <Link
-              to="/services"
-              className="hidden sm:inline-flex"
-              style={{
-                alignItems: 'center', gap: '0.45rem',
-                background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
-                color: 'white', padding: '0.5rem 1.1rem', borderRadius: '10px',
-                fontSize: '0.75rem', fontWeight: 800, textDecoration: 'none',
-                fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.06em',
-                textTransform: 'uppercase', whiteSpace: 'nowrap',
-                boxShadow: '0 4px 14px rgba(30, 58, 138, 0.25)', transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
-            >
-              <Wrench size={14} /> Book Service
-            </Link>
-
             {/* Cart */}
             <Link to="/cart" style={{ position: 'relative', color: '#0F172A', display: 'flex', alignItems: 'center', padding: '0.4rem', borderRadius: '8px', transition: 'background 0.2s' }}
               onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(15, 23, 42, 0.05)'}
@@ -267,18 +278,13 @@ export default function Navbar() {
               {totalCartCount > 0 && (
                 <span style={{
                   position: 'absolute', top: '-2px', right: '-2px',
-                  background: '#1E3A8A', color: 'white', borderRadius: '50%',
+                  background: '#2563EB', color: 'white', borderRadius: '50%',
                   width: '18px', height: '18px', fontSize: '0.65rem',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800,
                   border: '2px solid white', boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
                 }}>{totalCartCount}</span>
               )}
             </Link>
-
-            {/* Call us */}
-            <a href="tel:+919253625099" className="hidden xl:flex items-center gk-nav-phone" style={{ gap: '0.4rem', color: '#0F172A', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 700, padding: '0.4rem 0.75rem', borderRadius: '8px', background: 'rgba(30, 58, 138, 0.04)', border: '1px solid rgba(30, 58, 138, 0.08)' }}>
-              <Phone size={14} style={{ color: '#1E3A8A' }} /> +91 92536 25099
-            </a>
 
             {/* User Menu */}
             {user ? (
@@ -294,7 +300,7 @@ export default function Navbar() {
                   }}
                 >
                   {dropdownOpen ? (
-                    <X size={18} style={{ color: '#1E3A8A' }} />
+                    <X size={18} style={{ color: '#2563EB' }} />
                   ) : (
                     <>
                       {user.avatar ? (
@@ -362,6 +368,29 @@ export default function Navbar() {
               </div>
             )}
 
+            {/* Book Now — last in the row, which is where the reference puts
+                its one filled control. Blue-600 rather than the slate-900 it
+                used to be: with the bar now sitting on a slate-900 band, a
+                slate button on a white card between two dark fields read as a
+                hole rather than as the primary action. */}
+            <Link
+              to="/services"
+              className="hidden sm:inline-flex gk-nav-cta"
+              style={{
+                alignItems: 'center', justifyContent: 'center',
+                background: '#2563EB', color: '#FFFFFF',
+                padding: '0.6rem 1.35rem', borderRadius: '10px',
+                fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none',
+                whiteSpace: 'nowrap', letterSpacing: '0.01em',
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+                transition: 'background 0.2s, transform 0.2s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#1D4ED8'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#2563EB'; e.currentTarget.style.transform = 'translateY(0)'; }}
+            >
+              Book Now
+            </Link>
+
             {/* Mobile hamburger */}
             {/* `display` must not be set inline here: an inline style beats
                 Tailwind's `md:hidden` (which is not !important), which is why
@@ -369,7 +398,7 @@ export default function Navbar() {
                 pushing the right-hand group past the container. Centring now
                 comes from .gk-burger, which yields to the hidden rule. */}
             <button
-              onClick={() => setMobileOpen(!mobileOpen)}
+              onClick={toggleMenu}
               className="lg:hidden gk-burger"
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={mobileOpen}
@@ -384,6 +413,7 @@ export default function Navbar() {
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
+        </div>
         </div>
 
       </div>
@@ -416,9 +446,9 @@ export default function Navbar() {
               <Link to="/services" onClick={() => setMobileOpen(false)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                  background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', color: 'white',
+                  background: '#2563EB', color: 'white',
                   padding: '0.8rem', minHeight: 48, borderRadius: '12px', textDecoration: 'none',
-                  fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, letterSpacing: '0.08em',
+                  fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, letterSpacing: '0.08em',
                   textTransform: 'uppercase', fontSize: '0.9rem', marginBottom: '1rem'
                 }}>
                 <Wrench size={16} /> Book Service Now
@@ -434,6 +464,37 @@ export default function Navbar() {
               <a href="tel:+919253625099" style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
                 <Phone size={15} /> +91 92536 25099
               </a>
+
+              {/* Signed-out actions.
+                  Login and Sign Up were reachable from the bar itself but not
+                  from this panel, and Sign Up is hidden below 640px — so on a
+                  phone the drawer was the only menu and it had no way to
+                  register. Both live here now, in the same button system as
+                  the rest of the redesign: outline for Login, solid blue-600
+                  for Sign Up. */}
+              {!user && (
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '0.8rem', paddingTop: '1rem', display: 'flex', gap: '0.6rem' }}>
+                  <Link to="/login" onClick={() => setMobileOpen(false)}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      minHeight: 46, borderRadius: '10px', textDecoration: 'none',
+                      border: '1.5px solid rgba(255,255,255,0.3)', color: '#FFFFFF',
+                      fontSize: '0.85rem', fontWeight: 800, letterSpacing: '0.04em',
+                    }}>
+                    Login
+                  </Link>
+                  <Link to="/register" onClick={() => setMobileOpen(false)}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      minHeight: 46, borderRadius: '10px', textDecoration: 'none',
+                      background: '#2563EB', color: '#FFFFFF',
+                      fontSize: '0.85rem', fontWeight: 800, letterSpacing: '0.04em',
+                      boxShadow: '0 6px 16px rgba(37, 99, 235, 0.3)',
+                    }}>
+                    Sign Up
+                  </Link>
+                </div>
+              )}
 
               {/* Mobile user actions */}
               {user && (

@@ -42,7 +42,7 @@ export default function BestsellerParts() {
           .bestseller-products-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.6rem !important; }
         }
       `}</style>
-      <div style={{ height: '4px', background: 'linear-gradient(90deg, #1E3A8A, #93C5FD, transparent)' }} />
+      <div style={{ height: '4px', background: 'linear-gradient(90deg, #2563EB, #93C5FD, transparent)' }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ paddingTop: '3.5rem', paddingBottom: '5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '3.5rem' }}>
           <Link to="/parts" style={{ background: '#F9F9F9', border: '1px solid #EEE', borderRadius: '12px', padding: '0.6rem 1.2rem', color: '#111', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: 800, transition: 'all 0.2s' }}
@@ -51,9 +51,9 @@ export default function BestsellerParts() {
             <ArrowLeft size={16} /> SHOP ALL
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: 6, height: 32, background: '#1E3A8A', borderRadius: '3px' }} />
-            <h1 style={{ color: '#111', fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 950, margin: 0, letterSpacing: '-0.02em', textTransform: 'uppercase' }}>
-              BEST <span style={{ color: '#1E3A8A' }}>SELLERS</span>
+            <div style={{ width: 6, height: 32, background: '#2563EB', borderRadius: '3px' }} />
+            <h1 style={{ color: '#111', fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 950, margin: 0, letterSpacing: '-0.02em', textTransform: 'uppercase' }}>
+              BEST <span style={{ color: '#2563EB' }}>SELLERS</span>
             </h1>
           </div>
         </div>
@@ -74,9 +74,9 @@ export default function BestsellerParts() {
         ) : (
           <div style={{ textAlign: 'center', padding: '10rem 2rem', background: '#F9F9F9', borderRadius: '32px', border: '1.5px solid #EEE' }}>
             <div style={{ fontSize: '4.5rem', marginBottom: '1.5rem', opacity: 0.2 }}>🔥</div>
-            <h3 style={{ color: '#111', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.8rem', fontWeight: 900, textTransform: 'uppercase' }}>NO BESTSELLERS FOUND</h3>
+            <h3 style={{ color: '#111', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', fontWeight: 900, textTransform: 'uppercase' }}>NO BESTSELLERS FOUND</h3>
             <p style={{ color: '#666', fontSize: '1.1rem', fontWeight: 600, marginTop: '0.6rem', maxWidth: '400px', margin: '0.6rem auto' }}>Top performing parts and vehicles will appear here soon. Check back shortly!</p>
-            <Link to="/parts" style={{ display: 'inline-block', marginTop: '2.5rem', color: '#1E3A8A', fontWeight: 900, textDecoration: 'none', borderBottom: '2.5px solid #1E3A8A', paddingBottom: '3px' }}>BROWSE SHOP →</Link>
+            <Link to="/parts" style={{ display: 'inline-block', marginTop: '2.5rem', color: '#2563EB', fontWeight: 900, textDecoration: 'none', borderBottom: '2.5px solid #2563EB', paddingBottom: '3px' }}>BROWSE SHOP →</Link>
           </div>
         )}
       </div>

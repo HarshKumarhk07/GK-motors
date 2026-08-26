@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -140,7 +140,7 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1E3A8A;
+  background: #2563EB;
   border-radius: 3px;
 }
 
@@ -172,11 +172,11 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
 @keyframes pulse-blue {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(30, 58, 138, 0.4);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
   }
 
   50% {
-    box-shadow: 0 0 0 12px rgba(30, 58, 138, 0);
+    box-shadow: 0 0 0 12px rgba(37, 99, 235, 0);
   }
 }
 
@@ -227,15 +227,15 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
 
 /* Gradient Text */
 .gradient-text {
-  background: linear-gradient(135deg, #1E3A8A, #93C5FD);
+  background: linear-gradient(135deg, #2563EB, #93C5FD);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Red gradient button */
+/* Primary button — solid blue-600, per the redesign's button system. */
 .btn-primary {
-  background: linear-gradient(135deg, #1E3A8A 0%, #172554 100%);
+  background: #2563EB;
   color: white;
   padding: 0.75rem 2rem;
   border-radius: 8px;
@@ -248,13 +248,13 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
   align-items: center;
   gap: 0.5rem;
   text-decoration: none;
-  box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.22);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.4);
-  background: linear-gradient(135deg, #93C5FD 0%, #1E3A8A 100%);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.35);
+  background: #1D4ED8;
 }
 
 .btn-primary:active {
@@ -279,9 +279,9 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
 }
 
 .btn-outline:hover {
-  border-color: #1E3A8A;
-  color: #1E3A8A;
-  background: rgba(30, 58, 138, 0.08);
+  border-color: #2563EB;
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.08);
 }
 
 /* Light outlined button for light backgrounds */
@@ -302,9 +302,9 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
 }
 
 .btn-outline-dark:hover {
-  border-color: #1E3A8A;
-  color: #1E3A8A;
-  background: rgba(30, 58, 138, 0.05);
+  border-color: #2563EB;
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.06);
 }
 
 /* Card Styles */
@@ -317,7 +317,7 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
 }
 
 .card-dark:hover {
-  border-color: #1E3A8A;
+  border-color: #2563EB;
   transform: translateY(-4px);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
 }
@@ -332,7 +332,7 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
 }
 
 .card-light:hover {
-  border-color: #1E3A8A;
+  border-color: #2563EB;
   transform: translateY(-5px);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
 }
@@ -379,7 +379,7 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
 }
 
 .badge-blue {
-  background: rgba(30, 58, 138, 1);
+  background: rgba(37, 99, 235, 1);
   color: white;
   border: none;
 }
@@ -404,8 +404,8 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
 }
 
 .input-dark:focus {
-  border-color: #1E3A8A;
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .input-dark::placeholder {
@@ -425,8 +425,8 @@ a, button, input[type="submit"], input[type="button"], [role="button"] {
 }
 
 .input-light:focus {
-  border-color: #1E3A8A;
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
 .input-light::placeholder {

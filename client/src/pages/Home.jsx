@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight, Wrench, Sparkles, Zap, PaintBucket, Droplets, CircleDot, Battery,
   Disc, Settings, Shield, Award, Car, CheckCircle, Clock, Star, Phone,
-  Calendar, Users, MapPin, AlertCircle, RefreshCw
+  Calendar, Users, MapPin, AlertCircle, RefreshCw, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { getServiceCategories, getCategories } from '../api/serviceApi';
 import { getFeaturedParts, getRecentParts } from '../api/storeApi';
@@ -56,6 +56,15 @@ const STATS = [
   { value: '100%',    label: 'Genuine Parts',    icon: Shield },
 ];
 
+/* The card above the services grid. Deliberately three entries to match its
+   heading — HOW_IT_WORKS below is the four-step version further down the page
+   and the two are not interchangeable. */
+const BOOKING_STEPS = [
+  { icon: Wrench,      title: 'Select Service',     desc: 'Choose your service' },
+  { icon: Calendar,    title: 'Select Date & Time', desc: 'Pick convenient slot' },
+  { icon: CheckCircle, title: 'Confirm Booking',    desc: "We'll take care of the rest" },
+];
+
 const HOW_IT_WORKS = [
   { step: '01', icon: Wrench,     title: 'Pick a Service',    desc: 'Select a service category with upfront, transparent pricing.' },
   { step: '02', icon: Calendar,   title: 'Book Your Slot',    desc: 'Pick a convenient date, time and address that suits you.' },
@@ -63,13 +72,17 @@ const HOW_IT_WORKS = [
   { step: '04', icon: CheckCircle, title: 'Service & Return', desc: 'We service your car and deliver it back, ready to drive.' },
 ];
 
-const HOME_CATEGORY_COUNT = 12;
+/* Primary cards shown before the grid is expanded: the four featured
+   services plus the first four of the compact tier. "Show More" reveals the
+   remainder in place; "View All Services" is a separate control that leaves
+   the page for /services. */
+const HOME_CATEGORY_COUNT = 8;
 const HOME_PART_COUNT = 5;
 
 const TESTIMONIALS = [
-  { name: 'Rohit Sharma',  role: 'BMW 3 Series Owner',     review: 'Excellent service! They picked up my car on time and delivered after service. Highly professional team.', color: '#1E3A8A', img: '/testimonials/rahul-sharma.jpg' },
+  { name: 'Rohit Sharma',  role: 'BMW 3 Series Owner',     review: 'Excellent service! They picked up my car on time and delivered after service. Highly professional team.', color: '#2563EB', img: '/testimonials/rahul-sharma.jpg' },
   { name: 'Priya Mehta',   role: 'Honda City Owner',       review: 'AC service was done perfectly. My car is now cooling like new. Highly recommended!', color: '#0F172A', img: '/testimonials/priya-patel.jpg' },
-  { name: 'Arun Verma',    role: 'Audi A4 Owner',          review: 'Genuine parts and transparent pricing. Finally found a service center I can trust.', color: '#1E3A8A', img: '/testimonials/aman-singh.jpg' },
+  { name: 'Arun Verma',    role: 'Audi A4 Owner',          review: 'Genuine parts and transparent pricing. Finally found a service center I can trust.', color: '#2563EB', img: '/testimonials/aman-singh.jpg' },
   { name: 'Suresh Kumar',  role: 'Toyota Fortuner Owner',  review: 'Doorstep pickup and drop saved my day. Quick turn-around and great communication.', color: '#0F172A', img: '/testimonials/suresh-kumar.jpg' },
 ];
 
@@ -77,6 +90,11 @@ export default function Home() {
   const [packages, setPackages] = useState([]);
   const [serviceCategories, setServiceCategories] = useState(FALLBACK_CATEGORIES);
   const [parts, setParts] = useState([]);
+  /* Expand-in-place for the services grid. Deliberately not a route change and
+     not a separate list: the same <ServiceCategoryGrid> simply stops being
+     limited, so the featured 2x2 block above stays put and only the compact
+     tier below it grows. */
+  const [servicesExpanded, setServicesExpanded] = useState(false);
   const [partsLoading, setPartsLoading] = useState(true);
   const [partsError, setPartsError] = useState(false);
 
@@ -248,8 +266,6 @@ export default function Home() {
     [serviceCategories, packages]
   );
 
-  const shownCount = Math.min(categories.length, HOME_CATEGORY_COUNT);
-
   /* No viewport min-height on the root any more. The Layout shell in App.jsx
      is already at least one viewport tall with <main> growing to fill it, so
      it was redundant — and on mobile `100vh` is measured with the URL bar
@@ -371,16 +387,242 @@ export default function Home() {
         }
 
 
-        /* Booking Card responsive layout */
+        /* ── Booking steps card ───────────────────────────────────────────
+           Floats across the hero's bottom edge: a negative top margin pulls it
+           up over the dark section, and z-index lifts it above the hero's own
+           glow layers. The hero carries 5.5rem of bottom padding, comfortably
+           more than the 3.25rem pulled back, so the overlap eats slack rather
+           than clipping the hero's content. */
         .gk-booking-card {
           background: #FFFFFF;
           border: 1px solid #E2E8F0;
-          border-radius: 18px;
-          box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
-          padding: 1.5rem 2rem;
-          margin-top: -2.5rem;
+          border-radius: 20px;
+          box-shadow: 0 24px 55px rgba(15, 23, 42, 0.16);
+          padding: 1.5rem 1.75rem;
+          margin-top: -3.25rem;
           position: relative;
           z-index: 10;
+        }
+
+        .gk-booking-title {
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 1.2rem; font-weight: 800; color: #2563EB;
+          margin: 0 0 1.15rem; letter-spacing: -0.01em;
+        }
+
+        /* Steps take equal share, the CTA only what it needs. */
+        .gk-booking-row {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+          align-items: center;
+          gap: 0;
+        }
+
+        .gk-booking-step {
+          display: flex; align-items: center; gap: 0.8rem;
+          padding: 0.35rem 1.25rem;
+          min-width: 0;
+        }
+        /* Hairline rules BETWEEN steps only — on the divider, never on the
+           outer edges, so the row is not boxed in. */
+        .gk-booking-step + .gk-booking-step { border-left: 1px solid #E2E8F0; }
+        .gk-booking-step:first-child { padding-left: 0; }
+
+        .gk-booking-ico {
+          width: 42px; height: 42px; border-radius: 12px;
+          background: #EBF0FF; color: #2563EB;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .gk-booking-lab { min-width: 0; }
+        .gk-booking-lab b {
+          display: block; font-size: 0.9rem; font-weight: 700; color: #0F172A;
+          line-height: 1.3; overflow-wrap: anywhere;
+        }
+        .gk-booking-lab span {
+          display: block; font-size: 0.78rem; color: #64748B; font-weight: 500;
+          line-height: 1.35; margin-top: 1px; overflow-wrap: anywhere;
+        }
+
+        .gk-booking-cta {
+          display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+          background: #2563EB; color: #FFFFFF;
+          padding: 0.9rem 1.6rem; border-radius: 12px;
+          text-decoration: none; font-weight: 700; font-size: 0.88rem;
+          white-space: nowrap; margin-left: 1.25rem;
+          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+          transition: background .2s, transform .2s;
+        }
+        .gk-booking-cta:hover { background: #1D4ED8; transform: translateY(-2px); }
+
+        /* Below the four-up width the dividers stop making sense: the steps
+           become stacked rows with horizontal rules, and the CTA goes full
+           width beneath them. */
+        @media (max-width: 900px) {
+          .gk-booking-row { grid-template-columns: 1fr; }
+          .gk-booking-step { padding: 0.75rem 0; }
+          .gk-booking-step + .gk-booking-step {
+            border-left: 0; border-top: 1px solid #E2E8F0;
+          }
+          .gk-booking-cta { margin-left: 0; margin-top: 1rem; width: 100%; }
+        }
+
+        /* ── Why Choose banner ────────────────────────────────────────────
+           One solid blue slab inset from the section edges, rather than five
+           white cards on a light ground. These five points are secondary
+           reassurance, not five things to weigh against each other, so they
+           read better as a single block than as a card row competing with the
+           service grid directly above them.
+
+           Items are top-aligned, not centre-aligned: the descriptions are
+           different lengths, and centring each one vertically would scatter
+           the five icons down the row at five different heights. */
+        /* The slab itself is shared by both blue bands on this page — Why
+           Choose and the numbers strip — so the gradient, radius and shadow
+           have ONE definition and cannot drift apart. Only the padding differs,
+           and that lives on the two modifier classes below: Why Choose carries
+           a heading, the numbers strip does not. */
+        .gk-band {
+          background: linear-gradient(120deg, #1E40AF 0%, #2563EB 55%, #1D4ED8 100%);
+          border-radius: 24px;
+          box-shadow: 0 18px 45px rgba(37, 99, 235, 0.22);
+        }
+        .gk-why-band   { padding: 2.25rem 2rem 2.4rem; }
+        .gk-stats-band { padding: 1.65rem 2rem; }
+
+        /* ── Final CTA band ───────────────────────────────────────────────
+           Copy left, car centre, the two actions stacked right — on the same
+           .gk-band slab the Why Choose and numbers sections use, so the page's
+           three blue blocks read as one material rather than three near-misses.
+
+           The car is the hero's artwork reused: a second decorative render of
+           the same subject would be another file to ship for no gain, and this
+           one is already in the bundle by the time the section is reached. */
+        .gk-cta-band { padding: 2.1rem 2.4rem; }
+        .gk-cta-inner {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto auto;
+          align-items: center;
+          gap: 1.75rem;
+        }
+        .gk-cta-title {
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+          font-weight: 800; color: #FFFFFF; line-height: 1.2;
+          margin: 0 0 0.55rem; letter-spacing: -0.01em;
+        }
+        .gk-cta-sub {
+          color: rgba(255, 255, 255, 0.82); font-size: 0.85rem;
+          font-weight: 500; line-height: 1.6; margin: 0; max-width: 34ch;
+        }
+        .gk-cta-img { display: flex; justify-content: center; }
+        .gk-cta-img img { width: 270px; max-width: 100%; height: auto; display: block; }
+        .gk-cta-actions { display: flex; flex-direction: column; gap: 0.6rem; }
+
+        /* White fill on blue, not blue on blue: the band's gradient ends near
+           blue-700, so a blue-600 button would all but vanish into it. */
+        .gk-cta-primary {
+          display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+          background: #FFFFFF; color: #1D4ED8;
+          padding: 0.75rem 1.5rem; border-radius: 10px;
+          text-decoration: none; font-weight: 700; font-size: 0.85rem;
+          white-space: nowrap; transition: background .2s, transform .2s;
+        }
+        .gk-cta-primary:hover { background: #EFF6FF; transform: translateY(-2px); }
+
+        .gk-cta-secondary {
+          display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+          background: rgba(255, 255, 255, 0.1); color: #FFFFFF;
+          border: 1px solid rgba(255, 255, 255, 0.35);
+          padding: 0.7rem 1.5rem; border-radius: 10px;
+          text-decoration: none; font-weight: 600; font-size: 0.82rem;
+          white-space: nowrap; transition: background .2s, border-color .2s;
+        }
+        .gk-cta-secondary:hover { background: rgba(255, 255, 255, 0.18); border-color: #FFFFFF; }
+
+        /* Below the three-up width the car drops out rather than shrinking to
+           a smudge, and the block centres as a single column. */
+        @media (max-width: 1023px) {
+          .gk-cta-inner   { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 1.35rem; }
+          .gk-cta-sub     { max-width: 46ch; }
+          .gk-cta-actions { width: 100%; max-width: 320px; }
+        }
+        @media (max-width: 767px) {
+          .gk-cta-img  { display: none; }
+          .gk-cta-band { padding: 1.6rem 1.25rem; }
+        }
+
+        /* ── Numbers strip ────────────────────────────────────────────────
+           Icon chip, then the figure over its label. Vertically centred
+           rather than top-aligned (unlike the Why Choose row): every label
+           here is two or three words and fits one line, so there is no ragged
+           wrap to align against. */
+        .gk-stats-row {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 1.25rem;
+          align-items: center;
+        }
+        .gk-stat { display: flex; align-items: center; gap: 0.85rem; min-width: 0; }
+        .gk-stat-ico {
+          width: 40px; height: 40px; border-radius: 11px;
+          background: rgba(255, 255, 255, 0.16);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          display: flex; align-items: center; justify-content: center;
+          color: #FFFFFF; flex-shrink: 0;
+        }
+        .gk-stat-txt { min-width: 0; }
+        .gk-stat-val {
+          display: block; font-family: 'Space Grotesk', sans-serif;
+          font-size: 1.6rem; font-weight: 800; color: #FFFFFF;
+          line-height: 1.05; letter-spacing: -0.02em; white-space: nowrap;
+        }
+        .gk-stat-lab {
+          display: block; color: rgba(255, 255, 255, 0.8);
+          font-size: 0.75rem; font-weight: 500; line-height: 1.35;
+          margin-top: 3px; overflow-wrap: anywhere;
+        }
+        @media (max-width: 860px) { .gk-stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.3rem 1rem; } }
+        @media (max-width: 420px) {
+          .gk-stats-row  { grid-template-columns: 1fr; gap: 1.05rem; }
+          .gk-stats-band { padding: 1.3rem 1.15rem; }
+        }
+        .gk-why-title {
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: clamp(1.3rem, 2.6vw, 1.75rem);
+          font-weight: 800; color: #FFFFFF; text-align: center;
+          margin: 0 0 1.9rem; letter-spacing: -0.01em;
+        }
+        .gk-why-row {
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 1.25rem;
+          align-items: start;
+        }
+        .gk-why-item { display: flex; align-items: flex-start; gap: 0.7rem; min-width: 0; }
+        .gk-why-ico {
+          width: 38px; height: 38px; border-radius: 11px;
+          background: rgba(255, 255, 255, 0.16);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          display: flex; align-items: center; justify-content: center;
+          color: #FFFFFF; flex-shrink: 0;
+        }
+        .gk-why-txt { min-width: 0; padding-top: 0.1rem; }
+        .gk-why-txt b {
+          display: block; color: #FFFFFF; font-size: 0.82rem; font-weight: 700;
+          line-height: 1.3; overflow-wrap: anywhere;
+        }
+        .gk-why-txt span {
+          display: block; color: rgba(255, 255, 255, 0.78); font-size: 0.72rem;
+          font-weight: 500; line-height: 1.4; margin-top: 2px; overflow-wrap: anywhere;
+        }
+        @media (max-width: 1023px) { .gk-why-row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.3rem 1rem; } }
+        @media (max-width: 700px)  { .gk-why-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.15rem 0.85rem; } }
+        @media (max-width: 420px)  {
+          .gk-why-row  { grid-template-columns: 1fr; gap: 1rem; }
+          .gk-band     { border-radius: 18px; }
+          .gk-why-band { padding: 1.5rem 1.15rem 1.6rem; }
+          .gk-why-title { margin-bottom: 1.4rem; }
         }
 
         .gk-parts-grid {
@@ -392,10 +634,31 @@ export default function Home() {
           .gk-parts-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
         }
 
+        /* The row, not the buttons, owns the gap and the offset from the
+           grid — otherwise the two controls carry different top margins and
+           sit on different baselines. */
+        .gk-svc-actions {
+          display: flex; flex-wrap: wrap; align-items: center;
+          justify-content: center; gap: .8rem;
+          margin-top: 2.2rem;
+        }
+
+        .gk-svc-more {
+          display: inline-flex; align-items: center; gap: .5rem;
+          padding: .85rem 1.9rem;
+          background: #FFFFFF; color: #0F172A;
+          border: 1.5px solid #0F172A; border-radius: 10px;
+          font: inherit; font-weight: 800; font-size: .88rem;
+          letter-spacing: .02em; white-space: nowrap; cursor: pointer;
+          transition: background .2s, color .2s, transform .25s;
+        }
+        .gk-svc-more:hover { background: #0F172A; color: #FFFFFF; transform: translateY(-2px); }
+        .gk-svc-more:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+
         .gk-svc-all {
           display: inline-flex; align-items: center; gap: .5rem;
-          margin: 2.2rem auto 0; padding: .85rem 2rem;
-          background: #1D4ED8; color: #FFFFFF; border-radius: 999px;
+          margin: 0; padding: .85rem 2rem;
+          background: #2563EB; color: #FFFFFF; border-radius: 10px;
           text-decoration: none; font-weight: 800; font-size: .88rem;
           letter-spacing: .02em; white-space: nowrap;
           box-shadow: 0 10px 24px rgba(29, 78, 216, .24);
@@ -405,12 +668,12 @@ export default function Home() {
 
         .gk-shop-all {
           display: inline-flex; align-items: center; gap: .45rem;
-          background: #1E3A8A; color: #FFFFFF; padding: .65rem 1.4rem; min-height: 42px;
+          background: #2563EB; color: #FFFFFF; padding: .65rem 1.4rem; min-height: 42px;
           border-radius: 10px; text-decoration: none; font-weight: 800; font-size: .82rem;
-          white-space: nowrap; box-shadow: 0 8px 20px rgba(30,58,138,.22);
+          white-space: nowrap; box-shadow: 0 8px 20px rgba(37,99,235,.24);
           transition: transform .2s, box-shadow .2s;
         }
-        .gk-shop-all:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(30,58,138,.28); }
+        .gk-shop-all:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(37,99,235,.3); }
 
         /* ── Mobile hero ─────────────────────────────────────────────────────
            The car used to be hidden outright below 900px, which left the
@@ -506,17 +769,12 @@ export default function Home() {
           /* minmax(0, 1fr), not 1fr: a bare 1fr is minmax(auto, 1fr), so a long
              word inside a card sets the track's minimum and the grid grows
              past its container. */
-          .gk-why-grid,
-          .gk-how-grid,
-          .gk-stats-grid {
+          .gk-how-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             gap: 0.75rem !important;
           }
-          .gk-why-grid > *,
           .gk-how-grid > *,
-          .gk-stats-grid > *,
           .gk-testimonials-grid > * { min-width: 0; }
-          .gk-why-grid > div,
           .gk-how-grid > div {
             padding: 1rem 0.85rem !important;
             border-radius: 12px !important;
@@ -553,18 +811,17 @@ export default function Home() {
            the elements, which a plain stylesheet rule cannot override. */
         @media (max-width: 640px) {
           .gk-booking-card { box-shadow: 0 8px 18px rgba(15, 23, 42, 0.10) !important; }
-          .gk-why-grid > div,
           .gk-how-grid > div { box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06) !important; }
           .gk-testimonials-grid > div { box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05) !important; }
           .gk-svc-all { box-shadow: 0 5px 12px rgba(29, 78, 216, .26) !important; }
-          .gk-shop-all { box-shadow: 0 4px 10px rgba(30, 58, 138, .24) !important; }
+          .gk-shop-all { box-shadow: 0 4px 10px rgba(37, 99, 235, .26) !important; }
         }
 
         /* Hover lifts re-blur a shadow and re-composite the card. A touch
            screen fires them on tap and can leave them stuck afterwards, so
            they are reserved for pointers that can actually hover. */
         @media (hover: none) {
-          .gk-svc-all:hover, .gk-shop-all:hover {
+          .gk-svc-all:hover, .gk-shop-all:hover, .gk-svc-more:hover {
             transform: none;
             box-shadow: 0 5px 12px rgba(29, 78, 216, .26);
           }
@@ -596,7 +853,7 @@ export default function Home() {
                 PREMIUM CAR CARE
               </p>
 
-              <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.08, letterSpacing: '-0.02em', marginBottom: '1.1rem' }}>
+              <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.08, letterSpacing: '-0.02em', marginBottom: '1.1rem' }}>
                 Professional<br />
                 <span className="gk-shimmer">Car Service &amp; Repair</span>
               </h1>
@@ -614,7 +871,7 @@ export default function Home() {
                     display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
                     background: '#2563EB', color: '#FFFFFF',
                     padding: '0.85rem 2.1rem', borderRadius: '10px', textDecoration: 'none',
-                    fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.9rem',
+                    fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '0.9rem',
                     letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
                     boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)', transition: 'all 0.25s',
                   }}
@@ -631,7 +888,7 @@ export default function Home() {
                     background: 'rgba(255,255,255,0.05)', color: '#FFFFFF',
                     padding: '0.85rem 2.1rem', borderRadius: '10px', textDecoration: 'none',
                     border: '1.5px solid rgba(255,255,255,0.25)',
-                    fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: '0.9rem',
+                    fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: '0.9rem',
                     letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
                     transition: 'all 0.25s',
                   }}
@@ -643,7 +900,7 @@ export default function Home() {
               </div>
 
               {/* Trust Tags */}
-              <div className="gk-trust-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="gk-trust-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
                 {TRUST_TAGS.map(({ icon: Icon, title }) => (
                   <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', minWidth: 0 }}>
                     <div style={{ width: 26, height: 26, borderRadius: '7px', background: 'rgba(147, 197, 253, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -655,7 +912,7 @@ export default function Home() {
               </div>
 
               {/* Social Proof */}
-              <div className="gk-social-proof" style={{ marginTop: '1.2rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <div className="gk-social-proof" style={{ marginTop: '1.2rem', paddingTop: '1.1rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                 <span style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 600, whiteSpace: 'nowrap' }}>Trusted by 10,000+ Car Owners</span>
                 <div style={{ display: 'flex', gap: '2px', alignItems: 'center', flexShrink: 0 }}>
                   {[...Array(5)].map((_, i) => <Star key={i} size={13} fill="#F59E0B" color="#F59E0B" />)}
@@ -686,16 +943,38 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Removed: "Book Your Service in 3 Easy Steps" ──────────────────
-          It restated the How It Works section further down the page — Select
-          Service / Select Date & Time were the same two steps written twice,
-          about two thousand pixels apart, and it carried a fourth "Book
-          Service Now" CTA on a page that already had several. How It Works
-          keeps the process explanation; this block was pure repetition.
+      {/* ════════════════════ 2. BOOKING STEPS CARD ════════════════════
+          Restored on request after previously being removed for overlapping
+          How It Works further down the page. The two still describe the same
+          journey; this one is the above-the-fold funnel entry and stops at
+          three lines, How It Works is the full four-step explanation.
 
-          Deleting it also removes .gk-booking-card's `margin-top: -2.5rem`
-          overlap with the hero, so the hero's own bottom padding now reads
-          correctly on mobile. */}
+          The three steps are described, not operated: there is no service
+          picker, date picker or confirmation step on this page, so they carry
+          no chevrons or other controls that would not do anything. The single
+          blue CTA is the card's action. */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="gk-booking-card">
+          <h3 className="gk-booking-title">Book Your Service in 3 Easy Steps</h3>
+
+          <div className="gk-booking-row">
+            {BOOKING_STEPS.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="gk-booking-step">
+                <span className="gk-booking-ico"><Icon size={20} /></span>
+                <span className="gk-booking-lab">
+                  <b>{title}</b>
+                  <span>{desc}</span>
+                </span>
+              </div>
+            ))}
+
+            <Link to="/services" className="gk-booking-cta">
+              Book Service Now <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* ════════════════════ 3. SERVICES SECTION ════════════════════ */}
       <section
         id="services"
@@ -706,25 +985,51 @@ export default function Home() {
             <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
               WHAT WE OFFER
             </p>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.5rem', fontWeight: 900, color: '#0F172A', lineHeight: 1, margin: 0 }}>
+            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.5rem', fontWeight: 900, color: '#0F172A', lineHeight: 1, margin: 0 }}>
               Our <span style={{ color: '#2563EB' }}>Services</span>
             </h2>
-            <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: 500, lineHeight: 1.6, maxWidth: '480px', margin: '0.7rem auto 0' }}>
+            <p style={{ color: '#475569', fontSize: '0.9rem', fontWeight: 500, lineHeight: 1.6, maxWidth: '480px', margin: '0.7rem auto 0' }}>
               Tailored car care solutions — everything your car needs with upfront pricing and doorstep pickup.
             </p>
             <div style={{ width: 56, height: 4, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '3px' }} />
           </div>
 
-          {/* Strict Equal-Sized Cards Grid */}
-          <ServiceCategoryGrid categories={categories} limit={HOME_CATEGORY_COUNT} />
+          {/* Passing `undefined` rather than a bigger number is what keeps the
+              expansion honest: the grid's own slice is simply removed, so the
+              expanded state can never disagree with the catalogue length. */}
+          <div id="gk-services-grid">
+            {/* featured={false} — one flat grid of equally sized cards, four
+                to a row. The two-tier featured/compact arrangement is still
+                what /services renders; this section is a uniform 8. */}
+            <ServiceCategoryGrid
+              categories={categories}
+              limit={servicesExpanded ? undefined : HOME_CATEGORY_COUNT}
+              featured={false}
+            />
+          </div>
 
-          {categories.length > shownCount && (
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Link to="/services" className="gk-svc-all">
-                View All Services <ArrowRight size={16} />
-              </Link>
-            </div>
-          )}
+          {/* Two controls, deliberately different jobs and different weights.
+              "Show More" is the secondary (slate outline) button and expands
+              this grid in place. "View All Services" is the primary and leaves
+              for /services, where packages, filtering and booking live. */}
+          <div className="gk-svc-actions">
+            {categories.length > HOME_CATEGORY_COUNT && (
+              <button
+                type="button"
+                className="gk-svc-more"
+                onClick={() => setServicesExpanded((open) => !open)}
+                aria-expanded={servicesExpanded}
+                aria-controls="gk-services-grid"
+              >
+                {servicesExpanded ? 'Show Less' : 'Show More'}
+                {servicesExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+            )}
+
+            <Link to="/services" className="gk-svc-all">
+              View All Services <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -735,15 +1040,19 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem' }}>
             <div>
-              <p style={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
-                GENUINE SPARES
+              <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
+                GK MOTORS
               </p>
-              <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-                Shop Car <span style={{ color: '#1E3A8A' }}>Essentials</span>
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+                Shop Car <span style={{ color: '#2563EB' }}>Essentials</span>
               </h2>
-              <p style={{ color: '#64748B', fontSize: '0.88rem', fontWeight: 500, margin: '0.4rem 0 0', maxWidth: '440px' }}>
+              <p style={{ color: '#475569', fontSize: '0.88rem', fontWeight: 500, margin: '0.4rem 0 0', maxWidth: '440px' }}>
                 Genuine oils, filters, batteries and accessories — delivered or fitted during your service.
               </p>
+              {/* Left-aligned rather than centred: this section's header sits
+                  beside its CTA instead of over the grid, so the accent follows
+                  the heading's own edge. */}
+              <div style={{ width: 56, height: 4, background: '#2563EB', margin: '1.1rem 0 0', borderRadius: '3px' }} />
             </div>
             <Link to="/parts" className="gk-shop-all">
               View All Products <ArrowRight size={15} />
@@ -766,15 +1075,15 @@ export default function Home() {
             /* Error State */
             <div style={{ background: '#FFF', border: '1px solid #FEE2E2', borderRadius: '16px', padding: '2.5rem', textAlign: 'center' }}>
               <AlertCircle size={36} style={{ color: '#EF4444', margin: '0 auto 0.75rem' }} />
-              <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>Unable to load products</h3>
-              <p style={{ color: '#64748B', fontSize: '0.85rem', margin: '0.4rem 0 1.2rem' }}>Something went wrong while fetching car essentials.</p>
+              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>Unable to load products</h3>
+              <p style={{ color: '#475569', fontSize: '0.85rem', margin: '0.4rem 0 1.2rem' }}>Something went wrong while fetching car essentials.</p>
               <button
                 onClick={fetchParts}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
-                  background: '#1E3A8A', color: 'white', border: 'none', borderRadius: '8px',
+                  background: '#2563EB', color: 'white', border: 'none', borderRadius: '8px',
                   padding: '0.6rem 1.4rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem',
-                  fontFamily: 'Rajdhani, sans-serif'
+                  fontFamily: "'Space Grotesk', sans-serif"
                 }}
               >
                 <RefreshCw size={14} /> Try Again
@@ -784,8 +1093,8 @@ export default function Home() {
             /* Empty State */
             <div style={{ background: '#FFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '2.5rem', textAlign: 'center' }}>
               <p style={{ fontSize: '2.5rem', margin: '0 0 0.5rem' }}>📦</p>
-              <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>No products available</h3>
-              <p style={{ color: '#64748B', fontSize: '0.85rem', margin: '0.4rem 0 1.2rem' }}>Check back soon for new genuine car spares and accessories.</p>
+              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>No products available</h3>
+              <p style={{ color: '#475569', fontSize: '0.85rem', margin: '0.4rem 0 1.2rem' }}>Check back soon for new genuine car spares and accessories.</p>
               <Link to="/parts" className="gk-shop-all" style={{ margin: '0 auto' }}>
                 View All Products <ArrowRight size={15} />
               </Link>
@@ -803,28 +1112,27 @@ export default function Home() {
       </section>
 
       {/* ════════════════════ 5. WHY CHOOSE GK MOTORS ════════════════════ */}
-      <section style={{ background: '#F8FAFC', padding: '4rem 0', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+      {/* The eyebrow and the blue underline are deliberately not here. Every
+          other section carries both, but they exist to sit above a dark
+          heading on a light ground — inside a blue slab the heading is already
+          the only thing competing for attention, and a blue rule on blue would
+          be invisible anyway. */}
+      <section style={{ background: '#F8FAFC', padding: '3.5rem 0', borderTop: '1px solid #E2E8F0' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
-              WHY CHOOSE US
-            </p>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-              Why Choose <span style={{ color: '#2563EB' }}>GK Motors?</span>
-            </h2>
-            <div style={{ width: 52, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
-          </div>
+          <div className="gk-band gk-why-band">
+            <h2 className="gk-why-title">Why Choose GK Motors?</h2>
 
-          <div className="gk-why-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.1rem' }}>
-            {WHY_CHOOSE_US.map(({ icon: Icon, title, desc }) => (
-              <div key={title} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1.5rem 1.25rem', textAlign: 'center', boxShadow: '0 6px 18px rgba(15, 23, 42, 0.04)' }}>
-                <div style={{ width: 46, height: 46, borderRadius: '14px', background: 'linear-gradient(135deg, #2563EB 0%, #1E3A8A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.9rem', boxShadow: '0 6px 16px rgba(37, 99, 235, 0.25)' }}>
-                  <Icon size={21} style={{ color: '#FFFFFF' }} />
+            <div className="gk-why-row">
+              {WHY_CHOOSE_US.map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="gk-why-item">
+                  <span className="gk-why-ico"><Icon size={18} /></span>
+                  <span className="gk-why-txt">
+                    <b>{title}</b>
+                    <span>{desc}</span>
+                  </span>
                 </div>
-                <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.45rem' }}>{title}</h3>
-                <p style={{ color: '#64748B', fontSize: '0.78rem', lineHeight: 1.55, fontWeight: 500, margin: 0 }}>{desc}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -836,7 +1144,7 @@ export default function Home() {
             <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
               SIMPLE PROCESS
             </p>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
               How It <span style={{ color: '#2563EB' }}>Works</span>
             </h2>
             <div style={{ width: 50, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
@@ -845,12 +1153,12 @@ export default function Home() {
           <div className="gk-how-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.1rem' }}>
             {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
               <div key={step} style={{ position: 'relative', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1.5rem 1.25rem', overflow: 'hidden' }}>
-                <span style={{ position: 'absolute', top: '0.3rem', right: '0.8rem', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.8rem', fontWeight: 950, color: 'rgba(37, 99, 235, 0.08)', lineHeight: 1 }}>{step}</span>
+                <span style={{ position: 'absolute', top: '0.3rem', right: '0.8rem', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.8rem', fontWeight: 950, color: 'rgba(37, 99, 235, 0.08)', lineHeight: 1 }}>{step}</span>
                 <div style={{ width: 44, height: 44, borderRadius: '12px', background: '#FFFFFF', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.9rem', position: 'relative' }}>
                   <Icon size={20} style={{ color: '#2563EB' }} />
                 </div>
-                <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.4rem' }}>{title}</h3>
-                <p style={{ color: '#64748B', fontSize: '0.78rem', lineHeight: 1.55, fontWeight: 500, margin: 0 }}>{desc}</p>
+                <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.4rem' }}>{title}</h3>
+                <p style={{ color: '#475569', fontSize: '0.78rem', lineHeight: 1.55, fontWeight: 500, margin: 0 }}>{desc}</p>
               </div>
             ))}
           </div>
@@ -869,23 +1177,25 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Numbers strip — restyled for the light background it now sits on. */}
-          <div className="gk-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '3rem' }}>
-            {STATS.map(({ value, label, icon: Icon }) => (
-              <div key={label} style={{ textAlign: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '1.1rem 0.75rem' }}>
-                <div style={{ width: 36, height: 36, borderRadius: '11px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.6rem' }}>
-                  <Icon size={17} style={{ color: '#2563EB' }} />
+          <div className="gk-band gk-stats-band" style={{ marginBottom: '3rem' }}>
+            <div className="gk-stats-row">
+              {STATS.map(({ value, label, icon: Icon }) => (
+                <div key={label} className="gk-stat">
+                  <span className="gk-stat-ico"><Icon size={18} /></span>
+                  <span className="gk-stat-txt">
+                    <span className="gk-stat-val">{value}</span>
+                    <span className="gk-stat-lab">{label}</span>
+                  </span>
                 </div>
-                <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.65rem', fontWeight: 900, color: '#0F172A', lineHeight: 1, letterSpacing: '-0.02em' }}>{value}</div>
-                <div style={{ color: '#64748B', fontSize: '0.64rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.35rem' }}>{label}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
             <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
               WHAT OUR CUSTOMERS SAY
             </p>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
               Trusted by <span style={{ color: '#2563EB' }}>Thousands</span>
             </h2>
             <div style={{ width: 50, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
@@ -922,7 +1232,7 @@ export default function Home() {
                     style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${item.color}` }}
                   />
                   <div>
-                    <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: '1rem', color: '#0F172A', margin: 0 }}>{item.name}</h4>
+                    <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: '1rem', color: '#0F172A', margin: 0 }}>{item.name}</h4>
                     <p style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700, margin: '2px 0 0' }}>{item.role}</p>
                   </div>
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px' }}>
@@ -939,44 +1249,35 @@ export default function Home() {
       {/* ════════════════════ 9. FINAL CTA BANNER ════════════════════ */}
       <section style={{ position: 'relative', background: 'linear-gradient(180deg, #0F172A 0%, #131B31 100%)', padding: '4rem 0', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-40%', right: '5%', width: '480px', height: '480px', background: 'radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2, textAlign: 'center' }}>
-          <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(1.8rem, 4.5vw, 2.7rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.1, marginBottom: '0.8rem' }}>
-            Give Your Car The Care It Deserves
-          </h2>
-          <p style={{ color: '#94A3B8', fontSize: '0.92rem', fontWeight: 500, maxWidth: '540px', margin: '0 auto 1.8rem', lineHeight: 1.7 }}>
-            Book your service today and experience hassle-free car care at your doorstep.
-          </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2 }}>
+          <div className="gk-band gk-cta-band">
+            <div className="gk-cta-inner">
+              <div>
+                <h2 className="gk-cta-title">
+                  Give Your Car<br />The Care It Deserves
+                </h2>
+                <p className="gk-cta-sub">
+                  Book your service today &amp; experience hassle-free car care at your doorstep.
+                </p>
+              </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-            <Link
-              to="/services"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-                background: '#2563EB', color: '#FFFFFF', padding: '0.8rem 2rem',
-                borderRadius: '10px', textDecoration: 'none', fontFamily: 'Rajdhani, sans-serif',
-                fontWeight: 900, fontSize: '0.88rem', letterSpacing: '0.06em', textTransform: 'uppercase',
-                boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)', transition: 'all 0.25s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.background = '#1D4ED8'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#2563EB'; }}
-            >
-              <Wrench size={16} /> Book Service Now <ArrowRight size={16} />
-            </Link>
+              {/* Decorative: the heading beside it already names the subject, so
+                  an empty alt keeps it out of the accessibility tree rather than
+                  having it announced twice. Lazy and async-decoded — this is the
+                  last section on the page and never near first paint. */}
+              <div className="gk-cta-img">
+                <img src={heroCar} alt="" width={554} height={241} loading="lazy" decoding="async" />
+              </div>
 
-            <a
-              href="tel:+919253625099"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-                background: 'rgba(255,255,255,0.06)', color: '#FFFFFF', padding: '0.8rem 2rem',
-                borderRadius: '10px', textDecoration: 'none', border: '1.5px solid rgba(255,255,255,0.25)',
-                fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: '0.88rem',
-                letterSpacing: '0.06em', textTransform: 'uppercase', transition: 'all 0.25s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#FFFFFF'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
-            >
-              <Phone size={16} /> Call Us: +91 92536 25099
-            </a>
+              <div className="gk-cta-actions">
+                <Link to="/services" className="gk-cta-primary">
+                  Book Service Now <ArrowRight size={15} />
+                </Link>
+                <a href="tel:+919253625099" className="gk-cta-secondary">
+                  <Phone size={14} /> Call Us: +91 92536 25099
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>

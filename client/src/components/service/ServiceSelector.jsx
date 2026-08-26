@@ -50,7 +50,7 @@ const CARD_STYLES = `
     overflow: hidden;
   }
   .gk-pkg:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(15,23,42,0.09); }
-  .gk-pkg--in { border-color: #1E3A8A; box-shadow: 0 10px 24px rgba(30,58,138,0.12); }
+  .gk-pkg--in { border-color: #2563EB; box-shadow: 0 10px 24px rgba(37,99,235,0.12); }
   .gk-pkg--off { background: #F8FAFC; opacity: .72; }
   .gk-pkg--off:hover { transform: none; box-shadow: 0 2px 10px rgba(15,23,42,0.03); }
 
@@ -78,11 +78,11 @@ const CARD_STYLES = `
   .gk-pkg-main { flex: 1 1 auto; min-width: 0; }
   .gk-pkg-head { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; margin-bottom: .3rem; }
   .gk-pkg-title {
-    font-family: Rajdhani, sans-serif; font-weight: 900; font-size: 1.15rem;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 1.15rem;
     color: #0F172A; margin: 0; line-height: 1.2;
   }
   .gk-pkg-tier {
-    background: #EBF0FF; color: #1E3A8A; border-radius: 999px;
+    background: #EBF0FF; color: #2563EB; border-radius: 999px;
     padding: .12rem .55rem; font-size: .58rem; font-weight: 900;
     text-transform: uppercase; letter-spacing: .08em;
   }
@@ -93,7 +93,7 @@ const CARD_STYLES = `
     display: inline-flex; align-items: center; gap: .3rem;
     color: #475569; font-size: .72rem; font-weight: 600;
   }
-  .gk-pkg-meta svg { color: #1E3A8A; flex: none; }
+  .gk-pkg-meta svg { color: #2563EB; flex: none; }
 
   .gk-pkg-feats {
     list-style: none; margin: 0; padding: 0;
@@ -108,7 +108,7 @@ const CARD_STYLES = `
   .gk-pkg-more {
     display: inline-flex; align-items: center; gap: .25rem;
     background: none; border: none; padding: .5rem 0 0; margin: 0;
-    color: #1E3A8A; font-size: .74rem; font-weight: 800; cursor: pointer;
+    color: #2563EB; font-size: .74rem; font-weight: 800; cursor: pointer;
     text-decoration: underline; text-underline-offset: 3px;
   }
   .gk-pkg-more:hover { color: #2563EB; }
@@ -125,7 +125,7 @@ const CARD_STYLES = `
   .gk-pkg-price { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
   .gk-pkg-was { color: #94A3B8; font-size: .82rem; font-weight: 600; text-decoration: line-through; }
   .gk-pkg-now {
-    font-family: Rajdhani, sans-serif; font-size: 1.5rem; font-weight: 900;
+    font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 900;
     color: #0F172A; letter-spacing: -.01em; line-height: 1;
   }
   .gk-pkg-save {
@@ -137,14 +137,14 @@ const CARD_STYLES = `
 
   .gk-pkg-cta {
     display: inline-flex; align-items: center; gap: .4rem;
-    background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%); color: #FFF;
+    background: linear-gradient(135deg, #2563EB 0%, #0F172A 100%); color: #FFF;
     border: none; border-radius: 10px; padding: .7rem 1.3rem;
-    font-family: Rajdhani, sans-serif; font-weight: 900; font-size: .8rem;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: .8rem;
     letter-spacing: .07em; text-transform: uppercase; cursor: pointer;
     white-space: nowrap; transition: transform .18s, box-shadow .18s, filter .18s;
     min-height: 44px;
   }
-  .gk-pkg-cta:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(30,58,138,.28); }
+  .gk-pkg-cta:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(37,99,235,.28); }
   .gk-pkg--in .gk-pkg-cta { background: #DCFCE7; color: #166534; }
   .gk-pkg-cta:disabled { cursor: not-allowed; }
   .gk-pkg--off .gk-pkg-cta { background: #E2E8F0; color: #94A3B8; }
@@ -214,7 +214,7 @@ export default function ServiceSelector({ category, packages = [], selectedCar }
         </p>
         <p style={{ color: '#64748B', fontSize: '0.85rem', fontWeight: 500 }}>
           We're adding packages here soon. Try another category, or call us on
-          {' '}<a href="tel:+919253625099" style={{ color: '#1E3A8A', fontWeight: 700 }}>+91 92536 25099</a>.
+          {' '}<a href="tel:+919253625099" style={{ color: '#2563EB', fontWeight: 700 }}>+91 92536 25099</a>.
         </p>
       </div>
     );
@@ -225,7 +225,7 @@ export default function ServiceSelector({ category, packages = [], selectedCar }
       <style>{CARD_STYLES}</style>
 
       <div style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.4rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.25rem' }}>
+        <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.4rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.25rem' }}>
           {category.name}
         </h2>
         <p style={{ color: '#64748B', fontSize: '0.8rem', fontWeight: 500 }}>
@@ -235,7 +235,7 @@ export default function ServiceSelector({ category, packages = [], selectedCar }
 
       {currentInCategory && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: '#EFF6FF', border: '1.5px solid #BFDBFE', borderRadius: '12px', padding: '0.75rem 1rem', marginBottom: '1.25rem' }}>
-          <Info size={16} style={{ color: '#1E3A8A', flexShrink: 0 }} />
+          <Info size={16} style={{ color: '#2563EB', flexShrink: 0 }} />
           <span style={{ color: '#1E40AF', fontSize: '0.82rem', fontWeight: 600 }}>
             <strong>{currentInCategory.name}</strong> is in your cart. Picking another
             package here will replace it.

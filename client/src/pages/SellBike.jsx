@@ -104,7 +104,7 @@ export default function SellBike() {
       <div style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', padding: '3.5rem 0' }}>
         <div className="max-w-3xl mx-auto px-4">
           <div className="animate-fadeInUp sell-header" style={{ textAlign: 'center' }}>
-            <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(2rem, 5vw, 3.8rem)', fontWeight: 900, color: '#0F172A', lineHeight: 1.1, marginBottom: '0.8rem' }}>
+            <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(2rem, 5vw, 3.8rem)', fontWeight: 900, color: '#0F172A', lineHeight: 1.1, marginBottom: '0.8rem' }}>
               SELL YOUR <span style={{ color: '#1E3A8A' }}>CAR INSTANTLY</span>
             </h1>
             <p style={{ color: '#64748B', fontSize: '1.15rem', fontWeight: 600, letterSpacing: '0.02em', maxWidth: '550px', margin: '0 auto' }}>Get a premium market appraisal and sell your vehicle in under 60 minutes.</p>
@@ -125,7 +125,7 @@ export default function SellBike() {
                 <div key={title} style={{ textAlign: 'center', padding: '1.2rem 1rem', background: '#FFF', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', transition: 'all 0.3s' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.borderColor = '#1E3A8A'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(30, 58, 138, 0.08)'; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.02)'; }}>
-                  <div style={{ color: '#111', fontWeight: 800, fontSize: '0.85rem', fontFamily: 'Rajdhani, sans-serif', marginBottom: '0.1rem' }}>{title.toUpperCase()}</div>
+                  <div style={{ color: '#111', fontWeight: 800, fontSize: '0.85rem', fontFamily: "'Space Grotesk', sans-serif", marginBottom: '0.1rem' }}>{title.toUpperCase()}</div>
                   <div style={{ color: '#888', fontSize: '0.75rem', fontWeight: 600 }}>{desc}</div>
                 </div>
               ))}
@@ -134,7 +134,7 @@ export default function SellBike() {
             <form onSubmit={handleSubmit(onSubmit)} style={{ background: '#FFF', border: '1px solid #E2E8F0', borderRadius: '24px', padding: '2rem', boxShadow: '0 20px 60px rgba(15, 23, 42, 0.05)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '2rem' }}>
                 <div style={{ width: 5, height: 26, background: '#1E3A8A', borderRadius: '4px' }} />
-                <h3 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.6rem', fontWeight: 900, margin: 0, letterSpacing: '0.05em' }}>VEHICLE SPECIFICATIONS</h3>
+                <h3 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.6rem', fontWeight: 900, margin: 0, letterSpacing: '0.05em' }}>VEHICLE SPECIFICATIONS</h3>
               </div>
  
               <div className="sell-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
@@ -209,7 +209,7 @@ export default function SellBike() {
               <div style={{ marginTop: '2rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1.2rem' }}>
                   <div style={{ width: 5, height: 26, background: '#1E3A8A', borderRadius: '4px' }} />
-                  <h3 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.4rem', fontWeight: 900, margin: 0, letterSpacing: '0.05em' }}>PREMIUM FEATURES</h3>
+                  <h3 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.4rem', fontWeight: 900, margin: 0, letterSpacing: '0.05em' }}>PREMIUM FEATURES</h3>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem', background: '#F8FAFC', padding: '1.2rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
                   {['Airbags', 'ABS', 'Sunroof', 'Touchscreen', 'Parking Camera', 'Alloy Wheels'].map(feature => (
@@ -246,7 +246,7 @@ export default function SellBike() {
                   <div>
                     <div style={{ color: '#888', fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.1rem' }}>VALUATION</div>
                     {estimatedPrice ? (
-                      <div className="animate-fadeIn" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2rem', fontWeight: 950, color: '#10B981', lineHeight: 1 }}>
+                      <div className="animate-fadeIn" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2rem', fontWeight: 950, color: '#10B981', lineHeight: 1 }}>
                         ₹{estimatedPrice.toLocaleString('en-IN')}
                       </div>
                     ) : (
@@ -299,7 +299,7 @@ export default function SellBike() {
               <div style={{ marginTop: '1rem', padding: '1rem', background: '#FFF', borderRadius: '16px', border: '1.5px solid #EEE' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem' }}>
                   <Truck size={14} style={{ color: '#1E3A8A' }} />
-                  <span style={{ color: '#111', fontWeight: 800, fontSize: '0.85rem', fontFamily: 'Rajdhani, sans-serif' }}>PICKUP DETAILS</span>
+                  <span style={{ color: '#111', fontWeight: 800, fontSize: '0.85rem', fontFamily: "'Space Grotesk', sans-serif" }}>PICKUP DETAILS</span>
                 </div>
                 <div className="sell-pickup-grid" style={{ display: 'grid', gridTemplateColumns: '1.7fr 1.5fr 0.8fr', gap: '0.5rem' }}>
                   <input className="input-light" style={{ borderRadius: '8px', fontWeight: 600, height: '36px', fontSize: '0.75rem' }} placeholder="Address" {...register('pickupStreet')} />
@@ -312,13 +312,13 @@ export default function SellBike() {
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', width: '100%' }}>
                   <input type="checkbox" {...register('isOneHourSell')} style={{ accentColor: '#1E3A8A', width: 20, height: 20, cursor: 'pointer' }} />
                   <div>
-                    <div style={{ color: '#0F172A', fontWeight: 900, fontSize: '0.85rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.05em' }}>ACTIVATE EXPRESS SALE</div>
+                    <div style={{ color: '#0F172A', fontWeight: 900, fontSize: '0.85rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.05em' }}>ACTIVATE EXPRESS SALE</div>
                     <div style={{ color: '#64748B', fontSize: '0.65rem', fontWeight: 600 }}>Get priority appraisal within 15 minutes</div>
                   </div>
                 </label>
               </div>
 
-              <button type="submit" className="btn-primary" style={{ height: '48px', width: '100%', justifyContent: 'center', padding: '0.4rem', marginTop: '1.2rem', fontSize: '1.05rem', fontWeight: 900, borderRadius: '12px', letterSpacing: '0.05em', background: 'linear-gradient(135deg, #1E3A8A, #172554)', border: 'none', boxShadow: '0 6px 15px rgba(30, 58, 138, 0.2)', fontFamily: 'Rajdhani, sans-serif' }} disabled={submitting}>
+              <button type="submit" className="btn-primary" style={{ height: '48px', width: '100%', justifyContent: 'center', padding: '0.4rem', marginTop: '1.2rem', fontSize: '1.05rem', fontWeight: 900, borderRadius: '12px', letterSpacing: '0.05em', background: 'linear-gradient(135deg, #1E3A8A, #172554)', border: 'none', boxShadow: '0 6px 15px rgba(30, 58, 138, 0.2)', fontFamily: "'Space Grotesk', sans-serif" }} disabled={submitting}>
                 {submitting ? <Loader size={18} style={{ animation: 'spin 0.8s linear infinite' }} /> : <><Upload size={16} /> SUBMIT REQUEST</>}
               </button>
             </form>
@@ -330,11 +330,11 @@ export default function SellBike() {
             <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(30, 58, 138, 0.08)', color: '#1E3A8A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
               <CheckCircle size={48} />
             </div>
-            <h2 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 950, marginBottom: '0.6rem', lineHeight: 1, letterSpacing: '0.02em' }}>SUCCESSFULLY LISTED!</h2>
+            <h2 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.2rem', fontWeight: 950, marginBottom: '0.6rem', lineHeight: 1, letterSpacing: '0.02em' }}>SUCCESSFULLY LISTED!</h2>
             <p style={{ color: '#64748B', fontSize: '1rem', fontWeight: 600, maxWidth: '440px', margin: '0 auto 2rem', lineHeight: 1.5 }}>Our experts are reviewing your submission. You will receive a premium offer within <span style={{ color: '#1E3A8A', fontWeight: 900 }}>30 minutes</span>.</p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <button onClick={() => navigate('/my-bookings')} className="btn-primary" style={{ height: '52px', padding: '0 2rem', borderRadius: '12px', fontWeight: 900, background: '#1E3A8A', border: 'none', boxShadow: '0 6px 15px rgba(30, 58, 138, 0.15)', fontFamily: 'Rajdhani, sans-serif', fontSize: '0.9rem', letterSpacing: '0.05em' }}>MY SELL REQUESTS</button>
-              <button onClick={() => navigate('/')} className="btn-outline" style={{ height: '52px', padding: '0 2rem', borderRadius: '12px', fontWeight: 900, border: '2px solid #1E3A8A', color: '#1E3A8A', background: 'transparent', fontFamily: 'Rajdhani, sans-serif', fontSize: '0.9rem', letterSpacing: '0.05em' }}>BACK TO HOME</button>
+              <button onClick={() => navigate('/my-bookings')} className="btn-primary" style={{ height: '52px', padding: '0 2rem', borderRadius: '12px', fontWeight: 900, background: '#1E3A8A', border: 'none', boxShadow: '0 6px 15px rgba(30, 58, 138, 0.15)', fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.9rem', letterSpacing: '0.05em' }}>MY SELL REQUESTS</button>
+              <button onClick={() => navigate('/')} className="btn-outline" style={{ height: '52px', padding: '0 2rem', borderRadius: '12px', fontWeight: 900, border: '2px solid #1E3A8A', color: '#1E3A8A', background: 'transparent', fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.9rem', letterSpacing: '0.05em' }}>BACK TO HOME</button>
             </div>
           </div>
         )}

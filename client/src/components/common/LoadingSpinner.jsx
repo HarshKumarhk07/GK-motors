@@ -6,7 +6,7 @@ export default function LoadingSpinner({ size = 'md', text = '' }) {
       <svg width={s} height={s} viewBox="0 0 50 50" style={{ animation: 'spin 0.8s linear infinite' }}>
         <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
         <circle cx="25" cy="25" r="20" fill="none" stroke="#2A2A2A" strokeWidth="4" />
-        <circle cx="25" cy="25" r="20" fill="none" stroke="#1E3A8A" strokeWidth="4"
+        <circle cx="25" cy="25" r="20" fill="none" stroke="#2563EB" strokeWidth="4"
           strokeDasharray="80" strokeDashoffset="60" strokeLinecap="round" />
       </svg>
       {text && <p style={{ color: '#888', fontSize: '0.9rem' }}>{text}</p>}

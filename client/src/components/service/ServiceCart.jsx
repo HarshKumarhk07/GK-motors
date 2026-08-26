@@ -17,8 +17,8 @@ export default function ServiceCart({ onCheckout, onChangeCar, checkoutDisabled 
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-        <ShoppingCart size={17} style={{ color: '#1E3A8A' }} />
-        <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1rem', color: '#0F172A', letterSpacing: '0.02em' }}>
+        <ShoppingCart size={17} style={{ color: '#2563EB' }} />
+        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1rem', color: '#0F172A', letterSpacing: '0.02em' }}>
           Your Booking
         </h3>
       </div>
@@ -29,7 +29,7 @@ export default function ServiceCart({ onCheckout, onChangeCar, checkoutDisabled 
           <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#EBF0FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
             {car.image
               ? <img src={car.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <CarIcon size={18} style={{ color: '#1E3A8A' }} />}
+              : <CarIcon size={18} style={{ color: '#2563EB' }} />}
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: '0.8rem', color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -45,7 +45,7 @@ export default function ServiceCart({ onCheckout, onChangeCar, checkoutDisabled 
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0,
               background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '8px',
-              color: '#1E3A8A', cursor: 'pointer', padding: '0.4rem 0.6rem',
+              color: '#2563EB', cursor: 'pointer', padding: '0.4rem 0.6rem',
               minHeight: 36, fontWeight: 800, fontSize: '0.7rem', fontFamily: 'inherit',
             }}
           >
@@ -71,7 +71,7 @@ export default function ServiceCart({ onCheckout, onChangeCar, checkoutDisabled 
                   {s.category}
                 </div>
               </div>
-              <div style={{ fontWeight: 900, fontSize: '0.8rem', color: '#0F172A', whiteSpace: 'nowrap', fontFamily: 'Rajdhani, sans-serif' }}>
+              <div style={{ fontWeight: 900, fontSize: '0.8rem', color: '#0F172A', whiteSpace: 'nowrap', fontFamily: "'Space Grotesk', sans-serif" }}>
                 ₹{Number(s.price).toLocaleString('en-IN')}
               </div>
               <button
@@ -91,7 +91,7 @@ export default function ServiceCart({ onCheckout, onChangeCar, checkoutDisabled 
         <span style={{ fontSize: '0.7rem', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
           Total
         </span>
-        <span style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.35rem', fontWeight: 900, color: '#0F172A', letterSpacing: '-0.02em' }}>
+        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.35rem', fontWeight: 900, color: '#0F172A', letterSpacing: '-0.02em' }}>
           ₹{Number(totalAmount).toLocaleString('en-IN')}
         </span>
       </div>
@@ -102,10 +102,10 @@ export default function ServiceCart({ onCheckout, onChangeCar, checkoutDisabled 
         className="gk-cart-cta"
         style={{
           width: '100%',
-          background: empty || checkoutDisabled ? '#E2E8F0' : 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
+          background: empty || checkoutDisabled ? '#E2E8F0' : 'linear-gradient(135deg, #2563EB 0%, #0F172A 100%)',
           color: empty || checkoutDisabled ? '#94A3B8' : '#FFF',
           border: 'none', borderRadius: '10px', padding: '0.72rem',
-          fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.82rem',
+          fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '0.82rem',
           letterSpacing: '0.09em', textTransform: 'uppercase',
           cursor: empty || checkoutDisabled ? 'not-allowed' : 'pointer',
           transition: 'all 0.2s',

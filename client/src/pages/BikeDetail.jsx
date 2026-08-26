@@ -223,7 +223,7 @@ export default function BikeDetail() {
             {/* Specifications */}
             {bike.specifications && Object.keys(bike.specifications).some(k => bike.specifications[k]) && (
               <div style={{ marginTop: '0.8rem', background: '#FFF', border: '1px solid #EEE', borderRadius: '20px', padding: '1.2rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
-                <h3 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.4rem', fontWeight: 950, marginBottom: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <h3 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.4rem', fontWeight: 950, marginBottom: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                   <div style={{ width: 6, height: 24, background: '#1E3A8A', borderRadius: '4px' }} />
                   Technical Specifications
                 </h3>
@@ -241,7 +241,7 @@ export default function BikeDetail() {
             {/* Description */}
             {bike.description && (
               <div style={{ marginTop: '1.2rem', background: '#FFF', border: '1px solid #EEE', borderRadius: '20px', padding: '1.2rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
-                <h3 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.4rem', fontWeight: 950, marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <h3 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.4rem', fontWeight: 950, marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                   <div style={{ width: 6, height: 24, background: '#1E3A8A', borderRadius: '4px' }} />
                   Vehicle Overview
                 </h3>
@@ -258,13 +258,13 @@ export default function BikeDetail() {
                 <span className={`badge ${bike.type === 'new' ? 'badge-green' : 'badge-blue'}`} style={{ fontWeight: 800, fontSize: '0.6rem' }}>{bike.type === 'new' ? 'NEW' : 'CERTIFIED'}</span>
               </div>
  
-              <h1 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.4rem', fontWeight: 950, marginBottom: '0.6rem', lineHeight: 1, letterSpacing: '0.01em' }}>
+              <h1 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.4rem', fontWeight: 950, marginBottom: '0.6rem', lineHeight: 1, letterSpacing: '0.01em' }}>
                 {bike.brand} {bike.model}
               </h1>
  
               <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem' }}>
-                  <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.8rem', fontWeight: 950, color: '#1E3A8A', lineHeight: 1 }}>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.8rem', fontWeight: 950, color: '#1E3A8A', lineHeight: 1 }}>
                     ₹{effectivePrice?.toLocaleString('en-IN')}
                   </div>
                   {discount > 0 && (
@@ -272,7 +272,7 @@ export default function BikeDetail() {
                       background: 'rgba(30, 58, 138, 0.1)', color: '#1E3A8A',
                       fontSize: '0.8rem', fontWeight: 900,
                       padding: '2px 8px', borderRadius: '6px',
-                      fontFamily: 'Rajdhani, sans-serif'
+                      fontFamily: "'Space Grotesk', sans-serif"
                     }}>
                       {discount}% OFF
                     </div>
@@ -295,7 +295,7 @@ export default function BikeDetail() {
                 ].map(({ icon: Icon, label, value }) => (
                   <div key={label} style={{ padding: '0.6rem 0.8rem', background: '#F9F9F9', borderRadius: '12px', border: '1px solid #EEE' }}>
                     <div style={{ color: '#888', fontSize: '0.65rem', marginBottom: '0.2rem', fontWeight: 800, textTransform: 'uppercase' }}>{label}</div>
-                    <div style={{ color: '#0F172A', fontWeight: 900, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: 'Rajdhani, sans-serif' }}>
+                    <div style={{ color: '#0F172A', fontWeight: 900, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: "'Space Grotesk', sans-serif" }}>
                       <Icon size={16} style={{ color: '#1E3A8A' }} /> {value}
                     </div>
                   </div>
@@ -334,7 +334,7 @@ export default function BikeDetail() {
               {bike.userEnquiry && (
                 <div style={{ marginBottom: '1.2rem', padding: '1rem', background: 'rgba(30, 58, 138, 0.05)', border: '1px solid rgba(30, 58, 138, 0.1)', borderRadius: '14px' }}>
                   <div style={{ color: '#1E3A8A', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.3rem', letterSpacing: '0.1em' }}>ENQUIRY STATUS</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0F172A', fontWeight: 900, fontSize: '1rem', fontFamily: 'Rajdhani, sans-serif' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0F172A', fontWeight: 900, fontSize: '1rem', fontFamily: "'Space Grotesk', sans-serif" }}>
                     <CheckCircle size={16} style={{ color: '#10B981' }} /> 
                     {bike.userEnquiry.status?.toUpperCase() || 'REQUESTED'}
                   </div>
@@ -343,11 +343,11 @@ export default function BikeDetail() {
  
               {/* Action Buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-                <button onClick={handleEnquire} disabled={enquirySending} className="btn-primary" style={{ height: '56px', borderRadius: '14px', fontSize: '1.1rem', fontWeight: 950, background: '#1E3A8A', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em' }}>
+                <button onClick={handleEnquire} disabled={enquirySending} className="btn-primary" style={{ height: '56px', borderRadius: '14px', fontSize: '1.1rem', fontWeight: 950, background: '#1E3A8A', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em' }}>
                   <MessageCircle size={22} /> {enquirySending ? 'SENDING...' : 'ENQUIRE NOW'}
                 </button>
                 {bike.seller?.phone && (
-                  <a href={`tel:${bike.seller.phone}`} className="btn-outline" style={{ height: '56px', borderRadius: '14px', fontSize: '1.1rem', fontWeight: 900, background: '#FFF', color: '#0F172A', border: '2px solid #E2E8F0', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Rajdhani, sans-serif' }}>
+                  <a href={`tel:${bike.seller.phone}`} className="btn-outline" style={{ height: '56px', borderRadius: '14px', fontSize: '1.1rem', fontWeight: 900, background: '#FFF', color: '#0F172A', border: '2px solid #E2E8F0', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Space Grotesk', sans-serif" }}>
                     <Phone size={20} /> CALL SELLER
                   </a>
                 )}
@@ -359,7 +359,7 @@ export default function BikeDetail() {
               <div className="animate-fadeIn" style={{ background: '#F9F9F9', border: '1px solid #EEE', borderRadius: '20px', padding: '1.5rem', animationDelay: '0.3s' }}>
                 <p style={{ color: '#888', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.2rem' }}>LISTED BY</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
-                  <div style={{ width: 56, height: 56, borderRadius: '16px', background: '#1E3A8A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 950, color: 'white', fontSize: '1.5rem', boxShadow: '0 8px 20px rgba(30, 58, 138, 0.2)', fontFamily: 'Rajdhani, sans-serif' }}>
+                  <div style={{ width: 56, height: 56, borderRadius: '16px', background: '#1E3A8A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 950, color: 'white', fontSize: '1.5rem', boxShadow: '0 8px 20px rgba(30, 58, 138, 0.2)', fontFamily: "'Space Grotesk', sans-serif" }}>
                     {bike.seller.name?.charAt(0).toUpperCase()}
                   </div>
                   <div>

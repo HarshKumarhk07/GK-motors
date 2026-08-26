@@ -76,7 +76,7 @@ export default function BuyBikes() {
       {/* Header */}
       <div style={{ background: '#FFFFFF', borderBottom: '1px solid #F1F5F9', padding: '2.5rem 0' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 950, color: '#0F172A', marginBottom: '0.4rem', letterSpacing: '0.02em' }}>
+          <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 950, color: '#0F172A', marginBottom: '0.4rem', letterSpacing: '0.02em' }}>
             Explore <span style={{ color: '#1E3A8A' }}>Luxury Collection</span>
           </h1>
           <p style={{ color: '#64748B', fontSize: '1.1rem', fontWeight: 600 }}>{total} premium vehicles available</p>
@@ -101,7 +101,7 @@ export default function BuyBikes() {
                     background: filters.type === t ? 'rgba(30, 58, 138, 0.05)' : '#FFF',
                     color: filters.type === t ? '#1E3A8A' : '#64748B',
                     cursor: 'pointer', fontSize: '0.9rem', fontWeight: 800,
-                    transition: 'all 0.3s', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.05em'
+                    transition: 'all 0.3s', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.05em'
                   }}>
                   {t === '' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
                 </button>
@@ -109,7 +109,7 @@ export default function BuyBikes() {
             </div>
 
             <div className="bikes-sort-row" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <select className="input-light" style={{ width: 'auto', background: '#FFF', border: '1px solid rgba(156, 163, 175, 0.2)', fontWeight: 700, fontFamily: 'Rajdhani, sans-serif' }} value={filters.sort} onChange={(e) => handleFilter('sort', e.target.value)}>
+              <select className="input-light" style={{ width: 'auto', background: '#FFF', border: '1px solid rgba(156, 163, 175, 0.2)', fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif" }} value={filters.sort} onChange={(e) => handleFilter('sort', e.target.value)}>
                 <option value="newest">Newest First</option>
                 <option value="price_asc">Price: Low to High</option>
                 <option value="price_desc">Price: High to Low</option>
@@ -117,7 +117,7 @@ export default function BuyBikes() {
               </select>
 
                <button onClick={() => setFiltersOpen(!filtersOpen)}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.5rem', background: '#0F172A', border: 'none', borderRadius: '12px', color: '#FFF', cursor: 'pointer', fontWeight: 900, whiteSpace: 'nowrap', transition: 'all 0.3s', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.05em' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.5rem', background: '#0F172A', border: 'none', borderRadius: '12px', color: '#FFF', cursor: 'pointer', fontWeight: 900, whiteSpace: 'nowrap', transition: 'all 0.3s', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.05em' }}>
                 <SlidersHorizontal size={18} /> FILTERS
               </button>
             </div>
@@ -198,7 +198,7 @@ export default function BuyBikes() {
                       background: page === i + 1 ? '#0F172A' : '#FFF',
                       color: page === i + 1 ? 'white' : '#64748B',
                       cursor: 'pointer', fontWeight: 950, fontSize: '0.95rem',
-                      fontFamily: 'Rajdhani, sans-serif',
+                      fontFamily: "'Space Grotesk', sans-serif",
                       transition: 'all 0.3s', boxShadow: page === i + 1 ? '0 8px 20px rgba(15, 23, 42, 0.2)' : '0 4px 12px rgba(0,0,0,0.03)',
                       border: page === i + 1 ? 'none' : '1px solid rgba(156, 163, 175, 0.1)'
                     }}>
@@ -210,7 +210,7 @@ export default function BuyBikes() {
           </>
         ) : (
           <div style={{ textAlign: 'center', padding: '8rem 2rem', color: '#64748B' }}>
-            <p style={{ fontSize: '1.4rem', marginBottom: '2rem', fontWeight: 600, fontFamily: 'Rajdhani, sans-serif' }}>No cars match your current filters</p>
+            <p style={{ fontSize: '1.4rem', marginBottom: '2rem', fontWeight: 600, fontFamily: "'Space Grotesk', sans-serif" }}>No cars match your current filters</p>
             <button onClick={clearFilters} className="btn-primary">Clear Filters</button>
           </div>
         )}

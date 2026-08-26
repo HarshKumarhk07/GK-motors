@@ -117,10 +117,10 @@ export default function CarCard({ car, bike, hideBadges = false }) {
           {/* Metadata Row 1 */}
           <div style={{ marginBottom: '0.3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '0.6rem' }}>
-              <span style={{ color: '#1E3A8A', fontSize: '0.6rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: 'Rajdhani, sans-serif' }}>
+              <span style={{ color: '#1E3A8A', fontSize: '0.6rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: "'Space Grotesk', sans-serif" }}>
                 <Calendar size={11} /> {target?.year}
               </span>
-              <span style={{ color: '#64748B', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: 'Rajdhani, sans-serif' }}>
+              <span style={{ color: '#64748B', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '2px', fontFamily: "'Space Grotesk', sans-serif" }}>
                 <Gauge size={11} /> {target?.kmDriven?.toLocaleString()} KM
               </span>
             </div>
@@ -130,7 +130,7 @@ export default function CarCard({ car, bike, hideBadges = false }) {
           <h3 className="product-card-title" style={{
             color: '#111', fontWeight: 900, fontSize: '0.85rem',
             lineHeight: 1.2, marginBottom: '0.3rem',
-            fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.02em',
+            fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.02em',
             textTransform: 'uppercase',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
           }}>
@@ -156,14 +156,14 @@ export default function CarCard({ car, bike, hideBadges = false }) {
 
           {/* Price row + Action */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-            <span className="product-card-price" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.05rem', fontWeight: 950, color: '#1E3A8A', lineHeight: 1 }}>
+            <span className="product-card-price" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.05rem', fontWeight: 950, color: '#1E3A8A', lineHeight: 1 }}>
               ₹{effectivePrice?.toLocaleString('en-IN')}
             </span>
             <div className="product-card-btn" style={{
               height: '28px', padding: '0 0.75rem',
               background: '#1E3A8A', borderRadius: '6px', color: 'white',
               display: 'flex', alignItems: 'center', gap: '0.3rem',
-              fontSize: '0.65rem', fontWeight: 800, fontFamily: 'Rajdhani, sans-serif',
+              fontSize: '0.65rem', fontWeight: 800, fontFamily: "'Space Grotesk', sans-serif",
               letterSpacing: '0.05em', boxShadow: '0 4px 10px rgba(30, 58, 138, 0.15)',
               transition: 'all 0.3s'
             }}>

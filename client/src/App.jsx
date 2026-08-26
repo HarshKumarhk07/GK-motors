@@ -3,6 +3,7 @@ import { useEffect, lazy, Suspense } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import AnnouncementBar from './components/common/AnnouncementBar';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import PincodeModal from './components/common/PincodeModal';
@@ -126,6 +127,7 @@ const Layout = ({ hideNav = false }) => (
      is the mobile-correct unit). This just fills it, so there is exactly one
      viewport-height declaration in the whole chain rather than four. */
   <div style={{ flex: '1 0 auto', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100%', position: 'relative' }}>
+    {!hideNav && <AnnouncementBar />}
     {!hideNav && <Navbar />}
     {/* flex: 1 0 auto — absorbs all remaining height so footer stays pinned to bottom */}
     <main style={{ width: '100%', maxWidth: '100%', position: 'relative', flex: '1 0 auto', display: 'flex', flexDirection: 'column' }}>
@@ -167,11 +169,11 @@ const RouteFallback = () => (
 
 const NotFound = () => (
   <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '1.5rem', background: '#FFFFFF', textAlign: 'center' }}>
-    <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(5rem, 15vw, 10rem)', fontWeight: 950, color: '#111', lineHeight: 1, letterSpacing: '-0.05em' }}>404</div>
+    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(5rem, 15vw, 10rem)', fontWeight: 950, color: '#111', lineHeight: 1, letterSpacing: '-0.05em' }}>404</div>
     <div style={{ height: '6px', width: '80px', background: '#1E3A8A', borderRadius: '4px' }} />
-    <h2 style={{ color: '#0F172A', fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '0.05em' }}>PAGE NOT FOUND</h2>
+    <h2 style={{ color: '#0F172A', fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 950, textTransform: 'uppercase', letterSpacing: '0.05em' }}>PAGE NOT FOUND</h2>
     <p style={{ color: '#64748B', fontSize: '1.2rem', maxWidth: '450px', fontWeight: 600 }}>The page you're looking for doesn't exist or has moved.</p>
-    <a href="/" style={{ marginTop: '1.5rem', background: '#0F172A', color: 'white', padding: '1.2rem 3rem', borderRadius: '18px', textDecoration: 'none', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em', boxShadow: '0 15px 40px rgba(15, 23, 42, 0.2)', transition: 'all 0.3s' }}
+    <a href="/" style={{ marginTop: '1.5rem', background: '#0F172A', color: 'white', padding: '1.2rem 3rem', borderRadius: '18px', textDecoration: 'none', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em', boxShadow: '0 15px 40px rgba(15, 23, 42, 0.2)', transition: 'all 0.3s' }}
       onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
       onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
       BACK TO GK MOTORS

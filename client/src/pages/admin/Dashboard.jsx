@@ -18,7 +18,7 @@ const StatCard = ({ icon: Icon, label, value, color }) => (
         <Icon size={18} style={{ color }} />
       </div>
     </div>
-    <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2rem', fontWeight: 950, color: '#111', letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
+    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2rem', fontWeight: 950, color: '#111', letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
   </div>
 );
 
@@ -76,7 +76,7 @@ const UsersTab = () => {
   return (
     <div className="admin-table-wrap" style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '1.5rem', overflowX: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <h3 style={{ color: '#111', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', margin: 0, textTransform: 'uppercase' }}>
+        <h3 style={{ color: '#111', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.3rem', margin: 0, textTransform: 'uppercase' }}>
           USER <span style={{ color: '#E53935' }}>LIST</span>
           <span style={{ fontSize: '0.8rem', color: '#94A3B8', marginLeft: '0.5rem', fontWeight: 700 }}>
             ({filtered.length}{filtered.length !== data.length ? ` of ${data.length}` : ''})
@@ -385,7 +385,7 @@ const BookingsTab = () => {
               boxShadow: '0 4px 12px rgba(0,0,0,0.02)', transition: 'all 0.2s',
             }}>
             <div style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', opacity: 0.85, letterSpacing: '0.05em' }}>{s.label}</div>
-            <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.8rem', fontWeight: 950, marginTop: '0.2rem' }}>{s.count}</div>
+            <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', fontWeight: 950, marginTop: '0.2rem' }}>{s.count}</div>
           </div>
         ))}
       </div>
@@ -400,7 +400,7 @@ const BookingsTab = () => {
               <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(30, 58, 138, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1E3A8A' }}>
                 <Calendar size={20} />
               </div>
-              <h3 style={{ color: '#0F172A', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.6rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+              <h3 style={{ color: '#0F172A', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.6rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
                 USER SERVICE <span style={{ color: '#E53935' }}>BOOKINGS</span>
               </h3>
             </div>
@@ -414,7 +414,7 @@ const BookingsTab = () => {
               display: 'flex', alignItems: 'center', gap: '0.4rem',
               background: '#F8FAFC', color: '#1E3A8A', border: '1.5px solid #CBD5E1',
               borderRadius: '12px', padding: '0.6rem 1.1rem', cursor: 'pointer',
-              fontWeight: 800, fontSize: '0.82rem', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase'
+              fontWeight: 800, fontSize: '0.82rem', fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase'
             }}>
             <RefreshCw size={14} /> Refresh List
           </button>
@@ -454,7 +454,7 @@ const BookingsTab = () => {
                   color: filterMode === k ? '#FFF' : '#475569',
                   fontWeight: 800, fontSize: '0.75rem',
                   border: filterMode === k ? 'none' : '1px solid #CBD5E1',
-                  fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '0.04em',
+                  fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase', letterSpacing: '0.04em',
                 }}>{lbl}</button>
             ))}
 
@@ -486,7 +486,7 @@ const BookingsTab = () => {
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#FAFAFA', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
             <Calendar size={40} style={{ color: '#94A3B8', marginBottom: '1rem' }} />
-            <h4 style={{ color: '#0F172A', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.2rem', margin: '0 0 0.4rem 0' }}>
+            <h4 style={{ color: '#0F172A', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.2rem', margin: '0 0 0.4rem 0' }}>
               NO BOOKINGS FOUND
             </h4>
             <p style={{ color: '#64748B', fontSize: '0.85rem', margin: 0 }}>
@@ -518,7 +518,7 @@ const BookingsTab = () => {
                           Booked on: {new Date(item.createdAt || item.scheduledDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <h4 style={{ color: '#0F172A', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.35rem', margin: '0.4rem 0 0 0' }}>
+                      <h4 style={{ color: '#0F172A', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.35rem', margin: '0.4rem 0 0 0' }}>
                         {carName} <span style={{ color: '#64748B', fontWeight: 600, fontSize: '0.9rem' }}>— {servicesText}</span>
                       </h4>
                     </div>
@@ -665,7 +665,7 @@ const BookingsTab = () => {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: '#FFF', borderRadius: '20px', width: '100%', maxWidth: 480, padding: '1.8rem', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.8rem' }}>
-              <h4 style={{ margin: 0, fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, fontSize: '1.3rem', color: '#0F172A', textTransform: 'uppercase' }}>
+              <h4 style={{ margin: 0, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 950, fontSize: '1.3rem', color: '#0F172A', textTransform: 'uppercase' }}>
                 UPDATE BOOKING STATUS
               </h4>
               <button onClick={() => setNoteModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}>
@@ -991,7 +991,7 @@ const ServicesTab = () => {
               <div style={{ width: 34, height: 34, borderRadius: '10px', background: 'rgba(30, 58, 138, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1E3A8A' }}>
                 <Layers size={18} />
               </div>
-              <h3 style={{ color: '#0F172A', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.5rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+              <h3 style={{ color: '#0F172A', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.5rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                 SERVICE <span style={{ color: '#1E3A8A' }}>PACKAGES & CATEGORIES</span>
               </h3>
             </div>
@@ -1007,7 +1007,7 @@ const ServicesTab = () => {
               color: showStForm ? '#475569' : 'white',
               border: 'none', borderRadius: '12px', padding: '0.65rem 1.3rem',
               cursor: 'pointer', fontWeight: 800, fontSize: '0.85rem',
-              fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.06em',
+              fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.06em',
               textTransform: 'uppercase', boxShadow: showStForm ? 'none' : '0 6px 20px rgba(30, 58, 138, 0.25)',
               transition: 'all 0.2s'
             }}>
@@ -1019,7 +1019,7 @@ const ServicesTab = () => {
         {showStForm && (
           <form onSubmit={handleStSubmit} style={{ background: '#F8FAFC', border: '1.5px solid #CBD5E1', borderRadius: '20px', padding: '1.6rem', marginBottom: '2rem', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', paddingBottom: '0.8rem', borderBottom: '1px solid #E2E8F0' }}>
-              <span style={{ fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.1rem', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <span style={{ fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.1rem', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 {editSt ? 'Edit Service Package' : 'Create New Service Package'}
               </span>
               <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>All fields marked with * are required</span>
@@ -1179,7 +1179,7 @@ const ServicesTab = () => {
                 </button>
                 <button
                   type="submit"
-                  style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', color: 'white', border: 'none', borderRadius: '10px', padding: '0.6rem 1.8rem', cursor: 'pointer', fontWeight: 900, fontSize: '0.85rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(30,58,138,0.2)' }}
+                  style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', color: 'white', border: 'none', borderRadius: '10px', padding: '0.6rem 1.8rem', cursor: 'pointer', fontWeight: 900, fontSize: '0.85rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.05em', textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(30,58,138,0.2)' }}
                 >
                   {editSt ? 'Update Service' : 'Save Service'}
                 </button>
@@ -1227,7 +1227,7 @@ const ServicesTab = () => {
                   background: stStatusFilter === s.id ? '#1E3A8A' : '#FFF',
                   color: stStatusFilter === s.id ? '#FFF' : '#475569',
                   fontWeight: 800, fontSize: '0.74rem',
-                  fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '0.03em',
+                  fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase', letterSpacing: '0.03em',
                   boxShadow: stStatusFilter === s.id ? '0 2px 8px rgba(30,58,138,0.2)' : '0 1px 3px rgba(0,0,0,0.05)'
                 }}
               >
@@ -1248,7 +1248,7 @@ const ServicesTab = () => {
                 background: selectedCatFilter === 'all' ? '#0F172A' : '#F8FAFC',
                 color: selectedCatFilter === 'all' ? '#FFF' : '#334155',
                 border: `1.5px solid ${selectedCatFilter === 'all' ? '#0F172A' : '#E2E8F0'}`,
-                fontWeight: 900, fontSize: '0.8rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em',
+                fontWeight: 900, fontSize: '0.8rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.04em',
                 boxShadow: selectedCatFilter === 'all' ? '0 4px 14px rgba(15,23,42,0.15)' : 'none'
               }}
             >
@@ -1279,7 +1279,7 @@ const ServicesTab = () => {
                     background: isSelected ? cat.color : '#F8FAFC',
                     color: isSelected ? '#FFF' : '#334155',
                     border: `1.5px solid ${isSelected ? cat.color : '#E2E8F0'}`,
-                    fontWeight: 800, fontSize: '0.78rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.03em',
+                    fontWeight: 800, fontSize: '0.78rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.03em',
                     boxShadow: isSelected ? `0 4px 14px ${cat.color}35` : 'none',
                     transition: 'all 0.2s'
                   }}
@@ -1305,7 +1305,7 @@ const ServicesTab = () => {
             <div style={{ width: 50, height: 50, borderRadius: '14px', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#64748B' }}>
               <Search size={22} />
             </div>
-            <h4 style={{ margin: '0 0 0.4rem 0', color: '#0F172A', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.2rem' }}>
+            <h4 style={{ margin: '0 0 0.4rem 0', color: '#0F172A', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.2rem' }}>
               NO SERVICE PACKAGES MATCHED
             </h4>
             <p style={{ margin: '0 0 1.2rem 0', color: '#64748B', fontSize: '0.85rem' }}>
@@ -1313,7 +1313,7 @@ const ServicesTab = () => {
             </p>
             <button
               onClick={() => { setStSearch(''); setStStatusFilter('all'); setSelectedCatFilter('all'); }}
-              style={{ background: '#0F172A', color: '#FFF', border: 'none', borderRadius: '10px', padding: '0.6rem 1.2rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif' }}
+              style={{ background: '#0F172A', color: '#FFF', border: 'none', borderRadius: '10px', padding: '0.6rem 1.2rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif" }}
             >
               Reset All Filters
             </button>
@@ -1336,7 +1336,7 @@ const ServicesTab = () => {
                       </div>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                          <h4 style={{ margin: 0, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.25rem', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                          <h4 style={{ margin: 0, color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                             {cat.name}
                           </h4>
                           <span style={{ background: cat.color, color: 'white', fontSize: '0.68rem', fontWeight: 900, padding: '0.15rem 0.55rem', borderRadius: '6px', letterSpacing: '0.04em' }}>
@@ -1356,7 +1356,7 @@ const ServicesTab = () => {
                         background: '#FFF', color: cat.color,
                         border: `1.5px solid ${cat.color}30`, borderRadius: '10px',
                         padding: '0.45rem 0.9rem', fontSize: '0.75rem', fontWeight: 800,
-                        cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em', textTransform: 'uppercase',
+                        cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase',
                         transition: 'all 0.2s'
                       }}
                       onMouseEnter={e => { e.currentTarget.style.background = cat.color; e.currentTarget.style.color = '#FFF'; }}
@@ -1398,7 +1398,7 @@ const ServicesTab = () => {
                                 />
                               )}
                               <div>
-                                <h5 style={{ color: '#0F172A', fontWeight: 900, fontSize: '1rem', margin: 0, fontFamily: 'Rajdhani, sans-serif', lineHeight: 1.25 }}>
+                                <h5 style={{ color: '#0F172A', fontWeight: 900, fontSize: '1rem', margin: 0, fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1.25 }}>
                                   {st.label}
                                 </h5>
                                 <span style={{ fontSize: '0.66rem', color: '#94A3B8', fontWeight: 700, fontFamily: 'monospace', display: 'block', marginTop: '0.15rem' }}>
@@ -1434,7 +1434,7 @@ const ServicesTab = () => {
                           {/* Bottom meta & Price */}
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.7rem', borderTop: '1px solid #F1F5F9', marginTop: 'auto' }}>
                             <div>
-                              <span style={{ color: '#1E3A8A', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.15rem' }}>
+                              <span style={{ color: '#1E3A8A', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.15rem' }}>
                                 {st.price}
                               </span>
                               {st.tier && st.tier !== 'single' && (
@@ -1451,7 +1451,7 @@ const ServicesTab = () => {
                                 border: 'none', cursor: 'pointer',
                                 background: st.isActive ? 'rgba(46,125,50,0.1)' : '#F1F5F9',
                                 color: st.isActive ? '#2E7D32' : '#64748B',
-                                fontSize: '0.65rem', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif',
+                                fontSize: '0.65rem', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif",
                                 letterSpacing: '0.04em', padding: '0.25rem 0.6rem', borderRadius: '6px',
                                 textTransform: 'uppercase'
                               }}
@@ -1473,7 +1473,7 @@ const ServicesTab = () => {
       {/* ── Mechanics Management ── */}
       <div style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '1.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
-          <h3 style={{ color: '#111', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', margin: 0, textTransform: 'uppercase' }}>MECHANICS <span style={{ color: '#E53935' }}>({mechanics.length})</span></h3>
+          <h3 style={{ color: '#111', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.3rem', margin: 0, textTransform: 'uppercase' }}>MECHANICS <span style={{ color: '#E53935' }}>({mechanics.length})</span></h3>
           <button onClick={() => setShowMechForm(!showMechForm)}
             style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: showMechForm ? '#F5F5F5' : '#E53935', color: showMechForm ? '#666' : 'white', border: 'none', borderRadius: '10px', padding: '0.5rem 1.2rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem' }}>
             {showMechForm ? <><X size={14} /> Cancel</> : <><Plus size={14} /> Add Mechanic</>}
@@ -1512,7 +1512,7 @@ const ServicesTab = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '0.7rem' }}>
             {mechanics.map(m => (
               <div key={m._id} style={{ background: '#FFF', border: '1px solid #EEE', borderRadius: '12px', padding: '0.8rem 1rem' }}>
-                <div style={{ fontWeight: 800, color: '#111', fontFamily: 'Rajdhani, sans-serif', fontSize: '1rem' }}>{m.name}</div>
+                <div style={{ fontWeight: 800, color: '#111', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1rem' }}>{m.name}</div>
                 <div style={{ color: '#888', fontSize: '0.75rem', marginTop: '0.2rem', fontWeight: 600 }}>{m.phone}{m.email ? ` • ${m.email}` : ''}</div>
               </div>
             ))}
@@ -1522,7 +1522,7 @@ const ServicesTab = () => {
 
       <div className="admin-table-wrap" style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '1.5rem', overflowX: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <h3 style={{ color: '#111', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.8rem', textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0 }}>
+          <h3 style={{ color: '#111', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0 }}>
             SERVICE <span style={{ color: '#E53935' }}>BOOKINGS</span>
             <span style={{ fontSize: '0.8rem', color: '#94A3B8', marginLeft: '0.5rem', fontWeight: 700 }}>
               ({filtered.length}{filtered.length !== data.length ? ` of ${data.length}` : ''})
@@ -1888,7 +1888,7 @@ const PartsTab = () => {
   if (showForm) {
     return (
       <div className="admin-form-wrap" style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '2.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-        <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontSize: '2rem', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}>{editId ? 'UPDATE' : 'ADD NEW'} <span style={{ color: '#E53935' }}>PRODUCT</span></h3>
+        <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontSize: '2rem', fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase' }}>{editId ? 'UPDATE' : 'ADD NEW'} <span style={{ color: '#E53935' }}>PRODUCT</span></h3>
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.8rem' }}>
 
           {/* Core Details */}
@@ -1938,7 +1938,7 @@ const PartsTab = () => {
                     }} />
                   </div>
                   {newCatImagePreview && <img src={newCatImagePreview} alt="Preview" style={{ width: 64, height: 64, borderRadius: '14px', objectFit: 'cover', border: '1.5px solid #EEE' }} />}
-                  <button type="button" onClick={handleSaveCategory} style={{ background: '#111', color: 'white', border: 'none', padding: '1rem 2.5rem', borderRadius: '14px', fontWeight: 900, cursor: 'pointer', alignSelf: 'flex-end', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em' }}>SAVE CATEGORY</button>
+                  <button type="button" onClick={handleSaveCategory} style={{ background: '#111', color: 'white', border: 'none', padding: '1rem 2.5rem', borderRadius: '14px', fontWeight: 900, cursor: 'pointer', alignSelf: 'flex-end', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.08em' }}>SAVE CATEGORY</button>
                 </div>
               </div>
             </div>
@@ -1975,7 +1975,7 @@ const PartsTab = () => {
           <div style={{ background: 'rgba(33,150,243,0.03)', padding: '2rem', borderRadius: '24px', border: '1.5px solid rgba(33,150,243,0.15)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h4 style={{ color: '#2196F3', fontSize: '0.85rem', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>PINCODE PRICE & INVENTORY</h4>
-              <button type="button" onClick={() => setPincodePricingRows([...pincodePricingRows, { pincodes: '', size: '', originalPrice: '', discount: '', price: '', inventory: '' }])} style={{ background: '#111', color: 'white', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '14px', fontWeight: 900, cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'Rajdhani, sans-serif' }}>+ ADD ROW</button>
+              <button type="button" onClick={() => setPincodePricingRows([...pincodePricingRows, { pincodes: '', size: '', originalPrice: '', discount: '', price: '', inventory: '' }])} style={{ background: '#111', color: 'white', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '14px', fontWeight: 900, cursor: 'pointer', fontSize: '0.8rem', fontFamily: "'Space Grotesk', sans-serif" }}>+ ADD ROW</button>
             </div>
             {pincodePricingRows.map((row, idx) => (
               <div key={idx} style={{ background: '#FFFFFF', borderRadius: '20px', padding: '1.5rem', marginBottom: '1rem', border: '1.5px solid #EEE', position: 'relative', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
@@ -2052,7 +2052,7 @@ const PartsTab = () => {
 
           <div style={{ display: 'flex', gap: '1.2rem', marginTop: '1.5rem' }}>
             <button type="button" onClick={resetForm} style={{ flex: 1, padding: '1.1rem', borderRadius: '16px', fontWeight: 900, color: '#E53935', border: '1.5px solid #E53935', background: 'transparent' }}>CANCEL</button>
-            <button type="submit" className="btn-primary" style={{ flex: 2, padding: '1.1rem', borderRadius: '16px', fontWeight: 900, justifyContent: 'center', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.12em' }}>SAVE PRODUCT</button>
+            <button type="submit" className="btn-primary" style={{ flex: 2, padding: '1.1rem', borderRadius: '16px', fontWeight: 900, justifyContent: 'center', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.12em' }}>SAVE PRODUCT</button>
           </div>
         </form>
       </div>
@@ -2062,7 +2062,7 @@ const PartsTab = () => {
   return (
     <div style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '2rem', overflowX: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <h3 style={{ color: '#111', fontWeight: 950, margin: 0, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.8rem', letterSpacing: '-0.02em' }}>
+        <h3 style={{ color: '#111', fontWeight: 950, margin: 0, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', letterSpacing: '-0.02em' }}>
           ACTIVE <span style={{ color: '#E53935' }}>INVENTORY</span>
           <span style={{ fontSize: '0.8rem', color: '#94A3B8', marginLeft: '0.5rem', fontWeight: 700 }}>
             ({filtered.length}{filtered.length !== data.length ? ` of ${data.length}` : ''})
@@ -2078,7 +2078,7 @@ const PartsTab = () => {
               color: showManageCategories ? '#0F172A' : '#1E3A8A',
               border: `1.5px solid ${showManageCategories ? '#0F172A' : '#CBD5E1'}`,
               borderRadius: '14px', padding: '0.75rem 1.3rem', fontWeight: 900,
-              fontSize: '0.85rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em',
+              fontSize: '0.85rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.04em',
               cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
             }}
           >
@@ -2095,7 +2095,7 @@ const PartsTab = () => {
         <div style={{ background: '#F8FAFC', border: '1.5px solid #CBD5E1', borderRadius: '20px', padding: '1.6rem', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', paddingBottom: '0.8rem', borderBottom: '1px solid #E2E8F0' }}>
             <div>
-              <h4 style={{ margin: 0, color: '#0F172A', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <h4 style={{ margin: 0, color: '#0F172A', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 SPARE PARTS <span style={{ color: '#1E3A8A' }}>CATEGORIES</span>
               </h4>
               <p style={{ margin: '0.2rem 0 0', color: '#64748B', fontSize: '0.78rem', fontWeight: 600 }}>Create new categories, add icons, or remove categories</p>
@@ -2142,7 +2142,7 @@ const PartsTab = () => {
                   background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
                   color: 'white', border: 'none', padding: '0 1.8rem', height: 44,
                   borderRadius: '10px', fontWeight: 900, cursor: 'pointer',
-                  fontFamily: 'Rajdhani, sans-serif', fontSize: '0.85rem', letterSpacing: '0.06em',
+                  fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.85rem', letterSpacing: '0.06em',
                   textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem',
                   boxShadow: '0 4px 12px rgba(30,58,138,0.25)'
                 }}
@@ -2167,7 +2167,7 @@ const PartsTab = () => {
                     ) : (
                       <span style={{ fontSize: '0.9rem' }}>📦</span>
                     )}
-                    <span style={{ fontWeight: 800, fontSize: '0.8rem', color: '#0F172A', textTransform: 'uppercase', fontFamily: 'Rajdhani, sans-serif' }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.8rem', color: '#0F172A', textTransform: 'uppercase', fontFamily: "'Space Grotesk', sans-serif" }}>
                       {(cat.name || '').replace(/_/g, ' ')}
                     </span>
                     <span style={{ background: '#F1F5F9', color: '#64748B', fontSize: '0.68rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '6px' }}>
@@ -2261,7 +2261,7 @@ const PartsTab = () => {
               <div style={{ display: 'flex', gap: '1.2rem', marginBottom: '1.5rem' }}>
                 <img src={item.images?.[0] || 'https://via.placeholder.com/80'} alt={item.name} style={{ width: 90, height: 90, borderRadius: '16px', objectFit: 'cover', background: '#F9F9F9', border: '1.5px solid #EEE' }} />
                 <div>
-                  <h4 style={{ color: '#111', fontWeight: 900, margin: '0 0 0.4rem 0', fontSize: '1.2rem', lineHeight: 1.2, fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}>
+                  <h4 style={{ color: '#111', fontWeight: 900, margin: '0 0 0.4rem 0', fontSize: '1.2rem', lineHeight: 1.2, fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase' }}>
                     {item.name || 'Untitled'}
                     {item.isActive === false && (
                       <span title="Hidden from the storefront" style={{ marginLeft: '0.5rem', verticalAlign: 'middle', background: '#F1F5F9', color: '#64748B', borderRadius: '999px', padding: '0.15rem 0.5rem', fontSize: '0.6rem', fontWeight: 900, letterSpacing: '0.06em' }}>
@@ -2273,9 +2273,9 @@ const PartsTab = () => {
                     {item.brand ? `${item.brand} • ` : ''}{(item.category || '').replace('_', ' ')}
                   </p>
                   <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                    <span style={{ color: '#E53935', fontWeight: 950, fontSize: '1.4rem', fontFamily: 'Rajdhani, sans-serif' }}>₹{item.price || 0}</span>
+                    <span style={{ color: '#E53935', fontWeight: 950, fontSize: '1.4rem', fontFamily: "'Space Grotesk', sans-serif" }}>₹{item.price || 0}</span>
                     {item.discountedPrice && item.discountedPrice < item.price && (
-                      <span style={{ color: '#2E7D32', fontWeight: 900, fontSize: '0.95rem', fontFamily: 'Rajdhani, sans-serif' }}>→ ₹{item.discountedPrice}</span>
+                      <span style={{ color: '#2E7D32', fontWeight: 900, fontSize: '0.95rem', fontFamily: "'Space Grotesk', sans-serif" }}>→ ₹{item.discountedPrice}</span>
                     )}
                   </div>
                 </div>
@@ -2294,12 +2294,12 @@ const PartsTab = () => {
               </div>
             </div>
             <div style={{ borderTop: '1.5px solid #EEE', display: 'flex', alignItems: 'stretch', background: '#F9F9F9' }}>
-              <button onClick={() => handleEdit(item)} style={{ flex: 1, background: 'none', border: 'none', borderRight: '1.5px solid #EEE', padding: '1rem', color: '#111', fontWeight: 900, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', transition: 'all 0.2s', fontFamily: 'Rajdhani, sans-serif' }}
+              <button onClick={() => handleEdit(item)} style={{ flex: 1, background: 'none', border: 'none', borderRight: '1.5px solid #EEE', padding: '1rem', color: '#111', fontWeight: 900, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', transition: 'all 0.2s', fontFamily: "'Space Grotesk', sans-serif" }}
                 onMouseEnter={e => e.currentTarget.style.background = '#FFF'}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                 <Edit2 size={16} /> EDIT
               </button>
-              <button onClick={() => handleDelete(item._id)} style={{ flex: 1, background: 'none', border: 'none', padding: '1rem', color: '#E53935', fontWeight: 900, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', transition: 'all 0.2s', fontFamily: 'Rajdhani, sans-serif' }}
+              <button onClick={() => handleDelete(item._id)} style={{ flex: 1, background: 'none', border: 'none', padding: '1rem', color: '#E53935', fontWeight: 900, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', transition: 'all 0.2s', fontFamily: "'Space Grotesk', sans-serif" }}
                 onMouseEnter={e => e.currentTarget.style.background = '#FFF1F0'}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                 <Trash2 size={16} /> DELETE
@@ -2513,7 +2513,7 @@ const BikesTab = () => {
   if (showForm) {
     return (
       <div className="admin-form-wrap" style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '2.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-        <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontSize: '2rem', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}>{editId ? 'UPDATE' : 'ADD NEW'} <span style={{ color: '#E53935' }}>CAR</span></h3>
+        <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontSize: '2rem', fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase' }}>{editId ? 'UPDATE' : 'ADD NEW'} <span style={{ color: '#E53935' }}>CAR</span></h3>
         <form onSubmit={handleSubmit}>
           {/* Core Details */}
           <div style={{ background: '#F9F9F9', padding: '2rem', borderRadius: '20px', border: '1.5px solid #EEE', marginBottom: '1.8rem' }}>
@@ -2569,7 +2569,7 @@ const BikesTab = () => {
                       }} />
                     </div>
                     {newBrandImagePreview && <img src={newBrandImagePreview} alt="Preview" style={{ width: 64, height: 64, borderRadius: '14px', objectFit: 'cover', border: '1.5px solid #EEE' }} />}
-                    <button type="button" onClick={handleSaveBrand} style={{ background: '#111', color: 'white', border: 'none', padding: '1rem 2.5rem', borderRadius: '14px', fontWeight: 900, cursor: 'pointer', alignSelf: 'flex-end', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em' }}>SAVE BRAND</button>
+                    <button type="button" onClick={handleSaveBrand} style={{ background: '#111', color: 'white', border: 'none', padding: '1rem 2.5rem', borderRadius: '14px', fontWeight: 900, cursor: 'pointer', alignSelf: 'flex-end', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.08em' }}>SAVE BRAND</button>
                   </div>
                 </div>
               </div>
@@ -2621,7 +2621,7 @@ const BikesTab = () => {
           <div style={{ background: 'rgba(251,140,0,0.03)', padding: '2rem', borderRadius: '24px', border: '1.5px solid rgba(251,140,0,0.15)', marginBottom: '1.8rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h4 style={{ color: '#FB8C00', fontSize: '0.85rem', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>PINCODE PRICE & STOCK</h4>
-              <button type="button" onClick={() => setBikePincodeRows([...bikePincodeRows, { pincodes: '', size: '', originalPrice: '', discount: '', price: '', inventory: '' }])} style={{ background: '#111', color: 'white', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '14px', fontWeight: 900, cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'Rajdhani, sans-serif' }}>+ ADD ROW</button>
+              <button type="button" onClick={() => setBikePincodeRows([...bikePincodeRows, { pincodes: '', size: '', originalPrice: '', discount: '', price: '', inventory: '' }])} style={{ background: '#111', color: 'white', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '14px', fontWeight: 900, cursor: 'pointer', fontSize: '0.8rem', fontFamily: "'Space Grotesk', sans-serif" }}>+ ADD ROW</button>
             </div>
             {bikePincodeRows.map((row, idx) => (
               <div key={idx} style={{ background: '#FFFFFF', borderRadius: '20px', padding: '1.5rem', marginBottom: '1rem', border: '1.5px solid #EEE', position: 'relative', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
@@ -2698,7 +2698,7 @@ const BikesTab = () => {
 
           <div style={{ display: 'flex', gap: '1.2rem' }}>
             <button type="button" onClick={resetForm} style={{ flex: 1, padding: '1.1rem', borderRadius: '16px', fontWeight: 900, color: '#E53935', border: '1.5px solid #E53935', background: 'transparent' }}>CANCEL</button>
-            <button type="submit" className="btn-primary" style={{ flex: 2, padding: '1.1rem', borderRadius: '16px', fontWeight: 900, justifyContent: 'center', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.12em' }}>SAVE CAR LISTING</button>
+            <button type="submit" className="btn-primary" style={{ flex: 2, padding: '1.1rem', borderRadius: '16px', fontWeight: 900, justifyContent: 'center', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.12em' }}>SAVE CAR LISTING</button>
           </div>
         </form>
       </div>
@@ -2708,7 +2708,7 @@ const BikesTab = () => {
   return (
     <div style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '2rem', overflowX: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <h3 style={{ color: '#111', fontWeight: 950, margin: 0, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.8rem', letterSpacing: '-0.02em' }}>
+        <h3 style={{ color: '#111', fontWeight: 950, margin: 0, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', letterSpacing: '-0.02em' }}>
           ACTIVE <span style={{ color: '#E53935' }}>CARS</span>
           <span style={{ fontSize: '0.8rem', color: '#94A3B8', marginLeft: '0.5rem', fontWeight: 700 }}>
             ({filtered.length}{filtered.length !== data.length ? ` of ${data.length}` : ''})
@@ -2776,14 +2776,14 @@ const BikesTab = () => {
               <div style={{ display: 'flex', gap: '1.2rem', marginBottom: '1.5rem' }}>
                 <img src={item.images?.[0] || 'https://via.placeholder.com/80'} alt={item.title} style={{ width: 100, height: 100, borderRadius: '20px', objectFit: 'cover', background: '#F9F9F9', border: '1.5px solid #EEE' }} />
                 <div>
-                  <h4 style={{ color: '#111', fontWeight: 950, margin: '0 0 0.4rem 0', fontSize: '1.2rem', lineHeight: 1.2, fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}>{item.title || `${item.brand} ${item.model}`}</h4>
+                  <h4 style={{ color: '#111', fontWeight: 950, margin: '0 0 0.4rem 0', fontSize: '1.2rem', lineHeight: 1.2, fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase' }}>{item.title || `${item.brand} ${item.model}`}</h4>
                   <p style={{ color: '#888', margin: '0 0 0.8rem 0', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                     {item.brand} • {item.year} • {item.kmDriven?.toLocaleString()} KM
                   </p>
                   <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                    <span style={{ color: '#E53935', fontWeight: 950, fontSize: '1.4rem', fontFamily: 'Rajdhani, sans-serif' }}>₹{item.price?.toLocaleString('en-IN')}</span>
+                    <span style={{ color: '#E53935', fontWeight: 950, fontSize: '1.4rem', fontFamily: "'Space Grotesk', sans-serif" }}>₹{item.price?.toLocaleString('en-IN')}</span>
                     {item.discountedPrice && item.discountedPrice < item.price && (
-                      <span style={{ color: '#2E7D32', fontWeight: 900, fontSize: '0.95rem', fontFamily: 'Rajdhani, sans-serif' }}>→ ₹{item.discountedPrice?.toLocaleString('en-IN')}</span>
+                      <span style={{ color: '#2E7D32', fontWeight: 900, fontSize: '0.95rem', fontFamily: "'Space Grotesk', sans-serif" }}>→ ₹{item.discountedPrice?.toLocaleString('en-IN')}</span>
                     )}
                   </div>
                 </div>
@@ -2808,15 +2808,15 @@ const BikesTab = () => {
               </div>
             </div>
             <div style={{ borderTop: '1.5px solid #EEE', display: 'flex', alignItems: 'stretch', background: '#F9F9F9' }}>
-              <button onClick={() => handleApprove(item._id)} style={{ flex: 1, padding: '1rem', background: 'none', border: 'none', borderRight: '1.5px solid #EEE', color: item.isApproved ? '#2E7D32' : '#FB8C00', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', transition: 'all 0.2s' }}
+              <button onClick={() => handleApprove(item._id)} style={{ flex: 1, padding: '1rem', background: 'none', border: 'none', borderRight: '1.5px solid #EEE', color: item.isApproved ? '#2E7D32' : '#FB8C00', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", transition: 'all 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#FFF'}>
                 {item.isApproved ? '✓ APPROVED' : '⏳ APPROVE'}
               </button>
-              <button onClick={() => handleEdit(item)} style={{ flex: 1, padding: '1rem', background: 'none', border: 'none', borderRight: '1.5px solid #EEE', color: '#111', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontFamily: 'Rajdhani, sans-serif', transition: 'all 0.2s' }}
+              <button onClick={() => handleEdit(item)} style={{ flex: 1, padding: '1rem', background: 'none', border: 'none', borderRight: '1.5px solid #EEE', color: '#111', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontFamily: "'Space Grotesk', sans-serif", transition: 'all 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#FFF'}>
                 <Edit2 size={14} /> EDIT
               </button>
-              <button onClick={() => handleDelete(item._id)} style={{ flex: 1, padding: '1rem', background: 'none', border: 'none', color: '#E53935', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontFamily: 'Rajdhani, sans-serif', transition: 'all 0.2s' }}
+              <button onClick={() => handleDelete(item._id)} style={{ flex: 1, padding: '1rem', background: 'none', border: 'none', color: '#E53935', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontFamily: "'Space Grotesk', sans-serif", transition: 'all 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#FFF1F0'}>
                 <Trash2 size={14} /> DELETE
               </button>
@@ -2888,7 +2888,7 @@ const SellsTab = () => {
 
   return (
     <div style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '2rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-      <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.8rem', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
+      <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
         SELL <span style={{ color: '#E53935' }}>REQUESTS</span> ({filtered.length}{filtered.length !== sells.length ? ` of ${sells.length}` : ''})
       </h3>
 
@@ -2953,7 +2953,7 @@ const SellsTab = () => {
                   <img src={s.images[0]} alt="" style={{ width: 120, height: 90, borderRadius: '12px', objectFit: 'cover', border: '1.5px solid #EEE' }} />
                 )}
                 <div>
-                  <h4 style={{ color: '#111', fontWeight: 900, fontSize: '1.2rem', margin: 0, fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}>{s.brand} {s.model} {s.variant ? `(${s.variant})` : ''}</h4>
+                  <h4 style={{ color: '#111', fontWeight: 900, fontSize: '1.2rem', margin: 0, fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase' }}>{s.brand} {s.model} {s.variant ? `(${s.variant})` : ''}</h4>
                   <p style={{ color: '#666', fontSize: '0.85rem', fontWeight: 700, margin: '0.4rem 0' }}>
                     {s.year} • {s.kmDriven?.toLocaleString()} KM 
                     {s.fuelType ? ` • ${s.fuelType.toUpperCase()}` : ''} 
@@ -2970,9 +2970,9 @@ const SellsTab = () => {
               </div>
               <div style={{ textAlign: 'right' }}>
                 {s.estimatedPrice && <div style={{ color: '#888', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>est. value</div>}
-                {s.estimatedPrice && <div style={{ color: '#111', fontWeight: 800, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.1rem' }}>₹{s.estimatedPrice?.toLocaleString('en-IN')}</div>}
+                {s.estimatedPrice && <div style={{ color: '#111', fontWeight: 800, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.1rem' }}>₹{s.estimatedPrice?.toLocaleString('en-IN')}</div>}
                 {s.offeredPrice && <div style={{ color: '#888', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', margin: '0.8rem 0 0.2rem 0' }}>admin offer</div>}
-                {s.offeredPrice && <div style={{ color: '#2E7D32', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.5rem' }}>₹{s.offeredPrice?.toLocaleString('en-IN')}</div>}
+                {s.offeredPrice && <div style={{ color: '#2E7D32', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.5rem' }}>₹{s.offeredPrice?.toLocaleString('en-IN')}</div>}
               </div>
             </div>
             <div className="admin-sell-actions" style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -3087,7 +3087,7 @@ const OrdersTab = () => {
 
   return (
     <div className="admin-table-wrap" style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '2rem', overflowX: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-      <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.8rem', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
+      <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
         CUSTOMER <span style={{ color: '#E53935' }}>ORDERS</span> ({filtered.length}{filtered.length !== orders.length ? ` of ${orders.length}` : ''})
       </h3>
 
@@ -3153,11 +3153,11 @@ const OrdersTab = () => {
             <tr key={o._id} style={{ borderBottom: '1px solid #F5F5F5' }}>
               <td style={{ padding: '1.2rem', color: '#888', fontSize: '0.8rem', fontWeight: 700 }}>#{o._id.slice(-8).toUpperCase()}</td>
               <td style={{ padding: '1.2rem' }}>
-                <div style={{ color: '#111', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif' }}>{o.user?.name || 'N/A'}</div>
+                <div style={{ color: '#111', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif" }}>{o.user?.name || 'N/A'}</div>
                 <div style={{ color: '#888', fontSize: '0.75rem', fontWeight: 600 }}>{o.user?.phone || ''}</div>
               </td>
               <td style={{ padding: '1.2rem', color: '#666', fontSize: '0.85rem', fontWeight: 600 }}>{o.items?.map(i => `${i.name}×${i.quantity}`).join(', ') || '-'}</td>
-              <td style={{ padding: '1.2rem', color: '#E53935', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.2rem' }}>₹{o.total?.toLocaleString('en-IN')}</td>
+              <td style={{ padding: '1.2rem', color: '#E53935', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.2rem' }}>₹{o.total?.toLocaleString('en-IN')}</td>
               <td style={{ padding: '1.2rem' }}><span className={`badge ${o.payment?.status === 'paid' ? 'badge-green' : 'badge-orange'}`} style={{ borderRadius: '8px', fontWeight: 900 }}>{o.payment?.method?.toUpperCase()} - {o.payment?.status?.toUpperCase()}</span></td>
               <td style={{ padding: '1.2rem' }}><span className={`badge ${statusColors[o.status] || 'badge-gray'}`} style={{ borderRadius: '8px', fontWeight: 900 }}>{o.status.toUpperCase()}</span></td>
               <td style={{ padding: '1.2rem' }}>
@@ -3225,7 +3225,7 @@ const LeadsTab = () => {
   return (
     <div style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '2rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <h3 style={{ color: '#111', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.8rem', textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0 }}>
+        <h3 style={{ color: '#111', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0 }}>
           BUY CAR <span style={{ color: '#E53935' }}>REQUESTS</span>
           <span style={{ fontSize: '0.8rem', color: '#94A3B8', marginLeft: '0.5rem', fontWeight: 700 }}>
             ({filtered.length}{filtered.length !== enquiries.length ? ` of ${enquiries.length}` : ''})
@@ -3295,8 +3295,8 @@ const LeadsTab = () => {
               <div className="admin-leads-grid" style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr auto', gap: '1rem', alignItems: 'center' }}>
                 <img src={enq.bike?.images?.[0] || 'https://via.placeholder.com/80'} alt="" style={{ width: 80, height: 60, borderRadius: '10px', objectFit: 'cover', border: '1px solid #EEE' }} />
                 <div>
-                  <h4 style={{ color: '#111', fontWeight: 900, fontSize: '1rem', margin: 0, fontFamily: 'Rajdhani, sans-serif' }}>{enq.bike?.brand} {enq.bike?.model} ({enq.bike?.year})</h4>
-                  <p style={{ color: '#E53935', fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, margin: '0.15rem 0', fontSize: '1rem' }}>₹{enq.bike?.price?.toLocaleString('en-IN')}</p>
+                  <h4 style={{ color: '#111', fontWeight: 900, fontSize: '1rem', margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>{enq.bike?.brand} {enq.bike?.model} ({enq.bike?.year})</h4>
+                  <p style={{ color: '#E53935', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, margin: '0.15rem 0', fontSize: '1rem' }}>₹{enq.bike?.price?.toLocaleString('en-IN')}</p>
                   {enq.bike?.location?.city && <p style={{ color: '#888', fontSize: '0.72rem', fontWeight: 600, margin: 0 }}>📍 {enq.bike.location.city}</p>}
                 </div>
                 <div>
@@ -3529,7 +3529,7 @@ const RentalsTab = () => {
   if (showForm) {
     return (
       <div className="admin-form-wrap" style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '2.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-        <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontSize: '2rem', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}>{editId ? 'UPDATE' : 'ADD'} <span style={{ color: '#1E3A8A' }}>RENTAL CAR</span></h3>
+        <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontSize: '2rem', fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase' }}>{editId ? 'UPDATE' : 'ADD'} <span style={{ color: '#1E3A8A' }}>RENTAL CAR</span></h3>
         <form onSubmit={handleSubmit}>
           <div style={{ background: '#F9F9F9', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.2rem', border: '1px solid #EEE' }}>
             <h4 style={{ fontSize: '0.78rem', fontWeight: 900, marginBottom: '1rem', color: '#111', textTransform: 'uppercase', letterSpacing: '0.08em' }}>BASIC DETAILS</h4>
@@ -3698,7 +3698,7 @@ const RentalsTab = () => {
   return (
     <div style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '2rem', overflowX: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <h3 style={{ color: '#111', fontWeight: 950, margin: 0, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.8rem', letterSpacing: '-0.02em' }}>
+        <h3 style={{ color: '#111', fontWeight: 950, margin: 0, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', letterSpacing: '-0.02em' }}>
           RENTAL <span style={{ color: '#E53935' }}>CARS</span>
           <span style={{ fontSize: '0.8rem', color: '#94A3B8', marginLeft: '0.5rem', fontWeight: 700 }}>
             ({filtered.length}{filtered.length !== data.length ? ` of ${data.length}` : ''})
@@ -3772,17 +3772,17 @@ const RentalsTab = () => {
               </div>
             </div>
             <div style={{ padding: '1.5rem', flex: 1 }}>
-              <h4 style={{ fontWeight: 950, color: '#111', margin: '0 0 0.4rem 0', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', textTransform: 'uppercase' }}>{car.brand} {car.model}</h4>
+              <h4 style={{ fontWeight: 950, color: '#111', margin: '0 0 0.4rem 0', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.3rem', textTransform: 'uppercase' }}>{car.brand} {car.model}</h4>
               <p style={{ color: '#888', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1rem' }}>{car.year} • {car.transmission?.toUpperCase()} • {car.fuelType?.toUpperCase()} • {car.seats} SEATS</p>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.2rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ color: '#E53935', fontWeight: 950, fontSize: '1.6rem', fontFamily: 'Rajdhani, sans-serif' }}>₹{car.pricePerDay?.toLocaleString('en-IN')}</span>
+                  <span style={{ color: '#E53935', fontWeight: 950, fontSize: '1.6rem', fontFamily: "'Space Grotesk', sans-serif" }}>₹{car.pricePerDay?.toLocaleString('en-IN')}</span>
                   <span style={{ color: '#888', fontSize: '0.7rem', fontWeight: 700, marginTop: '-0.2rem' }}>PER DAY</span>
                 </div>
                 {car.pricePerHour > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <span style={{ color: '#111', fontWeight: 900, fontSize: '1.1rem', fontFamily: 'Rajdhani, sans-serif' }}>₹{car.pricePerHour?.toLocaleString('en-IN')}</span>
+                    <span style={{ color: '#111', fontWeight: 900, fontSize: '1.1rem', fontFamily: "'Space Grotesk', sans-serif" }}>₹{car.pricePerHour?.toLocaleString('en-IN')}</span>
                     <span style={{ color: '#888', fontSize: '0.7rem', fontWeight: 700, marginTop: '-0.1rem' }}>PER HOUR</span>
                   </div>
                 )}
@@ -3794,8 +3794,8 @@ const RentalsTab = () => {
               </div>
             </div>
             <div style={{ borderTop: '1.5px solid #EEE', display: 'flex', alignItems: 'stretch', background: '#F9F9F9' }}>
-              <button onClick={() => handleEdit(car)} style={{ flex: 1, padding: '1rem', background: 'none', border: 'none', borderRight: '1.5px solid #EEE', color: '#1E3A8A', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontFamily: 'Rajdhani, sans-serif' }}><Edit2 size={14} /> EDIT</button>
-              <button onClick={() => handleDelete(car._id)} style={{ flex: 1, padding: '1rem', background: 'none', border: 'none', color: '#E53935', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontFamily: 'Rajdhani, sans-serif' }}><Trash2 size={14} /> DELETE</button>
+              <button onClick={() => handleEdit(car)} style={{ flex: 1, padding: '1rem', background: 'none', border: 'none', borderRight: '1.5px solid #EEE', color: '#1E3A8A', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontFamily: "'Space Grotesk', sans-serif" }}><Edit2 size={14} /> EDIT</button>
+              <button onClick={() => handleDelete(car._id)} style={{ flex: 1, padding: '1rem', background: 'none', border: 'none', color: '#E53935', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontFamily: "'Space Grotesk', sans-serif" }}><Trash2 size={14} /> DELETE</button>
             </div>
           </div>
         ))}
@@ -3873,7 +3873,7 @@ const RentalBookingsTab = ({ setActiveTab, setTrackingBookingId }) => {
   return (
     <div style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '1.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.6rem' }}>
-        <h3 style={{ color: '#111', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', margin: 0, textTransform: 'uppercase' }}>
+        <h3 style={{ color: '#111', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.3rem', margin: 0, textTransform: 'uppercase' }}>
           RENTAL <span style={{ color: '#1E3A8A' }}>BOOKINGS</span>
           <span style={{ fontSize: '0.8rem', color: '#94A3B8', marginLeft: '0.5rem', fontWeight: 700 }}>
             ({filtered.length}{filtered.length !== data.length ? ` of ${data.length}` : ''})
@@ -3966,7 +3966,7 @@ const RentalBookingsTab = ({ setActiveTab, setTrackingBookingId }) => {
                 <div style={{ height: 110, background: '#F1F5F9', borderRadius: '10px', overflow: 'hidden', marginBottom: '0.6rem' }}>
                   {img ? <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#CBD5E1' }}><Car size={32} /></div>}
                 </div>
-                <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1rem', color: '#0F172A', margin: 0, lineHeight: 1.1 }}>
+                <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1rem', color: '#0F172A', margin: 0, lineHeight: 1.1 }}>
                   {b.carSnapshot?.brand || car.brand} {b.carSnapshot?.model || car.model}
                 </h4>
                 <p style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 600, marginTop: '0.2rem' }}>
@@ -3977,7 +3977,7 @@ const RentalBookingsTab = ({ setActiveTab, setTrackingBookingId }) => {
                     {new Date(b.pickupDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} → {new Date(b.returnDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                     <span style={{ color: '#94A3B8', marginLeft: '0.3rem' }}>({isHour ? `${b.totalHours}h` : `${b.totalDays}d`})</span>
                   </span>
-                  <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, color: '#1E3A8A', fontSize: '1rem' }}>₹{b.totalAmount?.toLocaleString('en-IN')}</span>
+                  <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#1E3A8A', fontSize: '1rem' }}>₹{b.totalAmount?.toLocaleString('en-IN')}</span>
                 </div>
                 {car.dropLocation?.city && (
                   <div style={{ marginTop: '0.4rem', color: '#16A34A', fontSize: '0.68rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -4045,7 +4045,7 @@ const RentalBookingDetailModal = ({ booking, onClose, onUpdateStatus, setActiveT
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.2rem' }}>
             {img ? <img src={img} alt="" style={{ width: 110, height: 80, objectFit: 'cover', borderRadius: '12px', border: '1px solid #EEE' }} /> : <div style={{ width: 110, height: 80, borderRadius: '12px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Car size={32} color="#CBD5E1" /></div>}
             <div style={{ flex: 1 }}>
-              <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1.4rem', color: '#0F172A', margin: 0, lineHeight: 1.1 }}>
+              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1.4rem', color: '#0F172A', margin: 0, lineHeight: 1.1 }}>
                 {booking.carSnapshot?.brand || car.brand} {booking.carSnapshot?.model || car.model}
               </h3>
               <p style={{ color: '#64748B', fontSize: '0.85rem', marginTop: '0.2rem', fontWeight: 600 }}>
@@ -4054,7 +4054,7 @@ const RentalBookingDetailModal = ({ booking, onClose, onUpdateStatus, setActiveT
                 {car.transmission && ` • ${car.transmission.toUpperCase()}`}
               </p>
               {car.registrationNumber && (
-                <span style={{ display: 'inline-block', marginTop: '0.4rem', background: '#0F172A', color: 'white', padding: '3px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.05em' }}>{car.registrationNumber}</span>
+                <span style={{ display: 'inline-block', marginTop: '0.4rem', background: '#0F172A', color: 'white', padding: '3px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.05em' }}>{car.registrationNumber}</span>
               )}
             </div>
           </div>
@@ -4121,7 +4121,7 @@ const RentalBookingDetailModal = ({ booking, onClose, onUpdateStatus, setActiveT
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(30,58,138,0.2)', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
               <span style={{ fontWeight: 900, color: '#0F172A' }}>TOTAL</span>
-              <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, fontSize: '1.3rem', color: '#1E3A8A' }}>₹{booking.totalAmount?.toLocaleString('en-IN')}</span>
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 950, fontSize: '1.3rem', color: '#1E3A8A' }}>₹{booking.totalAmount?.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
@@ -4328,7 +4328,7 @@ const LiveTrackingTab = ({ targetId, onClearTarget }) => {
 
           const marker = L.marker([b.currentLocation.lat, b.currentLocation.lng], { icon: carIcon })
             .bindPopup(`
-              <div style="font-family: Rajdhani, sans-serif;">
+              <div style="font-family: 'Space Grotesk', sans-serif;">
                 <strong style="font-size: 1.1rem; color: #1E3A8A;">${b.carSnapshot?.brand || b.rentalCar?.brand} ${b.carSnapshot?.model || b.rentalCar?.model}</strong><br/>
                 <div style="margin-top: 5px; font-size: 0.85rem; color: #475569; font-weight: 700;">
                   👤 Renter: ${b.user?.name || 'N/A'}<br/>
@@ -4397,7 +4397,7 @@ const LiveTrackingTab = ({ targetId, onClearTarget }) => {
       <div style={{ width: 340, flexShrink: 0, background: '#FFF', border: '1.5px solid #EEE', borderRadius: '24px', padding: '1.5rem', display: 'flex', flexDirection: 'column', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <h3 style={{ color: '#111', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', margin: 0 }}>
+            <h3 style={{ color: '#111', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.3rem', margin: 0 }}>
               ACTIVE <span style={{ color: '#1E3A8A' }}>RENTALS</span>
             </h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: socketConnected ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', padding: '0.2rem 0.6rem', borderRadius: '999px' }}>
@@ -4445,7 +4445,7 @@ const LiveTrackingTab = ({ targetId, onClearTarget }) => {
                 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ flex: 1 }}>
-                    <h4 style={{ color: '#111', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.1rem', margin: 0 }}>
+                    <h4 style={{ color: '#111', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.1rem', margin: 0 }}>
                       {car.brand} {car.model}
                     </h4>
                     <p style={{ color: '#666', fontSize: '0.8rem', fontWeight: 600, margin: '0.3rem 0' }}>
@@ -4573,7 +4573,7 @@ const serviceSummary = (booking) => {
 const gkBtn = (variant = 'primary') => ({
   display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: 'none',
   borderRadius: '10px', padding: '0.6rem 1.1rem', cursor: 'pointer',
-  fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.8rem',
+  fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '0.8rem',
   letterSpacing: '0.06em', textTransform: 'uppercase',
   background: variant === 'primary' ? 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)'
     : variant === 'danger' ? '#FEE2E2' : '#F1F5F9',
@@ -4768,7 +4768,7 @@ const CarsManagement = ({ serviceTypes }) => {
     <div>
       {/* form */}
       <form onSubmit={submit} style={{ background: '#FFF', border: '1.5px solid #EEE', borderRadius: '18px', padding: '1.5rem', marginBottom: '2rem' }}>
-        <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1.3rem', color: '#0F172A', marginBottom: '1.25rem' }}>
+        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1.3rem', color: '#0F172A', marginBottom: '1.25rem' }}>
           {editingId ? 'Edit Car' : 'Add Car'}
         </h3>
 
@@ -4814,7 +4814,7 @@ const CarsManagement = ({ serviceTypes }) => {
 
         {/* per-service pricing */}
         <div style={{ borderTop: '1px solid #EEE', paddingTop: '1.25rem' }}>
-          <p style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1rem', color: '#0F172A', marginBottom: '0.3rem' }}>
+          <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1rem', color: '#0F172A', marginBottom: '0.3rem' }}>
             Service Pricing For This Car
           </p>
           <p style={{ color: '#64748B', fontSize: '0.78rem', fontWeight: 500, marginBottom: '1rem' }}>
@@ -4865,7 +4865,7 @@ const CarsManagement = ({ serviceTypes }) => {
       {/* list */}
       <div style={{ background: '#FFF', border: '1.5px solid #EEE', borderRadius: '18px', padding: '1.5rem' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-          <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1.3rem', color: '#0F172A' }}>
+          <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1.3rem', color: '#0F172A' }}>
             Cars ({cars.length})
           </h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '10px', padding: '0.4rem 0.8rem' }}>
@@ -5237,7 +5237,7 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
     <div>
       {/* Add a category */}
       <form onSubmit={addCategory} style={{ background: '#FFF', border: '1.5px solid #EEE', borderRadius: '16px', padding: '1.15rem', marginBottom: '1.25rem' }}>
-        <p style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1rem', color: '#0F172A', marginBottom: '0.75rem' }}>
+        <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1rem', color: '#0F172A', marginBottom: '0.75rem' }}>
           Add a Category
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'flex-end' }}>
@@ -5284,7 +5284,7 @@ const CategoriesManagement = ({ serviceTypes, reload }) => {
               />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1.05rem', color: '#0F172A' }}>
+              <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1.05rem', color: '#0F172A' }}>
                 {cat.id}. {cat.name}
               </h4>
               <span style={{ color: '#94A3B8', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -5574,7 +5574,7 @@ const BasePriceSettings = ({ serviceTypes, reload }) => {
 
       {grouped.map((cat) => (
         <div key={cat.id} style={{ background: '#FFF', border: '1.5px solid #EEE', borderRadius: '16px', padding: '1.25rem', marginBottom: '1rem' }}>
-          <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1.05rem', color: '#0F172A', marginBottom: '0.9rem' }}>
+          <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1.05rem', color: '#0F172A', marginBottom: '0.9rem' }}>
             {cat.id}. {cat.name}
           </h4>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.7rem' }}>
@@ -5647,7 +5647,7 @@ const CarServicesTab = () => {
               color: activeSection === id ? '#FFF' : '#475569',
               border: `1.5px solid ${activeSection === id ? 'transparent' : '#E2E8F0'}`,
               borderRadius: '10px', padding: '0.6rem 1.1rem', cursor: 'pointer',
-              fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.82rem',
+              fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '0.82rem',
               letterSpacing: '0.05em', textTransform: 'uppercase',
             }}>
             <Icon size={14} /> {label}
@@ -5758,7 +5758,7 @@ export default function AdminDashboard() {
           <div style={{ width: 54, height: 54, background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '2px solid #2A2A2A' }}>
             <div style={{ width: '100%', height: '100%', borderRadius: '12px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px', boxSizing: 'border-box' }}><img src="/gkmotorslogo.png" alt="GK Motors" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /></div>
           </div>
-          <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, color: 'white', fontSize: '1.2rem', letterSpacing: '-0.02em' }}>
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 950, color: 'white', fontSize: '1.2rem', letterSpacing: '-0.02em' }}>
             GK Motors
           </span>
         </div>
@@ -5775,7 +5775,7 @@ export default function AdminDashboard() {
             <div style={{ width: 85, height: 85, background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '3px solid #2A2A2A' }}>
               <div style={{ width: '100%', height: '100%', borderRadius: '12px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px', boxSizing: 'border-box' }}><img src="/gkmotorslogo.png" alt="GK Motors" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /></div>
             </div>
-            <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, color: 'white', fontSize: '1.5rem', letterSpacing: '-0.02em' }}>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 950, color: 'white', fontSize: '1.5rem', letterSpacing: '-0.02em' }}>
               GK Motors
             </span>
           </div>
@@ -5793,7 +5793,7 @@ export default function AdminDashboard() {
                 fontSize: '0.9rem', fontWeight: 600,
                 marginBottom: '0.25rem', textAlign: 'left',
                 transition: 'all 0.2s',
-                fontFamily: 'Rajdhani, sans-serif',
+                fontFamily: "'Space Grotesk', sans-serif",
                 letterSpacing: '0.04em'
               }}
               onMouseEnter={e => { if(activeTab !== id) e.currentTarget.style.color = 'white'; }}
@@ -5816,7 +5816,7 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <div className="admin-main" style={{ flex: 1, overflow: 'auto' }}>
         <div style={{ padding: '3rem' }}>
-          <h2 className="admin-page-title" style={{ color: '#111', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.5rem', fontWeight: 950, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
+          <h2 className="admin-page-title" style={{ color: '#111', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.5rem', fontWeight: 950, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
             {sidebarLinks.find(l => l.id === activeTab)?.label || 'DASHBOARD'}
           </h2>
           <p style={{ color: '#888', marginBottom: '3rem', fontSize: '1.1rem', fontWeight: 500 }}>Welcome back, <span style={{ color: '#111', fontWeight: 800 }}>{user?.name}</span></p>
@@ -5837,7 +5837,7 @@ export default function AdminDashboard() {
 
               {/* Recent Service Bookings */}
               <div className="admin-table-wrap" style={{ background: '#FFFFFF', border: '1.5px solid #EEE', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-                <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontFamily: 'Rajdhani, sans-serif', fontSize: '1.5rem', textTransform: 'uppercase' }}>RECENT <span style={{ color: '#E53935' }}>BOOKINGS</span></h3>
+                <h3 style={{ color: '#111', fontWeight: 950, marginBottom: '2rem', fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.5rem', textTransform: 'uppercase' }}>RECENT <span style={{ color: '#E53935' }}>BOOKINGS</span></h3>
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                     <thead>

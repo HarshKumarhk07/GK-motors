@@ -63,16 +63,16 @@ const SERVICE_CART_STYLES = `
     display: inline-flex; align-items: center; gap: .5rem;
     background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;
     padding: .6rem 1.2rem; color: #475569; cursor: pointer;
-    font-family: Rajdhani, sans-serif; font-size: .85rem; font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif; font-size: .85rem; font-weight: 700;
     min-height: 44px;
   }
   .svc-cart-back:hover { background: #F1F5F9; }
   .svc-cart-title {
-    color: #0F172A; font-family: Rajdhani, sans-serif; font-weight: 900;
+    color: #0F172A; font-family: 'Space Grotesk', sans-serif; font-weight: 900;
     font-size: clamp(1.55rem, 6.5vw, 2.2rem); letter-spacing: .04em;
     margin: 0; line-height: 1.1;
   }
-  .svc-cart-title span { color: #1E3A8A; }
+  .svc-cart-title span { color: #2563EB; }
 
   .svc-cart-panel {
     background: #FFFFFF; border: 1.5px solid #E2E8F0;
@@ -82,11 +82,11 @@ const SERVICE_CART_STYLES = `
   }
 
   .svc-cart-eyebrow {
-    display: block; font-family: Rajdhani, sans-serif; font-size: .75rem;
+    display: block; font-family: 'Space Grotesk', sans-serif; font-size: .75rem;
     font-weight: 900; color: #64748B; text-transform: uppercase;
     letter-spacing: .05em;
   }
-  .svc-cart-eyebrow--blue { color: #1E3A8A; }
+  .svc-cart-eyebrow--blue { color: #2563EB; }
 
   .svc-cart-car {
     display: flex; align-items: center; gap: 1rem;
@@ -95,12 +95,12 @@ const SERVICE_CART_STYLES = `
   }
   .svc-cart-car-icon {
     flex: none; width: 50px; height: 50px; border-radius: 14px;
-    background: rgba(30,58,138,.08); color: #1E3A8A;
+    background: rgba(37,99,235,.08); color: #2563EB;
     display: flex; align-items: center; justify-content: center;
   }
   .svc-cart-car-text { min-width: 0; }
   .svc-cart-car-text h3 {
-    margin: 0; font-family: Rajdhani, sans-serif; font-weight: 900;
+    margin: 0; font-family: 'Space Grotesk', sans-serif; font-weight: 900;
     font-size: clamp(1.05rem, 4vw, 1.3rem); color: #0F172A; line-height: 1.25;
   }
 
@@ -115,21 +115,21 @@ const SERVICE_CART_STYLES = `
   }
   .svc-cart-row-main { min-width: 0; }
   .svc-cart-row-main h4 {
-    margin: 0; font-family: Rajdhani, sans-serif; font-weight: 800;
+    margin: 0; font-family: 'Space Grotesk', sans-serif; font-weight: 800;
     font-size: 1rem; color: #0F172A; line-height: 1.3;
   }
   .svc-cart-row-main p { margin: 0; font-size: .75rem; font-weight: 600; color: #64748B; }
   .svc-cart-row-price {
     flex: none; white-space: nowrap;
-    font-family: Rajdhani, sans-serif; font-weight: 950;
-    font-size: 1.2rem; color: #1E3A8A;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 950;
+    font-size: 1.2rem; color: #2563EB;
   }
 
   .svc-cart-total {
     display: flex; align-items: center; justify-content: space-between;
     gap: .5rem 1.25rem; padding: 1.2rem; margin-bottom: 2rem;
-    background: linear-gradient(135deg, rgba(30,58,138,.06) 0%, rgba(15,23,42,.02) 100%);
-    border: 1px solid rgba(30,58,138,.15); border-radius: 16px;
+    background: linear-gradient(135deg, rgba(37,99,235,.06) 0%, rgba(15,23,42,.02) 100%);
+    border: 1px solid rgba(37,99,235,.15); border-radius: 16px;
   }
   .svc-cart-total-label { min-width: 0; }
   .svc-cart-total-label p {
@@ -138,8 +138,8 @@ const SERVICE_CART_STYLES = `
   }
   .svc-cart-total-amount {
     flex: none; white-space: nowrap;
-    font-family: Rajdhani, sans-serif; font-weight: 950;
-    font-size: clamp(1.5rem, 6vw, 1.8rem); color: #1E3A8A; line-height: 1;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 950;
+    font-size: clamp(1.5rem, 6vw, 1.8rem); color: #2563EB; line-height: 1;
   }
 
   .svc-cart-actions { display: flex; flex-wrap: wrap; gap: 1rem; }
@@ -148,11 +148,11 @@ const SERVICE_CART_STYLES = `
     flex: 1 1 260px; display: inline-flex; align-items: center;
     justify-content: center; gap: .6rem; min-height: 52px;
     padding: .95rem 1.4rem; border: none; border-radius: 14px;
-    background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%); color: #FFFFFF;
-    font-family: Rajdhani, sans-serif; font-weight: 900;
+    background: linear-gradient(135deg, #2563EB 0%, #0F172A 100%); color: #FFFFFF;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 900;
     font-size: clamp(.85rem, 3.2vw, 1rem); letter-spacing: .06em;
     text-transform: uppercase; line-height: 1.25; cursor: pointer;
-    box-shadow: 0 8px 25px rgba(30,58,138,.25); transition: transform .25s;
+    box-shadow: 0 8px 25px rgba(37,99,235,.25); transition: transform .25s;
   }
   .svc-cart-cta svg { flex: none; }
   .svc-cart-cta:hover { transform: translateY(-2px); }
@@ -162,7 +162,7 @@ const SERVICE_CART_STYLES = `
     justify-content: center; min-height: 52px; padding: .95rem 1.8rem;
     background: #FFFFFF; color: #0F172A; border: 1.5px solid #E2E8F0;
     border-radius: 14px; text-decoration: none;
-    font-family: Rajdhani, sans-serif; font-weight: 800; font-size: .95rem;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: .95rem;
     letter-spacing: .04em; text-transform: uppercase;
   }
   .svc-cart-alt:hover { background: #F8FAFC; }
@@ -195,18 +195,18 @@ const StepIndicator = ({ step }) => (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
           <div style={{
             width: 38, height: 38, borderRadius: '50%',
-            background: step >= n ? '#1E3A8A' : '#1E293B',
-            border: `2px solid ${step >= n ? '#1E3A8A' : '#334155'}`,
+            background: step >= n ? '#2563EB' : '#1E293B',
+            border: `2px solid ${step >= n ? '#2563EB' : '#334155'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 800, fontSize: '0.9rem', color: step >= n ? 'white' : '#64748B',
-            fontFamily: 'Rajdhani, sans-serif',
-            boxShadow: step === n ? '0 0 25px rgba(30, 58, 138, 0.4)' : 'none',
+            fontFamily: "'Space Grotesk', sans-serif",
+            boxShadow: step === n ? '0 0 25px rgba(37, 99, 235, 0.4)' : 'none',
             transition: 'all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
           }}>{n}</div>
-          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: step >= n ? '#1E3A8A' : '#64748B', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'Rajdhani, sans-serif' }}>{label}</span>
+          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: step >= n ? '#2563EB' : '#64748B', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: "'Space Grotesk', sans-serif" }}>{label}</span>
         </div>
         {idx === 0 && (
-          <div style={{ width: 80, height: 2, background: step >= 2 ? '#1E3A8A' : '#F1F5F9', margin: '0 0.5rem', marginBottom: '1.4rem', transition: 'background 0.4s' }} />
+          <div style={{ width: 80, height: 2, background: step >= 2 ? '#2563EB' : '#F1F5F9', margin: '0 0.5rem', marginBottom: '1.4rem', transition: 'background 0.4s' }} />
         )}
       </div>
     ))}
@@ -296,7 +296,7 @@ export default function Cart() {
             name: 'GK Motors', description: 'Premium Showroom Order',
             order_id: rzpOrder.id,
             prefill: { name: user.name, email: user.email, contact: user.phone || '' },
-            theme: { color: '#1E3A8A' },
+            theme: { color: '#2563EB' },
             handler: async (response) => {
               try {
                 await verifyPartPayment(createdOrderId, {
@@ -422,17 +422,17 @@ export default function Cart() {
           <div style={{ width: 140, height: 140, borderRadius: '40px', background: '#F9F9F9', border: '1.5px solid #EEE', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'rotate(-5deg)' }}>
             <ShoppingBag size={56} style={{ color: '#DDD' }} />
           </div>
-          <div style={{ position: 'absolute', top: -10, right: -10, width: 44, height: 44, background: '#111', color: 'white', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', boxShadow: '0 8px 25px rgba(0,0,0,0.15)' }}>0</div>
+          <div style={{ position: 'absolute', top: -10, right: -10, width: 44, height: 44, background: '#111', color: 'white', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", boxShadow: '0 8px 25px rgba(0,0,0,0.15)' }}>0</div>
         </div>
         <div style={{ textAlign: 'center', maxWidth: '420px' }}>
-          <h2 style={{ color: '#111', fontSize: '2.5rem', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', letterSpacing: '-0.02em', margin: 0, textTransform: 'uppercase' }}>YOUR CART IS EMPTY</h2>
+          <h2 style={{ color: '#111', fontSize: '2.5rem', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em', margin: 0, textTransform: 'uppercase' }}>YOUR CART IS EMPTY</h2>
           <p style={{ color: '#666', marginTop: '0.6rem', fontSize: '1.05rem', fontWeight: 600 }}>Explore our certified car services or premium spare parts to get started.</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Link to="/services" style={{ background: '#1E3A8A', color: 'white', padding: '1rem 2.2rem', borderRadius: '16px', fontWeight: 950, textDecoration: 'none', fontSize: '0.95rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em', boxShadow: '0 12px 30px rgba(30, 58, 138, 0.25)', transition: 'all 0.4s' }}>
+          <Link to="/services" style={{ background: '#2563EB', color: 'white', padding: '1rem 2.2rem', borderRadius: '16px', fontWeight: 950, textDecoration: 'none', fontSize: '0.95rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.08em', boxShadow: '0 12px 30px rgba(37, 99, 235, 0.25)', transition: 'all 0.4s' }}>
             BOOK A SERVICE
           </Link>
-          <Link to="/parts" style={{ background: '#0F172A', color: 'white', padding: '1rem 2.2rem', borderRadius: '16px', fontWeight: 950, textDecoration: 'none', fontSize: '0.95rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em', boxShadow: '0 12px 30px rgba(15, 23, 42, 0.2)', transition: 'all 0.4s' }}>
+          <Link to="/parts" style={{ background: '#0F172A', color: 'white', padding: '1rem 2.2rem', borderRadius: '16px', fontWeight: 950, textDecoration: 'none', fontSize: '0.95rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.08em', boxShadow: '0 12px 30px rgba(15, 23, 42, 0.2)', transition: 'all 0.4s' }}>
             SHOP SPARE PARTS
           </Link>
         </div>
@@ -467,7 +467,7 @@ export default function Cart() {
         }
       `}</style>
       {/* Top blue accent line */}
-      <div style={{ height: '5px', background: 'linear-gradient(90deg, #1E3A8A, #93C5FD, transparent)' }} />
+      <div style={{ height: '5px', background: 'linear-gradient(90deg, #2563EB, #93C5FD, transparent)' }} />
  
       <div className="max-w-[1220px] mx-auto px-4" style={{ paddingTop: '2.5rem', paddingBottom: '4rem' }}>
  
@@ -480,8 +480,8 @@ export default function Cart() {
             <ArrowLeft size={16} /> Back to Store
           </button>
           <div>
-            <h1 style={{ color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, margin: 0, letterSpacing: '0.04em' }}>
-              YOUR <span style={{ color: '#1E3A8A' }}>CART</span>
+            <h1 style={{ color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.2rem', fontWeight: 900, margin: 0, letterSpacing: '0.04em' }}>
+              YOUR <span style={{ color: '#2563EB' }}>CART</span>
             </h1>
             <p style={{ color: '#888', margin: 0, fontSize: '0.95rem', fontWeight: 500 }}>{itemCount} items ready for checkout</p>
           </div>
@@ -495,13 +495,13 @@ export default function Cart() {
           {/* ── Cart Items ── */}
           <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
             {serviceCount > 0 && (
-              <div style={{ background: 'rgba(30, 58, 138, 0.05)', border: '1.5px solid rgba(30, 58, 138, 0.15)', borderRadius: '16px', padding: '1rem 1.4rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ background: 'rgba(37, 99, 235, 0.05)', border: '1.5px solid rgba(37, 99, 235, 0.15)', borderRadius: '16px', padding: '1rem 1.4rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '10px', background: '#1E3A8A', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '10px', background: '#2563EB', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Wrench size={18} />
                   </div>
                   <div>
-                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif' }}>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif" }}>
                       Active Service Booking ({serviceCount} package{serviceCount > 1 ? 's' : ''})
                     </h4>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>
@@ -518,7 +518,7 @@ export default function Cart() {
                     }
                     setShowServiceCheckout(true);
                   }}
-                  style={{ background: '#1E3A8A', color: 'white', border: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 800, fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                  style={{ background: '#2563EB', color: 'white', border: 'none', cursor: 'pointer', padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 800, fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                 >
                   CHECKOUT SERVICE <ArrowRight size={14} />
                 </button>
@@ -548,11 +548,11 @@ export default function Cart() {
                   {/* Info */}
                   <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <Link to={item.type === 'bike' ? `/bikes/${item._id}` : `/parts/${item._id}`} style={{ textDecoration: 'none' }}>
-                      <h3 style={{ color: '#111', fontWeight: 800, fontSize: '1.1rem', margin: '0 0 0.3rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.02em', textTransform: 'uppercase' }}>{item.name}</h3>
+                      <h3 style={{ color: '#111', fontWeight: 800, fontSize: '1.1rem', margin: '0 0 0.3rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.02em', textTransform: 'uppercase' }}>{item.name}</h3>
                     </Link>
                     {item.brand && <p style={{ color: '#888', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.6rem' }}>{item.brand}</p>}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
-                      <span style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.4rem', fontWeight: 950, color: '#1E3A8A' }}>
+                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.4rem', fontWeight: 950, color: '#2563EB' }}>
                         ₹{itemPrice?.toLocaleString('en-IN')}
                       </span>
                       {item.price > itemPrice && (
@@ -572,7 +572,7 @@ export default function Cart() {
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0.5rem 0' }}>
                     <button onClick={() => removeFromCart(item._id)}
                       style={{ background: '#F8FAFC', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '10px', borderRadius: '50%', transition: 'all 0.3s', display: 'flex' }}
-                      onMouseEnter={e => { e.currentTarget.style.color = '#1E3A8A'; e.currentTarget.style.background = 'rgba(30, 58, 138, 0.05)'; }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#2563EB'; e.currentTarget.style.background = 'rgba(37, 99, 235, 0.05)'; }}
                       onMouseLeave={e => { e.currentTarget.style.color = '#94A3B8'; e.currentTarget.style.background = '#F8FAFC'; }}>
                       <Trash2 size={16} />
                     </button>
@@ -583,7 +583,7 @@ export default function Cart() {
                         onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#666'; }}>
                         <Minus size={14} />
                       </button>
-                      <span style={{ color: '#111', fontWeight: 900, minWidth: 24, textAlign: 'center', fontSize: '1rem', fontFamily: 'Rajdhani, sans-serif' }}>{item.quantity}</span>
+                      <span style={{ color: '#111', fontWeight: 900, minWidth: 24, textAlign: 'center', fontSize: '1rem', fontFamily: "'Space Grotesk', sans-serif" }}>{item.quantity}</span>
                       <button onClick={() => updateQty(item._id, item.quantity + 1)}
                         style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: '#666', cursor: 'pointer', borderRadius: '10px', transition: 'all 0.2s' }}
                         onMouseEnter={e => { e.currentTarget.style.background = '#F5F5F5'; e.currentTarget.style.color = '#111'; }}
@@ -600,7 +600,7 @@ export default function Cart() {
             {savedPincode.length === 6 && !isDeliverableAtPincode(items, savedPincode) && (
               <div style={{ marginTop: '1.5rem', background: 'rgba(229,57,53,0.04)', border: '1px solid rgba(229,57,53,0.15)', borderRadius: '16px', padding: '1.2rem', display: 'flex', alignItems: 'flex-start', gap: '0.8rem' }}>
                 <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>⚠️</span>
-                <p style={{ color: '#1E3A8A', fontSize: '0.9rem', margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
+                <p style={{ color: '#2563EB', fontSize: '0.9rem', margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
                   <strong>NOTICE:</strong> Standard delivery for some items may be impacted at pincode <strong>{savedPincode}</strong>. Please check the pincode before you place the order.
                 </p>
               </div>
@@ -612,8 +612,8 @@ export default function Cart() {
                 { icon: <Truck size={16} />, text: 'FREE DELIVERY ABOVE ₹500', color: '#2E7D32' },
                 { icon: <Shield size={16} />, text: 'SECURE ENCRYPTED CHECKOUT', color: '#111' },
               ].map(({ icon, text, color }) => (
-                <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: color, fontSize: '0.85rem', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em' }}>
-                  <span style={{ color: '#1E3A8A' }}>{icon}</span> {text}
+                <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: color, fontSize: '0.85rem', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.04em' }}>
+                  <span style={{ color: '#2563EB' }}>{icon}</span> {text}
                 </div>
               ))}
             </div>
@@ -625,7 +625,7 @@ export default function Cart() {
               <div style={{ background: '#FFF', border: '1px solid #EEE', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 15px 50px rgba(0,0,0,0.03)' }}>
                 {/* Header */}
                 <div style={{ padding: '1.5rem 1.8rem', borderBottom: '1px solid #EEE', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F9F9F9' }}>
-                  <span style={{ color: '#111', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', fontSize: '1.1rem', letterSpacing: '0.08em' }}>SUMMARY</span>
+                  <span style={{ color: '#111', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.1rem', letterSpacing: '0.08em' }}>SUMMARY</span>
                   <span style={{ color: '#666', fontSize: '0.85rem', fontWeight: 700 }}>{itemCount} ITEMS</span>
                 </div>
  
@@ -664,9 +664,9 @@ export default function Cart() {
                       </span>
                     </div>
                     {/* Grand total */}
-                    <div style={{ background: '#EFF6FF', borderRadius: '18px', padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(30, 58, 138, 0.15)', boxShadow: 'inset 0 2px 10px rgba(30, 58, 138, 0.05)' }}>
-                      <span style={{ color: '#1E3A8A', fontWeight: 950, fontSize: '1.1rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em' }}>GRAND TOTAL</span>
-                      <span style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.5rem', fontWeight: 950, color: '#1E3A8A', lineHeight: 1 }}>
+                    <div style={{ background: '#EFF6FF', borderRadius: '18px', padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(37, 99, 235, 0.15)', boxShadow: 'inset 0 2px 10px rgba(37, 99, 235, 0.05)' }}>
+                      <span style={{ color: '#2563EB', fontWeight: 950, fontSize: '1.1rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.04em' }}>GRAND TOTAL</span>
+                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.5rem', fontWeight: 950, color: '#2563EB', lineHeight: 1 }}>
                         ₹{grandTotal?.toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -678,7 +678,7 @@ export default function Cart() {
                   </div>
  
                   <button onClick={() => setStep(2)}
-                    style={{ width: '100%', marginTop: '2rem', padding: '1.2rem', background: '#0F172A', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 950, fontSize: '1.1rem', cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.12em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', transition: 'all 0.3s', boxShadow: '0 12px 30px rgba(15, 23, 42, 0.2)' }}
+                    style={{ width: '100%', marginTop: '2rem', padding: '1.2rem', background: '#0F172A', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 950, fontSize: '1.1rem', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.12em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', transition: 'all 0.3s', boxShadow: '0 12px 30px rgba(15, 23, 42, 0.2)' }}
                     onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
                     onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                     PROCEED TO DELIVERY <ChevronRight size={20} />
@@ -689,7 +689,7 @@ export default function Cart() {
               <div style={{ background: '#FFF', border: '1px solid #EEE', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 15px 50px rgba(0,0,0,0.03)' }}>
                 {/* Red Header */}
                 <div style={{ background: '#0F172A', padding: '1.8rem 2rem', color: '#FFF' }}>
-                  <h3 style={{ fontSize: '1.6rem', fontWeight: 950, marginBottom: '0.3rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Delivery Location</h3>
+                  <h3 style={{ fontSize: '1.6rem', fontWeight: 950, marginBottom: '0.3rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.05em', textTransform: 'uppercase' }}>Delivery Location</h3>
                   <p style={{ fontSize: '0.85rem', fontWeight: 600, opacity: 0.8, letterSpacing: '0.02em' }}>Complimentary shipping for our elite members</p>
                 </div>
 
@@ -717,9 +717,9 @@ export default function Cart() {
                             toast.error('No saved addresses found');
                           }
                         }}
-                        style={{ width: '100%', border: '2px solid #1E3A8A', background: 'transparent', color: '#1E3A8A', borderRadius: '14px', padding: '0.8rem', fontSize: '0.85rem', fontWeight: 950, cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '0.08em', transition: 'all 0.3s' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#1E3A8A'; e.currentTarget.style.color = '#FFF'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#1E3A8A'; }}
+                        style={{ width: '100%', border: '2px solid #2563EB', background: 'transparent', color: '#2563EB', borderRadius: '14px', padding: '0.8rem', fontSize: '0.85rem', fontWeight: 950, cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", textTransform: 'uppercase', letterSpacing: '0.08em', transition: 'all 0.3s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#2563EB'; e.currentTarget.style.color = '#FFF'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2563EB'; }}
                       >
                         {showAddressMenu ? 'Close Selection' : 'Load Saved Address Profiles'}
                       </button>
@@ -833,11 +833,11 @@ export default function Cart() {
                       <div
                         onClick={() => setShowMap(true)}
                         style={{ border: '2px dashed #EEE', borderRadius: '16px', padding: '1rem', textAlign: 'center', cursor: 'pointer', background: '#F9F9F9', transition: 'all 0.2s' }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = '#1E3A8A'}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = '#2563EB'}
                         onMouseLeave={e => e.currentTarget.style.borderColor = '#EEE'}
                       >
                          <div style={{ color: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', fontWeight: 700, fontSize: '0.85rem' }}>
-                           <MapPin size={18} style={{ color: '#1E3A8A' }} /> Pin location on maps
+                           <MapPin size={18} style={{ color: '#2563EB' }} /> Pin location on maps
                          </div>
                       </div>
                     </div>
@@ -845,10 +845,10 @@ export default function Cart() {
                     {/* Payment — online only. Cash on delivery has been withdrawn. */}
                     <div style={{ marginTop: '1rem', marginBottom: '1.2rem' }}>
                       <p style={{ color: '#888', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.6rem' }}>PAYMENT</p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', background: '#EFF6FF', border: '1.5px solid rgba(30, 58, 138, 0.18)', borderRadius: '12px', padding: '0.9rem 1rem' }}>
-                        <Shield size={18} style={{ color: '#1E3A8A', flexShrink: 0 }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', background: '#EFF6FF', border: '1.5px solid rgba(37, 99, 235, 0.18)', borderRadius: '12px', padding: '0.9rem 1rem' }}>
+                        <Shield size={18} style={{ color: '#2563EB', flexShrink: 0 }} />
                         <div style={{ minWidth: 0 }}>
-                          <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 900, color: '#0F172A', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.04em' }}>
+                          <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 900, color: '#0F172A', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.04em' }}>
                             SECURE ONLINE PAYMENT
                           </p>
                           <p style={{ margin: 0, fontSize: '0.75rem', color: '#475569', fontWeight: 600 }}>
@@ -861,16 +861,16 @@ export default function Cart() {
                     <div style={{ borderTop: '1px solid #EEE', paddingTop: '1.5rem', marginTop: '1.5rem' }}>
                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                          <span style={{ color: '#666', fontWeight: 700, fontSize: '0.9rem' }}>Total Amount</span>
-                         <span style={{ color: '#111', fontSize: '1.8rem', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif' }}>₹{grandTotal?.toLocaleString('en-IN')}</span>
+                         <span style={{ color: '#111', fontSize: '1.8rem', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif" }}>₹{grandTotal?.toLocaleString('en-IN')}</span>
                        </div>
 
                        <div style={{ display: 'flex', gap: '1rem' }}>
                         <button type="button" onClick={() => setStep(1)}
-                          style={{ flex: 1, height: '54px', background: '#FFF', border: '2px solid #EEE', borderRadius: '14px', color: '#666', cursor: 'pointer', fontWeight: 800, fontSize: '0.9rem', fontFamily: 'Rajdhani, sans-serif' }}>
+                          style={{ flex: 1, height: '54px', background: '#FFF', border: '2px solid #EEE', borderRadius: '14px', color: '#666', cursor: 'pointer', fontWeight: 800, fontSize: '0.9rem', fontFamily: "'Space Grotesk', sans-serif" }}>
                           BACK
                         </button>
                         <button type="submit" disabled={placing}
-                          style={{ flex: 2, height: '54px', background: placing ? '#E2E8F0' : '#1E3A8A', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 950, cursor: placing ? 'not-allowed' : 'pointer', fontSize: '1.1rem', transition: 'all 0.3s', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em', boxShadow: placing ? 'none' : '0 12px 30px rgba(30, 58, 138, 0.25)' }}>
+                          style={{ flex: 2, height: '54px', background: placing ? '#E2E8F0' : '#2563EB', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 950, cursor: placing ? 'not-allowed' : 'pointer', fontSize: '1.1rem', transition: 'all 0.3s', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em', boxShadow: placing ? 'none' : '0 12px 30px rgba(37, 99, 235, 0.25)' }}>
                           {placing ? 'PROCESSING…' : 'PAY & PLACE ORDER'}
                         </button>
                       </div>
@@ -889,7 +889,7 @@ export default function Cart() {
           <div className="animate-scaleIn" style={{ background: '#FFF', width: '90%', maxWidth: '500px', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.2)' }}>
             <div style={{ padding: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #EEE' }}>
               <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif' }}>Select Location</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif" }}>Select Location</h3>
                 <p style={{ fontSize: '0.75rem', color: '#888', fontWeight: 600 }}>Please pin your service address</p>
               </div>
               <button onClick={() => setShowMap(false)} style={{ background: 'none', border: 'none', color: '#BBB', cursor: 'pointer' }}><X size={20} /></button>
@@ -943,7 +943,7 @@ export default function Cart() {
                     }
                   }
                 }}
-                style={{ width: '100%', background: '#0F172A', color: '#FFF', border: 'none', borderRadius: '14px', padding: '1.2rem', fontWeight: 950, cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase', boxShadow: '0 12px 30px rgba(15, 23, 42, 0.2)' }}>
+                style={{ width: '100%', background: '#0F172A', color: '#FFF', border: 'none', borderRadius: '14px', padding: '1.2rem', fontWeight: 950, cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em', textTransform: 'uppercase', boxShadow: '0 12px 30px rgba(15, 23, 42, 0.2)' }}>
                  Lock This Location
                </button>
             </div>

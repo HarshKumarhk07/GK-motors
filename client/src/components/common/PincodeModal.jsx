@@ -91,7 +91,7 @@ export default function PincodeModal() {
           </div>
 
           {/* Heading */}
-          <h2 style={{ color: 'white', fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1.5rem', margin: '0 0 0.35rem', letterSpacing: '0.04em' }}>
+          <h2 style={{ color: 'white', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1.5rem', margin: '0 0 0.35rem', letterSpacing: '0.04em' }}>
             SET YOUR LOCATION
           </h2>
           <p style={{ color: '#555', fontSize: '0.85rem', margin: '0 0 1.5rem', lineHeight: 1.5 }}>
@@ -115,7 +115,7 @@ export default function PincodeModal() {
                 borderRadius: '10px', padding: '0.75rem 1rem',
                 color: 'white', fontSize: '1.1rem',
                 letterSpacing: '0.15em', outline: 'none',
-                fontFamily: 'Rajdhani, sans-serif', fontWeight: 700,
+                fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700,
                 transition: 'border-color 0.2s',
               }}
             />
@@ -141,7 +141,7 @@ export default function PincodeModal() {
               border: 'none', borderRadius: '10px',
               fontWeight: 900, fontSize: '0.95rem',
               cursor: value.length === 6 ? 'pointer' : 'not-allowed',
-              fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.08em',
+              fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.08em',
               transition: 'all 0.2s',
               marginBottom: '0.75rem',
             }}

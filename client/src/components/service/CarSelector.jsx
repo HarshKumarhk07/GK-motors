@@ -82,7 +82,7 @@ const CarThumb = ({ car }) => {
       alignItems: 'center', justifyContent: 'center', gap: '0.25rem',
       background: 'linear-gradient(135deg, #EBF0FF 0%, #F8FAFC 100%)',
     }}>
-      <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 950, fontSize: '1.5rem', color: '#1E3A8A', letterSpacing: '0.05em' }}>
+      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 950, fontSize: '1.5rem', color: '#2563EB', letterSpacing: '0.05em' }}>
         {initials(car.brand, car.model)}
       </span>
       <CarIcon size={16} style={{ color: '#94A3B8' }} />
@@ -297,7 +297,7 @@ export default function CarSelector({ onSelect, selectedCar }) {
       {/* Search */}
       {!loading && cars.length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '12px', padding: '0.65rem 1rem', marginBottom: '1.25rem' }}>
-          <Search size={16} style={{ color: '#1E3A8A', flexShrink: 0 }} />
+          <Search size={16} style={{ color: '#2563EB', flexShrink: 0 }} />
           <input
             type="text"
             placeholder="Search by brand or model..."
@@ -335,16 +335,16 @@ export default function CarSelector({ onSelect, selectedCar }) {
                 onClick={() => chooseCatalogueCar(car)}
                 style={{
                   background: '#FFF', textAlign: 'left', cursor: 'pointer', padding: 0,
-                  border: `2px solid ${isSelected ? '#1E3A8A' : '#E2E8F0'}`,
+                  border: `2px solid ${isSelected ? '#2563EB' : '#E2E8F0'}`,
                   borderRadius: '14px', overflow: 'hidden',
-                  boxShadow: isSelected ? '0 12px 28px rgba(30,58,138,0.16)' : '0 2px 10px rgba(15,23,42,0.03)',
+                  boxShadow: isSelected ? '0 12px 28px rgba(37,99,235,0.16)' : '0 2px 10px rgba(15,23,42,0.03)',
                   transition: 'all 0.25s', position: 'relative',
                 }}
                 onMouseEnter={(e) => { if (!isSelected) { e.currentTarget.style.borderColor = '#93C5FD'; e.currentTarget.style.transform = 'translateY(-4px)'; } }}
                 onMouseLeave={(e) => { if (!isSelected) { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.transform = 'translateY(0)'; } }}
               >
                 {isSelected && (
-                  <div style={{ position: 'absolute', top: 8, right: 8, width: 24, height: 24, borderRadius: '50%', background: '#1E3A8A', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+                  <div style={{ position: 'absolute', top: 8, right: 8, width: 24, height: 24, borderRadius: '50%', background: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
                     <Check size={14} style={{ color: '#FFF' }} />
                   </div>
                 )}
@@ -352,7 +352,7 @@ export default function CarSelector({ onSelect, selectedCar }) {
                   <CarThumb car={car} />
                 </div>
                 <div style={{ padding: '0.6rem 0.7rem' }}>
-                  <div style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.88rem', color: '#0F172A', lineHeight: 1.2 }}>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '0.88rem', color: '#0F172A', lineHeight: 1.2 }}>
                     {car.brand}
                   </div>
                   <div style={{ color: '#475569', fontSize: '0.74rem', fontWeight: 600 }}>{car.model}</div>
@@ -382,8 +382,8 @@ export default function CarSelector({ onSelect, selectedCar }) {
           onClick={() => setManualOpen(true)}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-            width: '100%', background: '#FFF', border: '1.5px dashed #1E3A8A',
-            color: '#1E3A8A', borderRadius: '11px', padding: '0.75rem',
+            width: '100%', background: '#FFF', border: '1.5px dashed #2563EB',
+            color: '#2563EB', borderRadius: '11px', padding: '0.75rem',
             fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.background = '#EBF0FF'; }}
@@ -394,7 +394,7 @@ export default function CarSelector({ onSelect, selectedCar }) {
       ) : (
         <form onSubmit={submitManual} style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '1.15rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '1.02rem', color: '#0F172A' }}>
+            <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '1.02rem', color: '#0F172A' }}>
               Enter Your Car Details
             </h3>
             <button type="button" onClick={() => { setManualOpen(false); setErrors({}); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', display: 'flex' }}>
@@ -445,9 +445,9 @@ export default function CarSelector({ onSelect, selectedCar }) {
 
           <button type="submit" style={{
             marginTop: '1.25rem', width: '100%',
-            background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
+            background: 'linear-gradient(135deg, #2563EB 0%, #0F172A 100%)',
             color: '#FFF', border: 'none', borderRadius: '10px', padding: '0.7rem',
-            fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: '0.85rem',
+            fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '0.85rem',
             letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
           }}>
             Use This Car
@@ -463,7 +463,7 @@ export default function CarSelector({ onSelect, selectedCar }) {
 const CAR_SELECTOR_STYLES = `
   .gk-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 
-  .gk-car-title { font-family: Rajdhani, sans-serif; font-size: 1.4rem; font-weight: 900; color: #0F172A; margin: 0 0 0.25rem; }
+  .gk-car-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 900; color: #0F172A; margin: 0 0 0.25rem; }
   .gk-car-sub   { color: #64748B; font-size: 0.8rem; font-weight: 500; margin: 0; }
   @media (max-width: 400px) { .gk-car-title { font-size: 1.2rem; } }
 
@@ -503,7 +503,7 @@ const CAR_SELECTOR_STYLES = `
     color: #0F172A; font-weight: 800; font-size: 0.86rem;
     cursor: pointer; font-family: inherit;
   }
-  .gk-fuel-chip.is-on { border-color: #1E3A8A; background: #EFF6FF; color: #1E3A8A; }
+  .gk-fuel-chip.is-on { border-color: #2563EB; background: #EFF6FF; color: #2563EB; }
   .gk-fuel-chip:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
   .gk-fuel-legacy { font-weight: 600; font-size: 0.72rem; color: #64748B; }
 
@@ -515,9 +515,9 @@ const CAR_SELECTOR_STYLES = `
   }
   .gk-car-next {
     flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
-    background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%); color: #FFF;
+    background: linear-gradient(135deg, #2563EB 0%, #0F172A 100%); color: #FFF;
     border: none; border-radius: 10px; padding: 0.8rem; min-height: 46px;
-    font-family: Rajdhani, sans-serif; font-weight: 900; font-size: 0.88rem;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.88rem;
     letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer;
   }
   .gk-car-back:focus-visible, .gk-car-next:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }

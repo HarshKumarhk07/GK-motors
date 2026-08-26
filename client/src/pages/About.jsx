@@ -41,11 +41,11 @@ export default function About() {
         textAlign: 'center'
       }}>
         {/* Glow Background */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(30,58,138,0.2) 0%, transparent 60%)' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(37,99,235,0.2) 0%, transparent 60%)' }} />
         
         <div className="max-w-4xl mx-auto px-4 relative z-10">
           <p style={{ color: '#93C5FD', fontSize: '0.9rem', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '1rem' }}>Our Story</p>
-          <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 950, color: 'white', lineHeight: 1, marginBottom: '1.5rem' }}>
+          <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 950, color: 'white', lineHeight: 1, marginBottom: '1.5rem' }}>
             REVOLUTIONIZING <br />
             <span style={{ color: '#93C5FD' }}>CAR OWNERSHIP</span>
           </h1>
@@ -66,8 +66,8 @@ export default function About() {
               { value: '60 Min', label: 'Service Promise', icon: Clock },
             ].map((stat, i) => (
               <div key={i} style={{ padding: '1rem' }}>
-                <stat.icon size={28} style={{ color: '#1E3A8A', marginBottom: '0.8rem' }} />
-                <div className="stat-value" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: '#111', lineHeight: 1 }}>{stat.value}</div>
+                <stat.icon size={28} style={{ color: '#2563EB', marginBottom: '0.8rem' }} />
+                <div className="stat-value" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.2rem', fontWeight: 900, color: '#111', lineHeight: 1 }}>{stat.value}</div>
                 <div className="stat-label" style={{ color: '#888', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.3rem' }}>{stat.label}</div>
               </div>
             ))}
@@ -80,28 +80,28 @@ export default function About() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="journey-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
             <div>
-              <div style={{ width: 40, height: 4, background: '#1E3A8A', marginBottom: '1.5rem', borderRadius: '2px' }} />
-              <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.8rem', fontWeight: 900, color: '#111', lineHeight: 1.1, marginBottom: '1.5rem' }}>
-                A JOURNEY DRIVEN BY <span style={{ color: '#1E3A8A' }}>EXCELLENCE</span>
+              <div style={{ width: 40, height: 4, background: '#2563EB', marginBottom: '1.5rem', borderRadius: '2px' }} />
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.8rem', fontWeight: 900, color: '#111', lineHeight: 1.1, marginBottom: '1.5rem' }}>
+                A JOURNEY DRIVEN BY <span style={{ color: '#2563EB' }}>EXCELLENCE</span>
               </h2>
               <p style={{ color: '#555', fontSize: '1.05rem', lineHeight: 1.8, marginBottom: '1.5rem' }}>
                 GK Motors started as a small garage in 2018. Today we run a full-service workshop network with factory-trained technicians and modern diagnostics. From a routine periodic service to a full engine rebuild, we keep the process transparent and the pricing upfront at every step.
               </p>
               <div className="journey-subgrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                 <div style={{ background: '#FFF', padding: '1.5rem', borderRadius: '16px', border: '1px solid #EEE', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-                  <Zap size={22} style={{ color: '#1E3A8A', marginBottom: '0.8rem' }} />
+                  <Zap size={22} style={{ color: '#2563EB', marginBottom: '0.8rem' }} />
                   <h4 style={{ color: '#111', fontWeight: 800 }}>Fast Turnaround</h4>
                   <p style={{ color: '#777', fontSize: '0.85rem' }}>Most routine services completed and returned the same day.</p>
                 </div>
                 <div style={{ background: '#FFF', padding: '1.5rem', borderRadius: '16px', border: '1px solid #EEE', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-                  <Shield size={22} style={{ color: '#1E3A8A', marginBottom: '0.8rem' }} />
+                  <Shield size={22} style={{ color: '#2563EB', marginBottom: '0.8rem' }} />
                   <h4 style={{ color: '#111', fontWeight: 800 }}>Certified Quality</h4>
                   <p style={{ color: '#777', fontSize: '0.85rem' }}>Every service ends with a 40-point health check report.</p>
                 </div>
               </div>
             </div>
             <div className="journey-image-wrapper" style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', inset: '-10px', border: '2px solid #1E3A8A', borderRadius: '24px', zIndex: 0 }} />
+              <div style={{ position: 'absolute', inset: '-10px', border: '2px solid #2563EB', borderRadius: '24px', zIndex: 0 }} />
               <img 
                 src="https://images.unsplash.com/photo-1625047509248-ec889cbff17f?q=80&w=800&auto=format&fit=crop" 
                 alt="GK Motors Workshop" 
@@ -116,7 +116,7 @@ export default function About() {
       <section style={{ padding: '6rem 0', background: '#FFF' }}>
         <div className="max-w-6xl mx-auto px-4">
           <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.5rem', fontWeight: 900, color: '#111' }}>OUR CORE <span style={{ color: '#1E3A8A' }}>VALUES</span></h2>
+            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.5rem', fontWeight: 900, color: '#111' }}>OUR CORE <span style={{ color: '#2563EB' }}>VALUES</span></h2>
             <p style={{ color: '#666' }}>The principles that guide everything we do</p>
           </div>
           <div className="values-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
@@ -136,8 +136,8 @@ export default function About() {
               }}
               onMouseEnter={e => { 
                 e.currentTarget.style.transform = 'translateY(-10px)'; 
-                e.currentTarget.style.borderColor = '#1E3A8A';
-                e.currentTarget.style.boxShadow = '0 20px 40px rgba(30,58,138,0.1)';
+                e.currentTarget.style.borderColor = '#2563EB';
+                e.currentTarget.style.boxShadow = '0 20px 40px rgba(37,99,235,0.1)';
               }}
               onMouseLeave={e => { 
                 e.currentTarget.style.transform = 'translateY(0)'; 
@@ -156,7 +156,7 @@ export default function About() {
                     position: 'absolute', top: '15px', right: '15px', 
                     background: 'rgba(255,255,255,0.9)', padding: '4px 12px', 
                     borderRadius: '20px', fontSize: '1.2rem', fontWeight: 900, 
-                    fontFamily: 'Rajdhani, sans-serif', color: '#111' 
+                    fontFamily: "'Space Grotesk', sans-serif", color: '#111' 
                   }}>
                     {value.num}
                   </div>
@@ -167,14 +167,14 @@ export default function About() {
                   <div style={{ 
                     position: 'absolute', top: '-25px', left: '25px', 
                     width: '50px', height: '50px', borderRadius: '50%', 
-                    background: '#1E3A8A', display: 'flex', alignItems: 'center', 
-                    justifyContent: 'center', boxShadow: '0 8px 20px rgba(30,58,138,0.3)',
+                    background: '#2563EB', display: 'flex', alignItems: 'center', 
+                    justifyContent: 'center', boxShadow: '0 8px 20px rgba(37,99,235,0.3)',
                     border: '3px solid white'
                   }}>
                     <value.icon size={20} style={{ color: 'white' }} />
                   </div>
 
-                  <h3 className="value-card-title" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: '#111', marginTop: '0.5rem', marginBottom: '0.8rem' }}>{value.title}</h3>
+                  <h3 className="value-card-title" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.5rem', fontWeight: 800, color: '#111', marginTop: '0.5rem', marginBottom: '0.8rem' }}>{value.title}</h3>
                   <p style={{ color: '#666', lineHeight: 1.6, fontSize: '0.9rem' }}>{value.desc}</p>
                 </div>
               </div>

@@ -319,14 +319,14 @@ export default function Services() {
           overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .gk-svc-bar-total {
-          display: block; font-family: Rajdhani, sans-serif;
+          display: block; font-family: 'Space Grotesk', sans-serif;
           font-size: 1.25rem; font-weight: 900; color: #0F172A; line-height: 1.15;
         }
         .gk-svc-bar-cta {
           flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-          background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%); color: #FFF;
+          background: linear-gradient(135deg, #2563EB 0%, #0F172A 100%); color: #FFF;
           border: none; border-radius: 11px; padding: 0.8rem 1.15rem; min-height: 46px;
-          font-family: Rajdhani, sans-serif; font-weight: 900; font-size: 0.82rem;
+          font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.82rem;
           letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer;
         }
         .gk-svc-bar-cta:disabled { background: #E2E8F0; color: #94A3B8; cursor: not-allowed; }
@@ -379,7 +379,7 @@ export default function Services() {
           display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
           flex-shrink: 0; min-height: 44px; padding: 0.6rem 0.95rem;
           background: #EFF6FF; border: 1.5px solid #BFDBFE; border-radius: 10px;
-          color: #1E3A8A; font-family: inherit; font-weight: 800; font-size: 0.76rem;
+          color: #2563EB; font-family: inherit; font-weight: 800; font-size: 0.76rem;
           cursor: pointer; white-space: nowrap;
           transition: background 0.15s ease, border-color 0.15s ease;
         }
@@ -394,7 +394,7 @@ export default function Services() {
           padding: 1.35rem 1.25rem; box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
         }
         .gk-svc-confirm-title {
-          font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; font-weight: 900;
+          font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 900;
           color: #0F172A; letter-spacing: -0.01em; margin-bottom: 0.3rem;
         }
         .gk-svc-confirm-copy {
@@ -404,9 +404,9 @@ export default function Services() {
         .gk-svc-confirm-cta {
           display: inline-flex; align-items: center; justify-content: center;
           min-height: 48px; padding: 0.8rem 2.2rem;
-          background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%);
+          background: linear-gradient(135deg, #2563EB 0%, #0F172A 100%);
           color: #FFF; border: none; border-radius: 10px;
-          font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 0.85rem;
+          font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.85rem;
           letter-spacing: 0.09em; text-transform: uppercase; cursor: pointer;
         }
         .gk-svc-confirm-cta:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
@@ -430,9 +430,9 @@ export default function Services() {
       `}</style>
 
       {/* Header */}
-      <div className="gk-svc-head" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', padding: '2rem 0 2.4rem' }}>
+      <div className="gk-svc-head" style={{ background: 'linear-gradient(135deg, #2563EB 0%, #0F172A 100%)', padding: '2rem 0 2.4rem' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 1.5rem' }}>
-          <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(1.5rem, 3vw, 2.1rem)', fontWeight: 900, color: '#FFF', letterSpacing: '-0.01em', marginBottom: '0.35rem' }}>
+          <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(1.5rem, 3vw, 2.1rem)', fontWeight: 900, color: '#FFF', letterSpacing: '-0.01em', marginBottom: '0.35rem' }}>
             Book a Service
           </h1>
           <p style={{ color: '#94A3B8', fontSize: '0.85rem', fontWeight: 500 }}>
@@ -475,7 +475,7 @@ export default function Services() {
                 <div className="gk-svc-carbar-thumb">
                   {car.image
                     ? <img src={car.image} alt="" />
-                    : <CarIcon size={18} style={{ color: '#1E3A8A' }} />}
+                    : <CarIcon size={18} style={{ color: '#2563EB' }} />}
                 </div>
                 <div className="gk-svc-carbar-text">
                   <span className="gk-svc-carbar-label">Selected car</span>
@@ -522,7 +522,7 @@ export default function Services() {
               )
             ) : stage === 'categories' ? (
               <>
-                <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.4rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.25rem' }}>
+                <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.4rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.25rem' }}>
                   What does your car need?
                 </h2>
                 <p style={{ color: '#64748B', fontSize: '0.8rem', fontWeight: 500, marginBottom: '1.35rem' }}>

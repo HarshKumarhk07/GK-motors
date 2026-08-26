@@ -6,10 +6,19 @@ import CategoryIcon from './CategoryIcon';
 /* ═══════════════════════════════════════════════════════════════════════════
    GK Motors service cards.
 
-   Every category renders through ONE card component with ONE set of styles —
-   there is deliberately no "featured" variant. A card's size must not depend
-   on which category it is or on how much copy that category happens to carry,
-   so the layout is built from three rules rather than per-card tweaks:
+   Every category renders through ONE card component with three SIZES, all
+   selected by `variant` swapping a single class (see SIZES):
+
+     featured + compact — the two-tier arrangement, used when `featured` is on:
+       four large cards lead and the rest follow as a compact grid. Which group
+       a category lands in is decided purely by its position in the ordered
+       list (see FEATURED_COUNT), never by which category it is.
+     uniform — one flat 4-across grid of equally sized cards, used when
+       `featured` is off. This is what the home page renders.
+
+   Within either group a card's size must not depend on which category it is or
+   on how much copy that category happens to carry, so the layout is built from
+   three rules rather than per-card tweaks:
 
      1. `grid-auto-rows: 1fr` — every row in the grid is as tall as the
         tallest card, so cards match across rows, not just within one.
@@ -58,8 +67,14 @@ const priceLabel = (c) => c.price || c.meta || 'View packages';
  * move between the featured and compact groups purely by its position in the
  * ordered list. Nothing about a card depends on *which* category it is.
  */
+const SIZES = {
+  featured: { cls: 'lg', chip: 64, glyph: 30, arrow: 16 },
+  uniform:  { cls: 'md', chip: 48, glyph: 22, arrow: 16 },
+  compact:  { cls: 'sm', chip: 44, glyph: 21, arrow: 14 },
+};
+
 function ServiceCard({ category, onSelect, hrefFor, variant = 'compact' }) {
-  const featured = variant === 'featured';
+  const size = SIZES[variant] || SIZES.compact;
   const inner = (
     <>
       <span className="gk-sc-icon">
@@ -67,8 +82,8 @@ function ServiceCard({ category, onSelect, hrefFor, variant = 'compact' }) {
           slug={category.slug}
           image={category.image}
           icon={category.icon}
-          size={featured ? 64 : 44}
-          iconSize={featured ? 30 : 21}
+          size={size.chip}
+          iconSize={size.glyph}
         />
       </span>
       <span className="gk-sc-name">{label(category)}</span>
@@ -76,13 +91,13 @@ function ServiceCard({ category, onSelect, hrefFor, variant = 'compact' }) {
       <span className="gk-sc-foot">
         <span className="gk-sc-price">{priceLabel(category)}</span>
         <span className="gk-sc-arrow" aria-hidden="true">
-          <ArrowRight size={featured ? 16 : 14} strokeWidth={2.5} />
+          <ArrowRight size={size.arrow} strokeWidth={2.5} />
         </span>
       </span>
     </>
   );
 
-  const cls = `gk-sc gk-sc--${featured ? 'lg' : 'sm'}`;
+  const cls = `gk-sc gk-sc--${size.cls}`;
 
   if (onSelect) {
     return (
@@ -140,9 +155,9 @@ function ServiceCategoryGrid({
         </div>
       )}
 
-      <div className={`gk-sc-grid gk-sc-grid--sm${split ? ' gk-sc-grid--after-lg' : ''}`}>
+      <div className={split ? 'gk-sc-grid gk-sc-grid--sm gk-sc-grid--after-lg' : 'gk-sc-grid gk-sc-grid--md'}>
         {rest.map((c) => (
-          <ServiceCard key={c.id} category={c} onSelect={onSelect} hrefFor={hrefFor} variant={split ? 'compact' : 'featured'} />
+          <ServiceCard key={c.id} category={c} onSelect={onSelect} hrefFor={hrefFor} variant={split ? 'compact' : 'uniform'} />
         ))}
       </div>
     </>
@@ -195,6 +210,19 @@ const SERVICE_CARD_STYLES = `
   @media (min-width: 768px)  { .gk-sc-grid--sm { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; } }
   @media (min-width: 1024px) { .gk-sc-grid--sm { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.1rem; } }
 
+  /* ── Uniform grid ─────────────────────────────────────────────────────
+     Four to a row on desktop, three on a tablet, two on a phone. Eight cards
+     therefore land as two clean rows of four at the width this was designed
+     against, and expanding to twelve adds a third row rather than reflowing
+     the first two. */
+  .gk-sc-grid--md {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  @media (min-width: 480px)  { .gk-sc-grid--md { gap: 1rem; } }
+  @media (min-width: 768px)  { .gk-sc-grid--md { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; } }
+  @media (min-width: 1024px) { .gk-sc-grid--md { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.4rem; } }
+
   .gk-sc-grid--after-lg { margin-top: 0.75rem; }
   @media (min-width: 768px) { .gk-sc-grid--after-lg { margin-top: 1.25rem; } }
 
@@ -209,7 +237,6 @@ const SERVICE_CARD_STYLES = `
     padding: 1.25rem 1.1rem 1.1rem;
     background: #FFFFFF;
     border: 1px solid #E4EBF7;
-    border-top: 3px solid #1D4ED8;
     border-radius: 16px;
     text-decoration: none;
     color: inherit;
@@ -218,7 +245,7 @@ const SERVICE_CARD_STYLES = `
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
     transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s, border-color .22s;
   }
-  .gk-sc:hover { border-color: #BFD4F7; border-top-color: #1D4ED8; box-shadow: 0 14px 28px rgba(30, 58, 138, 0.12); transform: translateY(-3px); }
+  .gk-sc:hover { border-color: #BFD4F7; box-shadow: 0 14px 28px rgba(37, 99, 235, 0.14); transform: translateY(-3px); }
   .gk-sc:active { transform: translateY(-1px); }
   .gk-sc:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
 
@@ -230,7 +257,6 @@ const SERVICE_CARD_STYLES = `
   .gk-sc--lg {
     min-height: 178px;
     padding: 1.1rem 0.9rem 1rem;
-    border-top-width: 4px;
   }
   .gk-sc--sm {
     min-height: 132px;
@@ -244,6 +270,26 @@ const SERVICE_CARD_STYLES = `
   .gk-sc--sm .gk-sc-foot  { padding-top: 0.55rem; }
   .gk-sc--sm .gk-sc-price { font-size: 0.7rem; }
   .gk-sc--sm .gk-sc-arrow { width: 24px; height: 24px; }
+
+  /* Between the two older scales: roomy enough to carry the two-line blurb
+     the compact card drops, restrained enough that four sit in a desktop row
+     without the type ballooning the way the featured card's would. */
+  .gk-sc--md {
+    min-height: 186px;
+    padding: 1.3rem 1.2rem 1.1rem;
+  }
+  .gk-sc--md .gk-sc-icon  { margin-bottom: 0.9rem; }
+  .gk-sc--md .gk-sc-name  { font-size: 0.95rem; }
+  .gk-sc--md .gk-sc-desc  { font-size: 0.79rem; }
+  .gk-sc--md .gk-sc-price { font-size: 0.83rem; }
+  @media (min-width: 768px) {
+    .gk-sc--md { min-height: 200px; padding: 1.45rem 1.35rem 1.2rem; }
+    .gk-sc--md .gk-sc-name { font-size: 1.02rem; }
+    .gk-sc--md .gk-sc-desc { font-size: 0.82rem; }
+  }
+  @media (min-width: 1024px) {
+    .gk-sc--md { min-height: 212px; padding: 1.6rem 1.5rem 1.3rem; }
+  }
 
   @media (min-width: 480px) {
     .gk-sc--lg { min-height: 196px; padding: 1.25rem 1.1rem 1.1rem; }
@@ -277,7 +323,7 @@ const SERVICE_CARD_STYLES = `
     min-height: 2.56em;        /* two lines reserved, so one-line names align too */
   }
   .gk-sc-desc {
-    color: #64748B;
+    color: #475569;
     font-size: 0.81rem;
     line-height: 1.5;
     font-weight: 500;
@@ -296,7 +342,7 @@ const SERVICE_CARD_STYLES = `
     min-width: 0;
   }
   .gk-sc-price {
-    color: #1D4ED8;
+    color: #2563EB;
     font-weight: 800;
     font-size: 0.83rem;
     min-width: 0;
@@ -311,7 +357,7 @@ const SERVICE_CARD_STYLES = `
     flex-shrink: 0; color: #2563EB;
     transition: background .2s, color .2s, border-color .2s;
   }
-  .gk-sc:hover .gk-sc-arrow { background: #1D4ED8; border-color: #1D4ED8; color: #FFFFFF; }
+  .gk-sc:hover .gk-sc-arrow { background: #2563EB; border-color: #2563EB; color: #FFFFFF; }
 
   @media (max-width: 640px) {
     /* Type and chrome only. Sizing belongs to the --lg / --sm variants above:
@@ -321,6 +367,8 @@ const SERVICE_CARD_STYLES = `
     .gk-sc { border-radius: 14px; }
     .gk-sc--lg .gk-sc-name { font-size: 0.95rem; }
     .gk-sc--lg .gk-sc-desc { font-size: 0.75rem; }
+    .gk-sc--md .gk-sc-name { font-size: 0.86rem; }
+    .gk-sc--md .gk-sc-desc { font-size: 0.74rem; }
     .gk-sc-price { font-size: 0.74rem; }
     .gk-sc--lg .gk-sc-arrow { width: 28px; height: 28px; }
     /* Twenty cards scroll past on the home page. A blurred shadow costs the
@@ -339,6 +387,11 @@ const SERVICE_CARD_STYLES = `
     .gk-sc--lg .gk-sc-desc { display: none; }
     .gk-sc--sm { min-height: 124px; padding: 0.7rem 0.6rem 0.65rem; }
     .gk-sc--sm .gk-sc-name { font-size: 0.78rem; }
+    /* The blurb is what makes these tall; at 359px two columns need the room
+       more than they need the second line of copy. */
+    .gk-sc--md { min-height: 158px; padding: 0.85rem 0.75rem 0.8rem; }
+    .gk-sc--md .gk-sc-name { font-size: 0.8rem; }
+    .gk-sc--md .gk-sc-desc { display: none; }
   }
 
   /* A tap on a touch screen fires :hover, which re-blurs the bigger shadow,

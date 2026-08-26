@@ -57,13 +57,13 @@ export default function PartCard({ part }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         position: 'relative',
-        borderRadius: '20px',
+        borderRadius: '16px',
         overflow: 'hidden',
         background: '#FFF',
         display: 'flex',
         flexDirection: 'column',
         cursor: 'pointer',
-        boxShadow: hovered ? '0 30px 60px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(30, 58, 138, 0.1)' : '0 10px 30px rgba(0,0,0,0.04)',
+        boxShadow: hovered ? '0 30px 60px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(37, 99, 235, 0.12)' : '0 10px 30px rgba(0,0,0,0.04)',
         transform: hovered ? 'translateY(-12px)' : 'translateY(0)',
         transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
         height: '100%',
@@ -102,7 +102,7 @@ export default function PartCard({ part }) {
                 padding: '3px 8px',
                 borderRadius: '6px',
                 letterSpacing: '0.04em',
-                fontFamily: 'Rajdhani, sans-serif',
+                fontFamily: "'Space Grotesk', sans-serif",
                 boxShadow: '0 2px 8px rgba(239, 68, 68, 0.35)'
               }}>
                 {discount}% OFF
@@ -162,9 +162,9 @@ export default function PartCard({ part }) {
           {/* Category */}
           <div style={{ marginBottom: '0.3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{
-              fontSize: '0.65rem', color: '#1E3A8A',
+              fontSize: '0.65rem', color: '#2563EB',
               textTransform: 'uppercase', fontWeight: 950,
-              letterSpacing: '0.08em', fontFamily: 'Rajdhani, sans-serif'
+              letterSpacing: '0.08em', fontFamily: "'Space Grotesk', sans-serif"
             }}>
               {part.category?.replace('_', ' ')}
             </span>
@@ -189,10 +189,10 @@ export default function PartCard({ part }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
               {discount > 0 ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <span style={{ textDecoration: 'line-through', color: '#94A3B8', fontSize: '0.78rem', fontWeight: 700, fontFamily: 'Rajdhani, sans-serif', lineHeight: 1 }}>
+                  <span style={{ textDecoration: 'line-through', color: '#94A3B8', fontSize: '0.78rem', fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1 }}>
                     ₹{effectiveOriginalPrice?.toLocaleString('en-IN')}
                   </span>
-                  <span style={{ color: '#16A34A', fontSize: '0.72rem', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif', lineHeight: 1 }}>
+                  <span style={{ color: '#16A34A', fontSize: '0.72rem', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1 }}>
                     {discount}% OFF
                   </span>
                 </div>
@@ -217,19 +217,19 @@ export default function PartCard({ part }) {
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateQty(part._id, cartItem.quantity - 1); }}
                     style={{ 
                       width: 24, height: 24, borderRadius: '4px', border: 'none', 
-                      background: '#1E3A8A', color: 'white', display: 'flex', 
+                      background: '#2563EB', color: 'white', display: 'flex', 
                       alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                       fontSize: '1rem', fontWeight: 900
                     }}
                   >-</button>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 950, color: '#111', fontFamily: 'Rajdhani, sans-serif', minWidth: '15px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 950, color: '#111', fontFamily: "'Space Grotesk', sans-serif", minWidth: '15px', textAlign: 'center' }}>
                     {cartItem.quantity}
                   </span>
                   <button 
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateQty(part._id, cartItem.quantity + 1); }}
                     style={{ 
                       width: 24, height: 24, borderRadius: '4px', border: 'none', 
-                      background: '#1E3A8A', color: 'white', display: 'flex', 
+                      background: '#2563EB', color: 'white', display: 'flex', 
                       alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                       fontSize: '1rem', fontWeight: 900
                     }}
@@ -252,13 +252,13 @@ export default function PartCard({ part }) {
                   style={{
                     height: '32px', minWidth: 0,
                     padding: '0 0.75rem',
-                    background: effectiveStock === 0 || !hasPrice ? '#E2E8F0' : '#1E3A8A',
+                    background: effectiveStock === 0 || !hasPrice ? '#E2E8F0' : '#2563EB',
                     border: 'none', borderRadius: '8px', color: 'white',
                     cursor: effectiveStock === 0 || !hasPrice ? 'not-allowed' : 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: effectiveStock === 0 || !hasPrice ? 'none' : '0 4px 12px rgba(30, 58, 138, 0.25)',
+                    boxShadow: effectiveStock === 0 || !hasPrice ? 'none' : '0 4px 12px rgba(37, 99, 235, 0.28)',
                     transition: 'all 0.2s',
-                    gap: '0.35rem', fontWeight: 950, fontFamily: 'Rajdhani, sans-serif', fontSize: '0.7rem', letterSpacing: '0.04em'
+                    gap: '0.35rem', fontWeight: 950, fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.7rem', letterSpacing: '0.04em'
                   }}
                 >
                   <ShoppingCart size={13} /> <span className="gk-pc-addlabel">ADD</span>
@@ -280,7 +280,7 @@ export function PartCardSkeleton() {
       aria-hidden="true"
       style={{
         position: 'relative',
-        borderRadius: '20px',
+        borderRadius: '16px',
         overflow: 'hidden',
         background: '#FFF',
         display: 'flex',
@@ -361,18 +361,18 @@ const PART_CARD_STYLES = `
   .gk-pc-media { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #F5F5F5; overflow: hidden; }
   .gk-pc-name {
     color: #111; font-weight: 900; font-size: 0.86rem; line-height: 1.25;
-    margin: 0 0 0.25rem; font-family: Rajdhani, sans-serif; letter-spacing: 0.02em;
+    margin: 0 0 0.25rem; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.02em;
     text-transform: uppercase; overflow-wrap: anywhere;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     min-height: 2.15em;
   }
   .gk-pc-sub { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.5rem; min-height: 1rem; }
-  .gk-pc-brand { color: #888; font-size: 0.71rem; font-weight: 600; overflow-wrap: anywhere; }
+  .gk-pc-brand { color: #64748B; font-size: 0.71rem; font-weight: 600; overflow-wrap: anywhere; }
   .gk-pc-rating { display: inline-flex; align-items: center; gap: 0.18rem; color: #B45309; font-size: 0.7rem; font-weight: 800; }
   .gk-pc-reviews { color: #94A3B8; font-weight: 600; }
   /* A price must never break mid-number ('₹3,1 / 99'), so it stays nowrap
      and the row wraps instead when the card is too narrow for both. */
-  .gk-pc-price { font-family: Rajdhani, sans-serif; font-size: 1.2rem; font-weight: 950; color: #1E3A8A; line-height: 1.1; white-space: nowrap; }
+  .gk-pc-price { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 950; color: #2563EB; line-height: 1.1; white-space: nowrap; }
   .gk-pc-priceRow { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.4rem 0.4rem; margin-top: auto; padding-top: 0.4rem; min-width: 0; }
 
   @media (max-width: 420px) {

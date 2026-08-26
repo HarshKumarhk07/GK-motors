@@ -104,11 +104,11 @@ const Timeline = ({ steps, current }) => {
         return (
           <div key={s} className="gk-dash-step">
             <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-              <span className="gk-dash-rail" style={{ background: done && i > 0 ? '#1E3A8A' : '#F1F5F9', visibility: i === 0 ? 'hidden' : 'visible' }} />
-              <span className="gk-dash-dot" style={{ background: done ? '#1E3A8A' : '#F1F5F9' }}>
+              <span className="gk-dash-rail" style={{ background: done && i > 0 ? '#2563EB' : '#F1F5F9', visibility: i === 0 ? 'hidden' : 'visible' }} />
+              <span className="gk-dash-dot" style={{ background: done ? '#2563EB' : '#F1F5F9' }}>
                 {done ? <CheckCircle size={13} color="white" /> : <span className="gk-dash-pip" />}
               </span>
-              <span className="gk-dash-rail" style={{ background: steps.indexOf(s) < currentIdx && !cancelled ? '#1E3A8A' : '#F1F5F9', visibility: i === steps.length - 1 ? 'hidden' : 'visible' }} />
+              <span className="gk-dash-rail" style={{ background: steps.indexOf(s) < currentIdx && !cancelled ? '#2563EB' : '#F1F5F9', visibility: i === steps.length - 1 ? 'hidden' : 'visible' }} />
             </div>
             <span className="gk-dash-step-label" style={{ color: done ? '#0F172A' : '#94A3B8' }}>
               {s.replace('_', ' ')}
@@ -229,7 +229,7 @@ export default function MyBookings() {
           description: bookingTitle(booking).slice(0, 240),
           order_id: pay.order.id,
           prefill: { name: user?.name || '', email: user?.email || '', contact: user?.phone || '' },
-          theme: { color: '#1E3A8A' },
+          theme: { color: '#2563EB' },
           modal: {
             ondismiss: () => {
               setPayingId('');
@@ -309,7 +309,7 @@ export default function MyBookings() {
 
       <header className="gk-dash-head">
         <div className="gk-dash-wrap">
-          <h1 className="gk-dash-title">MY <span style={{ color: '#1E3A8A' }}>DASHBOARD</span></h1>
+          <h1 className="gk-dash-title">MY <span style={{ color: '#2563EB' }}>DASHBOARD</span></h1>
           <p className="gk-dash-sub">Your service bookings and spare-parts orders in one place.</p>
 
           <div className="gk-dash-tabs" role="tablist">
@@ -350,7 +350,7 @@ export default function MyBookings() {
                   <div className="gk-dash-card-top">
                     <div className="gk-dash-card-main">
                       <div className="gk-dash-thumb gk-dash-thumb--icon">
-                        <Wrench size={19} style={{ color: '#1E3A8A' }} />
+                        <Wrench size={19} style={{ color: '#2563EB' }} />
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <h3 className="gk-dash-card-title">{bookingTitle(booking)}</h3>
@@ -533,7 +533,7 @@ export default function MyBookings() {
 const DASHBOARD_STYLES = `
   .gk-dash-wrap { width: 100%; max-width: 960px; margin: 0 auto; padding: 0 1rem; }
   .gk-dash-head { background: #F8FAFC; border-bottom: 1px solid #E2E8F0; padding: 2.25rem 0 0; }
-  .gk-dash-title { font-family: Rajdhani, sans-serif; font-size: clamp(1.6rem, 6vw, 2.6rem); font-weight: 900; color: #0F172A; letter-spacing: 0.02em; margin: 0; line-height: 1.1; }
+  .gk-dash-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.6rem, 6vw, 2.6rem); font-weight: 900; color: #0F172A; letter-spacing: 0.02em; margin: 0; line-height: 1.1; }
   .gk-dash-sub { color: #64748B; margin: 0.4rem 0 0; font-weight: 600; font-size: 0.9rem; }
   .gk-dash-body { padding: 1.75rem 1rem 3.5rem; }
 
@@ -543,18 +543,18 @@ const DASHBOARD_STYLES = `
     padding: 0.6rem 1rem; border-radius: 12px 12px 0 0; cursor: pointer;
     border: 1px solid #E2E8F0; border-bottom: none; background: #FFFFFF;
     color: #64748B; font-weight: 800; font-size: 0.85rem;
-    font-family: Rajdhani, sans-serif; letter-spacing: 0.03em;
+    font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.03em;
     transition: color .2s, background .2s, border-color .2s;
     flex: 1 1 0; min-width: 0; justify-content: center;
   }
-  .gk-dash-tab.is-active { color: #1E3A8A; border-color: #BFD4F7; box-shadow: inset 0 3px 0 #1E3A8A; }
+  .gk-dash-tab.is-active { color: #2563EB; border-color: #BFD4F7; box-shadow: inset 0 3px 0 #2563EB; }
   .gk-dash-tab-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .gk-dash-tab-count {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 22px; height: 20px; padding: 0 6px; border-radius: 999px;
-    background: #EFF6FF; color: #1E3A8A; font-size: 0.72rem; font-weight: 900; flex-shrink: 0;
+    background: #EFF6FF; color: #2563EB; font-size: 0.72rem; font-weight: 900; flex-shrink: 0;
   }
-  .gk-dash-tab.is-active .gk-dash-tab-count { background: #1E3A8A; color: #FFFFFF; }
+  .gk-dash-tab.is-active .gk-dash-tab-count { background: #2563EB; color: #FFFFFF; }
 
   .gk-dash-card {
     background: #FFFFFF; border: 1px solid #E7EDF7; border-radius: 16px;
@@ -564,7 +564,7 @@ const DASHBOARD_STYLES = `
   .gk-dash-card-main { display: flex; gap: 0.85rem; align-items: flex-start; flex: 1 1 260px; min-width: 0; }
   .gk-dash-card-side { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; flex-shrink: 0; }
   .gk-dash-card-title {
-    font-family: Rajdhani, sans-serif; font-weight: 900; font-size: 1.1rem; color: #0F172A;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 1.1rem; color: #0F172A;
     margin: 0 0 0.35rem; line-height: 1.25; overflow-wrap: anywhere;
   }
   .gk-dash-thumb { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
@@ -577,15 +577,15 @@ const DASHBOARD_STYLES = `
 
   .gk-dash-amount { text-align: right; }
   .gk-dash-amount-label { display: block; color: #94A3B8; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
-  .gk-dash-amount-value { font-family: Rajdhani, sans-serif; font-size: 1.35rem; font-weight: 900; color: #0F172A; white-space: nowrap; }
+  .gk-dash-amount-value { font-family: 'Space Grotesk', sans-serif; font-size: 1.35rem; font-weight: 900; color: #0F172A; white-space: nowrap; }
   .gk-dash-pay { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; font-weight: 800; padding: 0.22rem 0.55rem; border-radius: 999px; background: #FFF7ED; color: #C2410C; white-space: nowrap; }
   .gk-dash-pay.is-paid { background: #ECFDF5; color: #047857; }
   .gk-dash-pay.is-failed { background: #FEF2F2; color: #B91C1C; }
   .gk-dash-paynow {
     display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-    background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%); color: #FFF;
+    background: linear-gradient(135deg, #2563EB 0%, #0F172A 100%); color: #FFF;
     border: none; border-radius: 9px; padding: 0.5rem 0.9rem; min-height: 38px;
-    font-family: Rajdhani, sans-serif; font-weight: 900; font-size: 0.78rem;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.78rem;
     letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; white-space: nowrap;
   }
   .gk-dash-paynow:disabled { background: #E2E8F0; color: #94A3B8; cursor: not-allowed; }
@@ -607,7 +607,7 @@ const DASHBOARD_STYLES = `
   .gk-dash-item-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; flex: 1; }
   .gk-dash-item-name { font-weight: 800; font-size: 0.86rem; color: #0F172A; overflow-wrap: anywhere; }
   .gk-dash-item-sub { color: #64748B; font-size: 0.75rem; font-weight: 600; }
-  .gk-dash-item-total { font-family: Rajdhani, sans-serif; font-weight: 900; font-size: 0.95rem; color: #0F172A; white-space: nowrap; flex-shrink: 0; }
+  .gk-dash-item-total { font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.95rem; color: #0F172A; white-space: nowrap; flex-shrink: 0; }
   .gk-dash-note { color: #94A3B8; font-size: 0.82rem; font-weight: 600; margin: 0 0 1rem; }
 
   .gk-dash-timeline { display: flex; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #F1F5F9; }
@@ -615,7 +615,7 @@ const DASHBOARD_STYLES = `
   .gk-dash-rail { flex: 1; height: 3px; border-radius: 2px; }
   .gk-dash-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .gk-dash-pip { width: 7px; height: 7px; border-radius: 50%; background: #CBD5E1; }
-  .gk-dash-step-label { font-size: 0.68rem; margin-top: 0.4rem; font-weight: 800; text-transform: capitalize; font-family: Rajdhani, sans-serif; text-align: center; overflow-wrap: anywhere; }
+  .gk-dash-step-label { font-size: 0.68rem; margin-top: 0.4rem; font-weight: 800; text-transform: capitalize; font-family: 'Space Grotesk', sans-serif; text-align: center; overflow-wrap: anywhere; }
 
   .gk-dash-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
   .gk-dash-btn {
@@ -625,18 +625,18 @@ const DASHBOARD_STYLES = `
     font-weight: 800; font-size: 0.82rem; text-decoration: none; transition: all .2s;
   }
   .gk-dash-btn:hover { border-color: #CBD5E1; color: #0F172A; }
-  .gk-dash-btn.is-primary { background: #1E3A8A; border-color: #1E3A8A; color: #FFFFFF; }
+  .gk-dash-btn.is-primary { background: #2563EB; border-color: #2563EB; color: #FFFFFF; }
   .gk-dash-btn.is-primary:hover { background: #17306F; color: #FFFFFF; }
   .gk-dash-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
   .gk-dash-empty { text-align: center; padding: 3rem 1.25rem; background: #F8FAFC; border: 1.5px dashed #DCE5F2; border-radius: 18px; }
   .gk-dash-empty-icon { width: 66px; height: 66px; border-radius: 50%; background: #FFFFFF; border: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
-  .gk-dash-empty-title { font-family: Rajdhani, sans-serif; font-size: 1.15rem; font-weight: 900; color: #0F172A; margin: 0 0 0.4rem; }
+  .gk-dash-empty-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 900; color: #0F172A; margin: 0 0 0.4rem; }
   .gk-dash-empty-body { color: #64748B; font-size: 0.88rem; font-weight: 500; max-width: 380px; margin: 0 auto 1.5rem; line-height: 1.6; }
   .gk-dash-cta {
     display: inline-flex; align-items: center; gap: 0.45rem; min-height: 44px;
     padding: 0 1.5rem; border-radius: 11px; border: none; cursor: pointer;
-    background: #1E3A8A; color: #FFFFFF; font-weight: 800; font-size: 0.85rem;
+    background: #2563EB; color: #FFFFFF; font-weight: 800; font-size: 0.85rem;
   }
 
   .gk-dash-error {

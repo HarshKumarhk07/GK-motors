@@ -105,11 +105,11 @@ export default function Login() {
         <div style={{ textAlign: 'center', marginBottom: '1.2rem' }}>
           <Link to="/" className="login-logo" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
             <img src="/gkmotorslogo.png" alt="GK Motors" style={{ height: 54, width: 'auto', objectFit: 'contain', display: 'block' }} />
-            <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, color: '#0F172A', fontSize: '1.6rem', letterSpacing: '0.03em' }}>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#0F172A', fontSize: '1.6rem', letterSpacing: '0.03em' }}>
               GK Motors
             </span>
           </Link>
-          <h1 className="login-title" style={{ color: '#111', fontSize: '1.6rem', fontWeight: 900, marginTop: '1rem', fontFamily: 'Rajdhani, sans-serif' }}>Welcome Back</h1>
+          <h1 className="login-title" style={{ color: '#111', fontSize: '1.6rem', fontWeight: 900, marginTop: '1rem', fontFamily: "'Space Grotesk', sans-serif" }}>Welcome Back</h1>
           <p className="login-subtitle" style={{ color: '#666', marginTop: '0.3rem', fontWeight: 500, fontSize: '0.9rem' }}>Login to continue to your account</p>
         </div>
  
@@ -120,9 +120,9 @@ export default function Login() {
               style={{
                 flex: 1, padding: '0.7rem', borderRadius: '8px', border: 'none', cursor: 'pointer',
                 background: mode === m ? '#FFF' : 'transparent',
-                color: mode === m ? '#1E3A8A' : '#888',
+                color: mode === m ? '#2563EB' : '#888',
                 fontWeight: 700, fontSize: '0.9rem', transition: 'all 0.25s',
-                boxShadow: mode === m ? '0 4px 12px rgba(30, 58, 138, 0.1)' : 'none'
+                boxShadow: mode === m ? '0 4px 12px rgba(37, 99, 235, 0.1)' : 'none'
               }}>
               {m === 'password' ? 'Password' : 'OTP Login'}
             </button>
@@ -202,12 +202,12 @@ export default function Login() {
                   </span>
                   <div style={{ display: 'flex', gap: '0.9rem' }}>
                     <button type="button" onClick={resend} disabled={resendIn > 0}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'none', border: 'none', padding: 0, fontSize: '0.78rem', fontWeight: 700, cursor: resendIn > 0 ? 'default' : 'pointer', color: resendIn > 0 ? '#94A3B8' : '#1E3A8A' }}>
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'none', border: 'none', padding: 0, fontSize: '0.78rem', fontWeight: 700, cursor: resendIn > 0 ? 'default' : 'pointer', color: resendIn > 0 ? '#94A3B8' : '#2563EB' }}>
                       <RotateCw size={13} />
                       {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
                     </button>
                     <button type="button" onClick={changeEmail}
-                      style={{ background: 'none', border: 'none', padding: 0, fontSize: '0.78rem', fontWeight: 700, color: '#1E3A8A', cursor: 'pointer' }}>
+                      style={{ background: 'none', border: 'none', padding: 0, fontSize: '0.78rem', fontWeight: 700, color: '#2563EB', cursor: 'pointer' }}>
                       Change email
                     </button>
                   </div>
@@ -228,7 +228,7 @@ export default function Login() {
  
         <p className="signup-text" style={{ textAlign: 'center', color: '#666', marginTop: '1.2rem', fontSize: '0.9rem', fontWeight: 500 }}>
           Don't have an account?{' '}
-          <Link to={redirectTo !== '/' ? `/register?redirect=${encodeURIComponent(redirectTo)}` : "/register"} style={{ color: '#1E3A8A', textDecoration: 'none', fontWeight: 700 }}>Sign Up Now</Link>
+          <Link to={redirectTo !== '/' ? `/register?redirect=${encodeURIComponent(redirectTo)}` : "/register"} style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 700 }}>Sign Up Now</Link>
         </p>
       </div>
     </div>

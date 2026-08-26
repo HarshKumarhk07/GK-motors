@@ -62,11 +62,11 @@ export default function Register() {
         <div style={{ textAlign: 'center', marginBottom: '1.2rem' }}>
           <Link to="/" className="register-logo" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
             <img src="/gkmotorslogo.png" alt="GK Motors" style={{ height: 54, width: 'auto', objectFit: 'contain', display: 'block' }} />
-            <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, color: '#0F172A', fontSize: '1.6rem', letterSpacing: '0.03em' }}>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, color: '#0F172A', fontSize: '1.6rem', letterSpacing: '0.03em' }}>
               GK Motors
             </span>
           </Link>
-          <h1 className="register-title" style={{ color: '#111', fontSize: '1.6rem', fontWeight: 900, marginTop: '1rem', fontFamily: 'Rajdhani, sans-serif' }}>Create Account</h1>
+          <h1 className="register-title" style={{ color: '#111', fontSize: '1.6rem', fontWeight: 900, marginTop: '1rem', fontFamily: "'Space Grotesk', sans-serif" }}>Create Account</h1>
           <p className="register-subtitle" style={{ color: '#64748B', marginTop: '0.3rem', fontWeight: 600, fontSize: '0.9rem' }}>Join India's most elite car marketplace</p>
         </div>
  
@@ -90,7 +90,7 @@ export default function Register() {
                   <Icon size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#AAA' }} />
                   <input type={type} className="input-light form-input" style={{ paddingLeft: '2.8rem', height: '44px', fontSize: '0.85rem' }} placeholder={placeholder} {...register(name, rules)} />
                 </div>
-                {errors[name] && <p style={{ color: '#1E3A8A', fontSize: '0.82rem', marginTop: '0.4rem', fontWeight: 700 }}>{errors[name].message}</p>}
+                {errors[name] && <p style={{ color: '#2563EB', fontSize: '0.82rem', marginTop: '0.4rem', fontWeight: 700 }}>{errors[name].message}</p>}
               </div>
             ))}
  
@@ -106,20 +106,20 @@ export default function Register() {
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              {errors.password && <p style={{ color: '#1E3A8A', fontSize: '0.82rem', marginTop: '0.4rem', fontWeight: 700 }}>{errors.password.message}</p>}
+              {errors.password && <p style={{ color: '#2563EB', fontSize: '0.82rem', marginTop: '0.4rem', fontWeight: 700 }}>{errors.password.message}</p>}
             </div>
  
             <p className="terms-text" style={{ color: '#94A3B8', fontSize: '0.78rem', marginBottom: '1.2rem', lineHeight: 1.4, fontWeight: 500 }}>
               By creating an account, you agree to our{' '}
-              <Link to="/terms" style={{ color: '#1E3A8A', textDecoration: 'none', fontWeight: 800 }}>Terms</Link> and{' '}
-              <Link to="/privacy" style={{ color: '#1E3A8A', textDecoration: 'none', fontWeight: 800 }}>Privacy</Link>.
+              <Link to="/terms" style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 800 }}>Terms</Link> and{' '}
+              <Link to="/privacy" style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 800 }}>Privacy</Link>.
             </p>
  
             <button type="submit" className="btn-primary submit-btn" 
-              style={{ width: '100%', justifyContent: 'center', padding: '1rem', fontSize: '1rem', fontWeight: 800, borderRadius: '16px', background: '#1E3A8A', border: 'none', color: 'white', cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.1em', boxShadow: '0 12px 30px rgba(30, 58, 138, 0.25)', transition: 'all 0.3s' }} 
+              style={{ width: '100%', justifyContent: 'center', padding: '1rem', fontSize: '1rem', fontWeight: 800, borderRadius: '16px', background: '#2563EB', border: 'none', color: 'white', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.1em', boxShadow: '0 12px 30px rgba(37, 99, 235, 0.25)', transition: 'all 0.3s' }} 
               disabled={loading}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.background = '#172554'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#1E3A8A'; }}>
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#2563EB'; }}>
               {loading ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : <><ArrowRight size={20} /> AUTHORIZE ACCOUNT</>}
             </button>
           </form>
@@ -127,7 +127,7 @@ export default function Register() {
  
         <p className="signin-text" style={{ textAlign: 'center', color: '#64748B', marginTop: '1.2rem', fontSize: '0.9rem', fontWeight: 600 }}>
           Already have an account?{' '}
-          <Link to={redirectTo !== '/' ? `/login?redirect=${encodeURIComponent(redirectTo)}` : "/login"} style={{ color: '#1E3A8A', textDecoration: 'none', fontWeight: 800 }}>Sign in</Link>
+          <Link to={redirectTo !== '/' ? `/login?redirect=${encodeURIComponent(redirectTo)}` : "/login"} style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 800 }}>Sign in</Link>
         </p>
       </div>
     </div>

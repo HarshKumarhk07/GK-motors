@@ -18,8 +18,14 @@ export default function CategoryIcon({ slug, image, icon: Icon, size = 40, iconS
   useEffect(() => { setAttempt(0); }, [image, slug]);
 
   const src = sources[attempt];
+  /* A rounded SQUARE, not a circle — the redesign's icon chip. The radius is
+     derived from the box rather than fixed, so the 44px compact chip and the
+     64px featured chip keep the same corner *character* instead of the larger
+     one reading as sharper. Floored at 10px so a small chip never flattens
+     into a plain square. */
   const box = {
-    width: size, height: size, borderRadius: '50%',
+    width: size, height: size,
+    borderRadius: `${Math.max(10, Math.round(size * 0.26))}px`,
     background: tone === 'plain' ? 'transparent' : '#EBF0FF',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     flexShrink: 0, overflow: 'hidden',
@@ -45,7 +51,7 @@ export default function CategoryIcon({ slug, image, icon: Icon, size = 40, iconS
 
   return (
     <div style={box}>
-      {Icon ? <Icon size={iconSize} style={{ color: '#1E3A8A' }} /> : null}
+      {Icon ? <Icon size={iconSize} style={{ color: '#2563EB' }} /> : null}
     </div>
   );
 }

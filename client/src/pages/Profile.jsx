@@ -177,15 +177,15 @@ export default function Profile() {
         <div className="profile-header" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', background: '#F9F9F9', padding: '2rem', borderRadius: '24px', border: '1px solid #EEE', marginBottom: '2.5rem', boxShadow: '0 10px 40px rgba(0,0,0,0.02)' }}>
           <div style={{ position: 'relative', width: 100, height: 100 }}>
             {avatarPreview || user.avatar ? (
-              <img src={avatarPreview || user.avatar} alt={user.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid #1E3A8A' }} />
+              <img src={avatarPreview || user.avatar} alt={user.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid #2563EB' }} />
             ) : (
-              <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #1E3A8A, #172554)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.8rem', fontWeight: 900, color: 'white' }}>
+              <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #2563EB, #172554)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.8rem', fontWeight: 900, color: 'white' }}>
                 {user.name?.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
           <div>
-            <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: '#111', lineHeight: 1 }}>{user.name}</h1>
+            <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.2rem', fontWeight: 900, color: '#111', lineHeight: 1 }}>{user.name}</h1>
             <p style={{ color: '#666', display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.6rem', fontWeight: 500, fontSize: '1rem' }}>
               <Mail size={16} /> {user.email || 'No email added'}
             </p>
@@ -219,12 +219,12 @@ export default function Profile() {
               }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.8rem 1.4rem', borderRadius: '12px', border: '1.5px solid',
-                borderColor: activeTab === id ? '#1E3A8A' : '#EEE',
+                borderColor: activeTab === id ? '#2563EB' : '#EEE',
                 background: activeTab === id ? '#FFF' : '#F9F9F9',
-                color: activeTab === id ? '#1E3A8A' : '#666',
+                color: activeTab === id ? '#2563EB' : '#666',
                 cursor: 'pointer', fontWeight: 800, fontSize: '0.9rem', transition: 'all 0.25s',
                 whiteSpace: 'nowrap',
-                boxShadow: activeTab === id ? '0 8px 20px rgba(30, 58, 138, 0.1)' : 'none'
+                boxShadow: activeTab === id ? '0 8px 20px rgba(37, 99, 235, 0.1)' : 'none'
               }}>
               <Icon size={16} /> {label}
             </button>
@@ -237,7 +237,7 @@ export default function Profile() {
           {/* PERSONAL DETAILS TAB */}
           {activeTab === 'details' && (
             <form onSubmit={handleProfileSubmit(onProfileUpdate)} className="animate-fadeInUp">
-              <h3 style={{ color: '#111', fontSize: '1.4rem', fontWeight: 900, marginBottom: '2rem', fontFamily: 'Rajdhani, sans-serif' }}>UPDATE PROFILE</h3>
+              <h3 style={{ color: '#111', fontSize: '1.4rem', fontWeight: 900, marginBottom: '2rem', fontFamily: "'Space Grotesk', sans-serif" }}>UPDATE PROFILE</h3>
               
               <div className="profile-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
                 <div>
@@ -279,7 +279,7 @@ export default function Profile() {
           {/* SAVED ADDRESSES TAB */}
           {activeTab === 'addresses' && (
             <div className="animate-fadeInUp">
-              <h3 style={{ color: '#111', fontSize: '1.4rem', fontWeight: 900, marginBottom: '2rem', fontFamily: 'Rajdhani, sans-serif' }}>YOUR SAVED ADDRESSES</h3>
+              <h3 style={{ color: '#111', fontSize: '1.4rem', fontWeight: 900, marginBottom: '2rem', fontFamily: "'Space Grotesk', sans-serif" }}>YOUR SAVED ADDRESSES</h3>
               {(!user.addresses || user.addresses.length === 0) ? (
                 <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#F9F9F9', borderRadius: '16px', border: '1.5px dashed #EEE' }}>
                   <div style={{ background: '#FFF', width: 70, height: 70, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 8px 20px rgba(0,0,0,0.03)' }}>
@@ -295,16 +295,16 @@ export default function Profile() {
                       onMouseEnter={e => e.currentTarget.style.borderColor = '#111'}
                       onMouseLeave={e => e.currentTarget.style.borderColor = '#EEE'}>
                       <div style={{ position: 'absolute', top: 18, right: 18, display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
-                        <span style={{ background: 'rgba(30,58,138,0.06)', color: '#1E3A8A', fontSize: '0.7rem', fontWeight: 800, padding: '0.4rem 0.8rem', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        <span style={{ background: 'rgba(37,99,235,0.06)', color: '#2563EB', fontSize: '0.7rem', fontWeight: 800, padding: '0.4rem 0.8rem', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           {addr.label || 'Home'}
                         </span>
                         <div style={{ display: 'flex', gap: '0.4rem' }}>
                           <button onClick={() => handleEditAddress(addr)} style={{ background: '#F5F5F5', border: 'none', color: '#666', cursor: 'pointer', padding: '7px', borderRadius: '8px', display: 'flex' }} title="Edit"><Edit2 size={15} /></button>
-                          <button onClick={() => handleDeleteAddress(addr._id || addr.id)} style={{ background: 'rgba(30,58,138,0.08)', border: 'none', color: '#1E3A8A', cursor: 'pointer', padding: '7px', borderRadius: '8px', display: 'flex' }} title="Delete"><Trash2 size={15} /></button>
+                          <button onClick={() => handleDeleteAddress(addr._id || addr.id)} style={{ background: 'rgba(37,99,235,0.08)', border: 'none', color: '#2563EB', cursor: 'pointer', padding: '7px', borderRadius: '8px', display: 'flex' }} title="Delete"><Trash2 size={15} /></button>
                         </div>
                       </div>
-                      <div style={{ background: '#FFF', width: 44, height: 44, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.2rem', boxShadow: '0 4px 12px rgba(30,58,138,0.15)', border: '1px solid rgba(30,58,138,0.1)' }}>
-                        <MapPin size={22} style={{ color: '#1E3A8A' }} />
+                      <div style={{ background: '#FFF', width: 44, height: 44, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.2rem', boxShadow: '0 4px 12px rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.1)' }}>
+                        <MapPin size={22} style={{ color: '#2563EB' }} />
                       </div>
                       <p style={{ color: '#111', fontWeight: 800, fontSize: '1.05rem', marginBottom: '0.4rem' }}>{addr.street}</p>
                       <p style={{ color: '#666', fontSize: '0.92rem', lineHeight: 1.5 }}>{addr.city}, {addr.state} - {addr.pincode}</p>
@@ -323,7 +323,7 @@ export default function Profile() {
           {/* ADD / EDIT ADDRESS TAB */}
           {activeTab === 'add_address' && (
             <form onSubmit={handleAddrSubmit(onAddAddress)} className="animate-fadeInUp">
-              <h3 style={{ color: '#111', fontSize: '1.4rem', fontWeight: 900, marginBottom: '2rem', fontFamily: 'Rajdhani, sans-serif' }}>{editingAddressId ? 'EDIT ADDRESS' : 'ADD NEW ADDRESS'}</h3>
+              <h3 style={{ color: '#111', fontSize: '1.4rem', fontWeight: 900, marginBottom: '2rem', fontFamily: "'Space Grotesk', sans-serif" }}>{editingAddressId ? 'EDIT ADDRESS' : 'ADD NEW ADDRESS'}</h3>
               
               <div className="profile-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
                 <div>
@@ -349,7 +349,7 @@ export default function Profile() {
               </div>
  
               <div style={{ marginTop: '2rem', gridColumn: '1 / -1' }}>
-                <label style={{ color: '#111', fontSize: '0.9rem', display: 'block', marginBottom: '0.8rem', textTransform: 'uppercase', fontWeight: 900, fontFamily: 'Rajdhani, sans-serif' }}>
+                <label style={{ color: '#111', fontSize: '0.9rem', display: 'block', marginBottom: '0.8rem', textTransform: 'uppercase', fontWeight: 900, fontFamily: "'Space Grotesk', sans-serif" }}>
                   <img src="https://cdn-icons-png.flaticon.com/512/2776/2776067.png" alt="pin" style={{ width: 18, height: 18, display: 'inline', marginRight: 6, verticalAlign: 'middle' }}/> Set Location on Map
                 </label>
                 
@@ -375,7 +375,7 @@ export default function Profile() {
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    <h4 style={{ color: locationSet ? '#2E7D32' : '#333', fontSize: '1rem', fontWeight: 800, margin: 0, fontFamily: 'Rajdhani, sans-serif', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <h4 style={{ color: locationSet ? '#2E7D32' : '#333', fontSize: '1rem', fontWeight: 800, margin: 0, fontFamily: "'Space Grotesk', sans-serif", display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                       {locationSet ? <><Check size={18} /> LOCATION CONFIGURED</> : <><img src="https://cdn-icons-png.flaticon.com/512/2776/2776067.png" alt="pin" style={{ width: 22, height: 22 }}/> PINPOINT ON MAP</>}
                     </h4>
                     <p style={{ color: '#666', fontSize: '0.88rem', margin: 0, marginTop: 4, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontWeight: 500 }}>
@@ -415,7 +415,7 @@ export default function Profile() {
             {/* Modal Header */}
             <div className="map-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.2rem 1.5rem', borderBottom: '1px solid #EEE' }}>
               <div>
-                <h3 style={{ color: '#111', fontWeight: 900, margin: 0, fontSize: '1.1rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.02em' }}>PINPOINT LOCATION</h3>
+                <h3 style={{ color: '#111', fontWeight: 900, margin: 0, fontSize: '1.1rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.02em' }}>PINPOINT LOCATION</h3>
                 <p style={{ color: '#888', margin: 0, fontSize: '0.75rem', fontWeight: 600 }}>Select the exact service location</p>
               </div>
               <button 
@@ -457,13 +457,13 @@ export default function Profile() {
                   }}
                   style={{ position: 'absolute', bottom: '1.5rem', right: '1rem', background: '#111', color: '#FFF', border: 'none', borderRadius: '12px', padding: '0.7rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', zIndex: 1000 }}
                 >
-                  <Crosshair size={16} style={{ color: '#1E3A8A' }}/> LOCATE ME
+                  <Crosshair size={16} style={{ color: '#2563EB' }}/> LOCATE ME
                 </button>
               </div>
  
               {/* Final Address Details Label */}
               <div className="map-modal-content" style={{ background: '#F9F9F9', borderRadius: '12px', padding: '0.8rem 1rem', border: '1px solid #EEE', marginTop: '1rem' }}>
-                <p style={{ color: '#1E3A8A', fontSize: '0.7rem', fontWeight: 900, margin: 0, marginBottom: '0.3rem', letterSpacing: '0.04em' }}>SELECTED ADDRESS:</p>
+                <p style={{ color: '#2563EB', fontSize: '0.7rem', fontWeight: 900, margin: 0, marginBottom: '0.3rem', letterSpacing: '0.04em' }}>SELECTED ADDRESS:</p>
                 
                 {isGeocoding ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#666', fontSize: '0.85rem', marginTop: '0.2rem', fontWeight: 600 }}>

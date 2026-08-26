@@ -303,7 +303,7 @@ export default function RentalDetail() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
-                    <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.1rem', fontWeight: 950, color: '#0F172A', lineHeight: 1, letterSpacing: '-0.01em', margin: 0 }}>
+                    <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.1rem', fontWeight: 950, color: '#0F172A', lineHeight: 1, letterSpacing: '-0.01em', margin: 0 }}>
                       {car.brand} {car.model}
                     </h1>
                     {car.isFeatured && (
@@ -313,7 +313,7 @@ export default function RentalDetail() {
                   <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: 600 }}>{car.year} • {car.title}</p>
                 </div>
                 {car.registrationNumber && (
-                  <span style={{ background: '#0F172A', color: 'white', padding: '0.5rem 0.9rem', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 900, letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: 'Rajdhani, sans-serif', boxShadow: '0 6px 18px rgba(15,23,42,0.18)' }}>
+                  <span style={{ background: '#0F172A', color: 'white', padding: '0.5rem 0.9rem', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 900, letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: "'Space Grotesk', sans-serif", boxShadow: '0 6px 18px rgba(15,23,42,0.18)' }}>
                     <Hash size={14} /> {car.registrationNumber}
                   </span>
                 )}
@@ -322,7 +322,7 @@ export default function RentalDetail() {
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.8rem', flexWrap: 'wrap', margin: '1.2rem 0' }}>
                 {allowedUnits.includes('day') && car.pricePerDay > 0 && (
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
-                    <span className="rental-price-value" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.1rem', fontWeight: 950, color: '#1E3A8A' }}>₹{car.pricePerDay?.toLocaleString('en-IN')}</span>
+                    <span className="rental-price-value" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.1rem', fontWeight: 950, color: '#1E3A8A' }}>₹{car.pricePerDay?.toLocaleString('en-IN')}</span>
                     <span className="rental-price-unit" style={{ color: '#64748B', fontWeight: 700, fontSize: '0.9rem' }}>/ day</span>
                   </div>
                 )}
@@ -331,7 +331,7 @@ export default function RentalDetail() {
                 )}
                 {allowedUnits.includes('hour') && car.pricePerHour > 0 && (
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
-                    <span className="rental-price-value" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '2.1rem', fontWeight: 950, color: '#1E3A8A' }}>₹{car.pricePerHour?.toLocaleString('en-IN')}</span>
+                    <span className="rental-price-value" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.1rem', fontWeight: 950, color: '#1E3A8A' }}>₹{car.pricePerHour?.toLocaleString('en-IN')}</span>
                     <span className="rental-price-unit" style={{ color: '#64748B', fontWeight: 700, fontSize: '0.9rem' }}>/ hour</span>
                   </div>
                 )}
@@ -382,7 +382,7 @@ export default function RentalDetail() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748B', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           <Hash size={12} /> Registration No.
                         </div>
-                        <div style={{ marginTop: '0.3rem', fontWeight: 800, color: '#0F172A', fontSize: '0.9rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.05em' }}>{car.registrationNumber}</div>
+                        <div style={{ marginTop: '0.3rem', fontWeight: 800, color: '#0F172A', fontSize: '0.9rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.05em' }}>{car.registrationNumber}</div>
                       </div>
                     )}
                     {car.carNumber && (
@@ -390,7 +390,7 @@ export default function RentalDetail() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748B', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           <CarIcon size={12} /> Car Number
                         </div>
-                        <div style={{ marginTop: '0.3rem', fontWeight: 800, color: '#0F172A', fontSize: '0.9rem', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '0.05em' }}>{car.carNumber}</div>
+                        <div style={{ marginTop: '0.3rem', fontWeight: 800, color: '#0F172A', fontSize: '0.9rem', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.05em' }}>{car.carNumber}</div>
                       </div>
                     )}
                     {car.rcNumber && (
@@ -523,7 +523,7 @@ export default function RentalDetail() {
 
           {/* RIGHT: Booking form */}
           <form onSubmit={handleSubmit} className="rental-form-card" style={{ background: 'white', borderRadius: '20px', padding: '1.5rem', border: '1px solid #E2E8F0', height: 'fit-content' }}>
-            <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', fontWeight: 950, color: '#0F172A', marginBottom: '1rem', letterSpacing: '0.01em' }}>
+            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.3rem', fontWeight: 950, color: '#0F172A', marginBottom: '1rem', letterSpacing: '0.01em' }}>
               BOOK THIS CAR
             </h2>
 
@@ -728,7 +728,7 @@ export default function RentalDetail() {
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '0.6rem', marginTop: '0.4rem' }}>
                 <span style={{ fontWeight: 900, color: '#0F172A', fontSize: '0.85rem' }}>TOTAL</span>
-                <span style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', fontWeight: 950, color: '#1E3A8A' }}>₹{totalAmount.toLocaleString('en-IN')}</span>
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.3rem', fontWeight: 950, color: '#1E3A8A' }}>₹{totalAmount.toLocaleString('en-IN')}</span>
               </div>
               {form.paymentPlan !== 'full' && (
                 <div style={{ marginTop: '0.6rem', paddingTop: '0.6rem', borderTop: '1px dashed #E2E8F0' }}>
@@ -745,7 +745,7 @@ export default function RentalDetail() {
             </div>
 
             <button type="submit" disabled={submitting || (car.status && car.status !== 'available')}
-              style={{ width: '100%', background: (!car.status || car.status === 'available') ? '#1E3A8A' : '#94A3B8', color: 'white', border: 'none', borderRadius: '12px', padding: '0.8rem', fontWeight: 900, fontSize: '0.9rem', cursor: (!car.status || car.status === 'available') && !submitting ? 'pointer' : 'not-allowed', letterSpacing: '0.1em', fontFamily: 'Rajdhani, sans-serif' }}>
+              style={{ width: '100%', background: (!car.status || car.status === 'available') ? '#1E3A8A' : '#94A3B8', color: 'white', border: 'none', borderRadius: '12px', padding: '0.8rem', fontWeight: 900, fontSize: '0.9rem', cursor: (!car.status || car.status === 'available') && !submitting ? 'pointer' : 'not-allowed', letterSpacing: '0.1em', fontFamily: "'Space Grotesk', sans-serif" }}>
               {(car.status && car.status !== 'available')
                 ? 'CURRENTLY UNAVAILABLE'
                 : submitting ? 'PROCESSING...'
