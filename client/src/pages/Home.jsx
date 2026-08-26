@@ -55,7 +55,7 @@ import {
   ArrowRight, Wrench, Sparkles, Zap, PaintBucket, Droplets, CircleDot, Battery,
   Disc, Settings, Shield, ShieldCheck, Award, Car, Check, CheckCircle, Clock,
   Star, Phone, Calendar, Users, MapPin, AlertCircle, RefreshCw, ChevronDown,
-  ChevronRight, Truck, Navigation, IndianRupee, Headset, MessageCircle,
+  ChevronRight, Truck, Navigation, IndianRupee, Headset, MessageCircle, Pencil,
 } from 'lucide-react';
 
 import { getServiceCategories, getCategories } from '../api/serviceApi';
@@ -66,6 +66,7 @@ import BrandRail from '../components/common/BrandRail';
 import AmbientVideo from '../components/common/AmbientVideo';
 import ScrollWheel from '../components/common/ScrollWheel';
 import ProcessFlow from '../components/common/ProcessFlow';
+import RollingWheel from '../components/common/RollingWheel';
 import {
   Reveal, Stagger, StaggerItem, Parallax, ScrollRecede, CountUp, ScrollProgressLine, motion,
 } from '../components/common/Motion';
@@ -445,6 +446,7 @@ export default function Home() {
             graphic rotated twice. */}
         <ScrollWheel className="gk-wheel gk-wheel--lg" factor={0.13} idle={3} stiffness={28} />
         <ScrollWheel className="gk-wheel gk-wheel--sm" factor={0.3} idle={9} stiffness={70} />
+        <RollingWheel className="gk-roll gk-roll--dark" size={300} direction={1} bottom="-9%" />
 
         <div className="gk-wrap gk-hero-inner">
           <div className="gk-hero-grid">
@@ -473,10 +475,17 @@ export default function Home() {
               </Reveal>
 
               <Reveal y={24} delay={0.13}>
-                <p className="gk-lede gk-lede--dark gk-hero-lede">
+                {/* Two ledes, one shown at a time. On a phone the long version
+                    pushed the buttons and the car below the fold, and nobody
+                    reads four lines of body copy above a call to action. The
+                    short one carries the same three claims in eleven words. */}
+                <p className="gk-lede gk-lede--dark gk-hero-lede gk-hero-lede--long">
                   One workshop on Sheela Bypass for all three: we service every make on
                   the road, stock the genuine parts to do it, and handle your insurance
                   claim end to end. Itemised quote first, old parts handed back.
+                </p>
+                <p className="gk-lede gk-lede--dark gk-hero-lede gk-hero-lede--short">
+                  Every make serviced. Genuine parts. Insurance claims handled.
                 </p>
               </Reveal>
 
@@ -537,9 +546,15 @@ export default function Home() {
                   transition={{ duration: 0.9, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <header className="gk-quote-head">
-                    <span className="gk-quote-badge"><Car size={15} /></span>
+                    {/* The car itself, not a generic blue icon. It is the same
+                        render as the hero above, which is the point: this is
+                        the estimate for the car you are looking at. */}
+                    <span className="gk-quote-thumb">
+                      <img src="/hero/car.webp" alt="" aria-hidden="true"
+                        width={1200} height={800} decoding="async" />
+                    </span>
                     <span className="gk-quote-title">
-                      <b>Maruti Swift Dzire</b>
+                      <b>Hyundai Creta</b>
                       {/* It was not obvious this was an EXAMPLE of the message
                           a customer receives rather than a live control they
                           were meant to interact with. Now it says so. */}
@@ -547,6 +562,14 @@ export default function Home() {
                     </span>
                     <span className="gk-quote-flag">Sample</span>
                   </header>
+
+                  {/* A real route, not a decorative control. It goes to the
+                      booking flow, which opens on the car selector — so the
+                      obvious question this card raises ("but that is not my
+                      car") has an answer one tap away. */}
+                  <Link to="/services" className="gk-quote-change">
+                    <Pencil size={12} /> Not your car? Pick yours
+                  </Link>
 
                   <ul className="gk-quote-rows">
                     {SAMPLE_QUOTE.map((row) => (
@@ -659,6 +682,7 @@ export default function Home() {
           ══════════════════════════════════════════════════════════════════ */}
       <section id="services" className="gk-sec" style={{ background: C.white, position: 'relative', overflow: 'hidden' }}>
         <ScrollWheel className="gk-wheel gk-wheel--light gk-wheel--svc" factor={0.1} idle={2.5} stiffness={24} />
+        <RollingWheel className="gk-roll gk-roll--light" size={240} direction={-1} bottom="-7%" />
         <div className="gk-wrap">
           <Reveal className="gk-head">
             <p className="gk-eyebrow gk-eyebrow--center">What we do</p>
@@ -829,6 +853,7 @@ export default function Home() {
         <img className="gk-ins-bg" src="/insurance/damage.webp" alt="" aria-hidden="true"
           loading="lazy" decoding="async" />
         <ScrollWheel className="gk-wheel gk-wheel--ins" factor={0.22} idle={6} stiffness={52} />
+        <RollingWheel className="gk-roll gk-roll--dark" size={230} direction={1} bottom="-6%" />
         <div className="gk-bloom gk-bloom--b" />
         <div className="gk-mesh" />
 
@@ -962,6 +987,7 @@ export default function Home() {
           ══════════════════════════════════════════════════════════════════ */}
       <section className="gk-sec" style={{ background: C.white, overflow: 'hidden', position: 'relative' }}>
         <ScrollWheel className="gk-wheel gk-wheel--light gk-wheel--rev" factor={0.14} idle={3.5} stiffness={34} />
+        <RollingWheel className="gk-roll gk-roll--light" size={260} direction={-1} top="4%" />
         <div className="gk-wrap">
 
           <Stagger className="gk-stats" gap={0.09}>
@@ -1035,6 +1061,7 @@ export default function Home() {
         />
         <div className="gk-bloom gk-bloom--b" />
         <ScrollWheel className="gk-wheel gk-wheel--visit" factor={0.12} idle={2.5} stiffness={26} />
+        <RollingWheel className="gk-roll gk-roll--dark" size={280} direction={1} bottom="-10%" />
 
         <div className="gk-wrap">
           <div className="gk-visit">
@@ -1284,6 +1311,30 @@ const HOME_STYLES = `
     .gk-wheel--visit { width: 60vw; opacity: .08; right: -24%; }
   }
 
+  /* ── Rolling wheels ────────────────────────────────────────────────────
+     The travelling layer. Positioned by the component (top/bottom/size); all
+     this does is pin it to the left edge so the component's own x transform
+     is measured from a known origin, and set the colour it inherits.
+
+     left:0 with the transform doing the travel, rather than animating left:
+     transform composites, left is layout. */
+  .gk-roll {
+    position: absolute; left: 0; z-index: 0;
+    pointer-events: none;
+  }
+  .gk-roll svg { width: 100%; height: 100%; display: block; }
+  .gk-roll--dark  { color: var(--gk-cyan-soft); opacity: .16; }
+  .gk-roll--light { color: var(--gk-navy);      opacity: .07; }
+
+  /* Kept on phones — this is the effect that reads as motion, and unlike the
+     static background wheels it is worth the compositor layer. Smaller and
+     fainter so it never fights the text it passes behind. */
+  @media (max-width: 700px) {
+    .gk-roll { transform: scale(.62); transform-origin: left center; }
+    .gk-roll--dark  { opacity: .13; }
+    .gk-roll--light { opacity: .06; }
+  }
+
   /* ── Hero car ────────────────────────────────────────────────────────────
      The car is the layer the whole right column is built around; the estimate
      card overlaps its lower-left corner. */
@@ -1344,11 +1395,37 @@ const HOME_STYLES = `
     padding-bottom: 1rem; margin-bottom: 0.35rem;
     border-bottom: 1px solid rgba(255,255,255,.1);
   }
-  .gk-quote-badge {
-    width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0;
-    display: inline-flex; align-items: center; justify-content: center;
-    background: var(--gk-g-brand); color: #FFF;
-    box-shadow: 0 6px 18px rgba(21,103,211,.4);
+  /* The car, not an icon. overflow:hidden plus a scaled, offset image crops
+     the render down to the body — the source is a wide shot with a lot of
+     empty space around the car, and object-fit alone would letterbox it into
+     a 36px square of mostly background. */
+  .gk-quote-thumb {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    overflow: hidden; position: relative;
+    background: linear-gradient(150deg, rgba(21,103,211,.35), rgba(0,178,240,.18));
+    border: 1px solid rgba(255,255,255,.14);
+  }
+  .gk-quote-thumb img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: 52% 62%;
+    transform: scale(1.85);
+  }
+
+  .gk-quote-change {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-top: 0.7rem; padding: 0.35rem 0.7rem;
+    border-radius: 999px; text-decoration: none;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.13);
+    color: var(--gk-cyan-soft);
+    font-size: 0.7rem; font-weight: 600;
+    transition: border-color .25s, background .25s, color .25s;
+  }
+  .gk-quote-change:hover {
+    border-color: rgba(0,178,240,.45);
+    background: rgba(0,178,240,.12);
+    color: #FFFFFF;
   }
   .gk-quote-title { display: flex; flex-direction: column; min-width: 0; flex: 1; }
   .gk-quote-title b {
@@ -2110,6 +2187,51 @@ const HOME_STYLES = `
     .gk-sec { padding-block: 2.5rem; }
     .gk-sec-sm { padding-block: 2rem; }
     .gk-head { margin-bottom: 1.6rem; }
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     PHONE HERO
+     The headline was rendering at the bottom of its clamp — around 2.3rem on
+     a 390px screen — which for the site's opening statement is small. It now
+     has its own floor. The proof row and the estimate card are tightened to
+     pay for the extra height.
+     ══════════════════════════════════════════════════════════════════════ */
+  .gk-hero-lede--short { display: none; }
+
+  @media (max-width: 640px) {
+    .gk-hero-h1 {
+      font-size: clamp(2.75rem, 12.5vw, 3.4rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+      margin-top: 1.1rem;
+    }
+
+    /* Swap the long lede for the eleven-word one. */
+    .gk-hero-lede--long { display: none; }
+    .gk-hero-lede--short {
+      display: block;
+      font-size: 0.94rem; line-height: 1.55;
+      margin-top: 0.9rem; max-width: 21rem;
+    }
+
+    /* Two claims on one line, not three stacked.
+       "Quote before we start" is dropped here on purpose rather than wrapped:
+       the estimate card directly below says the same thing far better, with
+       an actual example of the quote. Repeating it as a bullet a hundred
+       pixels above is the weaker of the two, so it is the one that goes. */
+    .gk-hero-proof {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.55rem 0.7rem;
+      margin-top: 1.5rem; padding-top: 1.1rem;
+    }
+    .gk-hero-proof li { font-size: 0.75rem; gap: 0.45rem; white-space: normal; }
+    .gk-hero-proof li:nth-child(2) { display: none; }
+    .gk-hero-proof-ico { width: 21px; height: 21px; border-radius: 7px; }
+    .gk-hero-proof-ico svg { width: 11px; height: 11px; }
+
+    .gk-hero-ctas { margin-top: 1.5rem; gap: 0.6rem; }
+    .gk-loc { font-size: 0.72rem; padding: 0.38rem 0.7rem 0.38rem 0.6rem; }
   }
 
   /* ── Phone: the promo banners ──────────────────────────────────────────

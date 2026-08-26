@@ -38,6 +38,7 @@ export default function AmbientVideo({
   rootMargin = '400px 0px',
 }) {
   const hostRef = useRef(null);
+  const videoRef = useRef(null);
   const reduced = useReducedMotion();
   const [show, setShow] = useState(false);
   const [ready, setReady] = useState(false);
@@ -82,12 +83,44 @@ export default function AmbientVideo({
     return () => io.disconnect();
   }, [reduced, minWidth, rootMargin]);
 
+  /* ── Why autoplay needed help ───────────────────────────────────────────
+     The clip played on desktop and silently did nothing on phones.
+
+     React sets `muted` as a DOM PROPERTY but does not reliably emit the
+     `muted` ATTRIBUTE on the element. Desktop browsers are happy either way;
+     mobile Safari and Chrome check for a muted video before allowing
+     unprompted playback, and several versions consult the attribute. With it
+     missing the element is treated as an audible autoplay attempt, silently
+     blocked, and left showing its poster — which is exactly what it looked
+     like, because the poster is our fallback design.
+
+     So the property is set imperatively the moment the element exists, and
+     play() is called explicitly rather than left to the `autoPlay` attribute.
+     play() returns a promise that REJECTS when the browser refuses; that
+     rejection is unhandled by default and shows up as a console error, so it
+     is caught. A refusal is not a failure here — the poster is a complete
+     design on its own. */
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !show) return;
+
+    v.muted = true;
+    v.defaultMuted = true;
+    v.setAttribute('muted', '');
+
+    const attempt = v.play();
+    if (attempt && typeof attempt.catch === 'function') {
+      attempt.catch(() => { /* Blocked by policy. The poster stands. */ });
+    }
+  }, [show]);
+
   return (
     <div ref={hostRef} className={className} aria-hidden="true">
       <img src={poster} alt="" className="gk-av-poster" loading="lazy" decoding="async" />
 
       {show && (
         <video
+          ref={videoRef}
           className="gk-av-video"
           // `ready` gates only the fade-in, so the first frame is never shown
           // half-decoded over the poster.

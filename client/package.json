@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "lint": "node scripts/check-css-templates.mjs && eslint .",
+    "preview": "vite preview",
+    "check:css": "node scripts/check-css-templates.mjs",
+    "optimise:assets": "node scripts/optimise-assets.mjs"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.8",
