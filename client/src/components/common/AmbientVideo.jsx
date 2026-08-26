@@ -29,11 +29,22 @@ export default function AmbientVideo({
   src,
   poster,
   className,
-  /* Below this width the video is never fetched. Deliberately low: it was
-     1024, which meant the clip simply never played on a phone — and the
-     section it sits behind ("Come and see") is exactly the one a local
-     customer on a phone is most likely to reach. */
-  minWidth = 420,
+  /* Below this width the video is never fetched.
+     0 by default — there is no width at which this should be withheld.
+
+     It has been wrong twice. First 1024, which excluded every phone and
+     tablet. Then 420, chosen as "deliberately low", which still blocked a
+     Galaxy S21 (360), an iPhone SE (375), an iPhone 14 (390) and a Pixel 7
+     (412) — in portrait, essentially every phone except a Pro Max. Both times
+     the symptom was identical and looked like a broken video rather than a
+     deliberate gate, which is exactly why an arbitrary pixel threshold was
+     the wrong instrument.
+
+     What actually needs guarding is the CONNECTION, not the screen, and that
+     is handled below by saveData and effectiveType. Someone on a 360px phone
+     over wifi should get the video; someone on a 1440px laptop tethered to a
+     2g hotspot should not. */
+  minWidth = 0,
   /* How far ahead of the viewport to start loading. */
   rootMargin = '400px 0px',
 }) {
@@ -47,8 +58,9 @@ export default function AmbientVideo({
     if (reduced) return undefined;
     if (typeof window === 'undefined') return undefined;
 
-    const wide = window.matchMedia(`(min-width: ${minWidth}px)`);
-    if (!wide.matches) return undefined;
+    if (minWidth > 0 && !window.matchMedia(`(min-width: ${minWidth}px)`).matches) {
+      return undefined;
+    }
 
     /* Now that phones are included, the connection has to be checked rather
        than assumed. The Network Information API is Chromium-only, which is
@@ -116,13 +128,38 @@ export default function AmbientVideo({
     if (v.readyState >= 2) setReady(true);
 
     let cancelled = false;
-    const attempt = v.play();
-    if (attempt && typeof attempt.then === 'function') {
-      attempt
-        .then(() => { if (!cancelled) setReady(true); })
-        .catch(() => { /* Blocked by policy. The poster stands. */ });
-    }
-    return () => { cancelled = true; };
+    let retry = null;
+
+    const start = () => {
+      const attempt = v.play();
+      if (attempt && typeof attempt.then === 'function') {
+        attempt
+          .then(() => { if (!cancelled) setReady(true); })
+          .catch(() => {
+            /* Refused. iOS in Low Power Mode blocks autoplay outright however
+               muted the clip is, and re-permits it after any user gesture. So
+               one retry is armed on the first touch or scroll and then thrown
+               away — passive and once:true, so it can never sit on the scroll
+               path. If that is refused too, the poster stands, which is a
+               finished design in its own right. */
+            if (cancelled || retry) return;
+            retry = () => { v.play().then(() => setReady(true)).catch(() => {}); };
+            const opts = { once: true, passive: true };
+            window.addEventListener('touchstart', retry, opts);
+            window.addEventListener('scroll', retry, opts);
+          });
+      }
+    };
+
+    start();
+
+    return () => {
+      cancelled = true;
+      if (retry) {
+        window.removeEventListener('touchstart', retry);
+        window.removeEventListener('scroll', retry);
+      }
+    };
   }, [show]);
 
   return (
