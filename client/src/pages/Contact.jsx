@@ -6,6 +6,7 @@ import {
 } from '../utils/validate';
 import { sendContactMessage } from '../api/contactApi';
 import { reportApiError } from '../api/apiError';
+import { BIZ } from '../theme';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -95,12 +96,19 @@ export default function Contact() {
                     <span style={{ fontSize: '1.4rem' }}>📍</span>
                   </div>
                   <div>
-                    <p style={{ color: '#111', fontWeight: 700, marginBottom: '0.3rem', fontSize: '1.05rem' }}>Our Locations</p>
+                    {/* One workshop, one address. This block previously listed
+                        head offices in Gurgaon and Mumbai — and a line reading
+                        "Australia: Australia" — all inherited from the national
+                        -chain template this project started from. None of them
+                        exist, and a customer who drove to one would have found
+                        somebody else's building. The address below is the one
+                        on the Google Business listing; it lives in BIZ so it
+                        stays in step with the nav, footer and booking flow. */}
+                    <p style={{ color: '#111', fontWeight: 700, marginBottom: '0.3rem', fontSize: '1.05rem' }}>Where to find us</p>
                     <p style={{ color: '#666', fontSize: '0.92rem', lineHeight: 1.6 }}>
-                      <b>Gurgaon:</b> Tower B, 3rd Floor, Unitech Cyber Park, Sector 39, 122002<br/>
-                      <b>Mumbai:</b> Third Floor, Vasudev Chamber, Teli Galli Cross Rd, Andheri East, 400069<br/>
-                      <b>Rohtak:</b> 106, First Floor, Agro Mall, Rohtak<br/>
-                      <b>Australia:</b> Australia
+                      <b>{BIZ.name}</b><br/>
+                      {BIZ.addressLine1}<br/>
+                      {BIZ.addressLine2}
                     </p>
                   </div>
                 </div>
@@ -111,7 +119,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p style={{ color: '#111', fontWeight: 700, marginBottom: '0.3rem', fontSize: '1.05rem' }}>Call Us</p>
-                    <p style={{ color: '#666', fontSize: '0.92rem' }}>+91 9253625099</p>
+                    <p style={{ color: '#666', fontSize: '0.92rem' }}>{BIZ.phoneDisplay}</p>
                   </div>
                 </div>
 
@@ -121,7 +129,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p style={{ color: '#111', fontWeight: 700, marginBottom: '0.3rem', fontSize: '1.05rem' }}>Email Us</p>
-                    <p style={{ color: '#666', fontSize: '0.92rem' }}>kp@avanienterprises.in</p>
+                    <p style={{ color: '#666', fontSize: '0.92rem' }}>{BIZ.email}</p>
                   </div>
                 </div>
 
@@ -131,8 +139,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <p style={{ color: '#111', fontWeight: 700, marginBottom: '0.3rem', fontSize: '1.05rem' }}>Working Hours</p>
-                    <p style={{ color: '#666', fontSize: '0.92rem' }}>Mon - Sat: 9:00 AM - 8:00 PM</p>
-                    <p style={{ color: '#666', fontSize: '0.92rem' }}>Sunday: 10:00 AM - 4:00 PM</p>
+                    <p style={{ color: '#666', fontSize: '0.92rem' }}>{BIZ.hours}</p>
+                    <p style={{ color: '#666', fontSize: '0.92rem' }}>{BIZ.hoursSunday}</p>
                   </div>
                 </div>
               </div>

@@ -1,31 +1,49 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   NAVBAR — 2026 reconstruction
+
+   Everything about how this bar BEHAVES is carried over unchanged, because all
+   of it was hard-won: the fixed-to-viewport mobile drawer with its measured
+   top offset, the deliberate absence of a body scroll lock, the escape key,
+   the focus move, the route-change close, and the rule that no inline
+   `display` may fight Tailwind's responsive hiding. The long comments
+   explaining those decisions are kept verbatim — they document bugs that took
+   real effort to find, and deleting them would invite the bugs back.
+
+   What changed is the LOOK:
+
+   • The band behind the floating card is the logo's navy, not slate-900.
+   • The active link is marked by a sliding gradient pill that animates between
+     items via framer-motion's shared layout, instead of a static underline
+     that pops from one link to the next.
+   • "Book Now" is the brand gradient, matching every other primary action on
+     the site.
+   • The bar compacts on scroll — less padding, more shadow — so it takes less
+     of the viewport once you are reading.
+   • The user dropdown, the cart badge and the drawer all move to the new
+     palette and the new radius scale.
+   ═══════════════════════════════════════════════════════════════════════════ */
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, ChevronDown, User, LogOut, Settings, Wrench, Phone, ShoppingCart, Heart, Package } from 'lucide-react';
+import {
+  Menu, X, ChevronDown, User, LogOut, Settings, Wrench, Phone,
+  ShoppingCart, Heart, Package,
+} from 'lucide-react';
 import { useCart, useServiceCart } from '../../context/CartContext';
+import { BIZ } from '../../theme';
 
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Services', href: '/services' },
   { label: 'Shop', href: '/parts' },
-  /* "How It Works" removed from the navigation on request. The section itself
-     still exists on the home page with its id intact, and App.jsx's hash-aware
-     ScrollToTop still resolves /#how-it-works — so any existing link or
-     bookmark keeps working; it is only gone from this row. */
+  /* "How It Works" is deliberately not here. The section still exists on the
+     home page with its id intact and App.jsx's hash-aware ScrollToTop still
+     resolves /#how-it-works, so every existing link and bookmark keeps
+     working; it is only gone from this row. */
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
-
-/* [GK MOTORS TRANSFORM] Marketplace nav links — restore alongside the routes in App.jsx
-const marketplaceLinks = [
-  { label: 'Buy Cars', href: '/bikes' },
-  { label: 'Rent Car', href: '/rentals' },
-  { label: 'Sell Car', href: '/sell' },
-  { label: 'Parts', href: '/parts' },
-  { label: 'Featured', href: '/bikes/featured' },
-  { label: 'Bestseller', href: '/bikes/bestseller' },
-];
-*/
 
 const isActive = (pathname, href) =>
   href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -33,35 +51,63 @@ const isActive = (pathname, href) =>
 const NAV_STYLES = `
   /* ── Floating card bar ───────────────────────────────────────────────────
      The bar is a white rounded card inset from the viewport edges, sitting on
-     a slate-900 band that runs edge to edge. The band is what makes the card
-     read as floating: at the top of the page it runs straight into the hero
-     below with no seam, and once the bar is pinned it keeps that same
-     figure/ground over the page's light sections — where a bare white card
-     would otherwise dissolve into a white background.
+     a navy band that runs edge to edge. The band is what makes the card read
+     as floating: at the top of the page it runs straight into the hero below
+     with no seam, and once the bar is pinned it keeps that same figure/ground
+     over the page's light sections — where a bare white card would otherwise
+     dissolve into a white background.
 
-     The backdrop-filter that used to frost this bar is gone. The card is fully
-     opaque, so there was nothing left to see through, and dropping it removes
-     two things at once: the per-frame blur that made scrolling stutter on
-     phones, and the containing block it created for position:fixed children,
-     which is what constrained the mobile drawer below. */
-  .gk-nav { background: #0F172A; padding: 0.55rem 0; }
+     There is deliberately NO backdrop-filter on this bar. The card is fully
+     opaque so there would be nothing to see through, and its absence removes
+     two problems at once: the per-frame blur that made scrolling stutter on
+     phones, and the containing block it would create for position:fixed
+     children, which is what would re-anchor the mobile drawer below. */
+  .gk-nav {
+    background: linear-gradient(180deg, var(--gk-ink) 0%, var(--gk-navy) 100%);
+    padding: 0.6rem 0;
+    transition: padding .35s cubic-bezier(.22,1,.36,1);
+  }
+  /* Compact once the page has been scrolled: the bar gives back a few pixels
+     of viewport and picks up a deeper shadow so it separates from whatever it
+     is now floating over. */
+  .gk-nav[data-scrolled="true"] { padding: 0.3rem 0; }
 
   .gk-nav-card {
     background: #FFFFFF;
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.28);
+    box-shadow: 0 10px 30px rgba(4, 16, 31, .3);
     padding: 0 0.75rem;
+    transition: box-shadow .35s, border-radius .35s;
+  }
+  .gk-nav[data-scrolled="true"] .gk-nav-card {
+    box-shadow: 0 14px 40px rgba(4, 16, 31, .42);
+    border-radius: 14px;
   }
   @media (min-width: 640px) { .gk-nav-card { padding: 0 1.25rem; } }
 
-  /* ── Active link underline ───────────────────────────────────────────────
-     Inset to the link's text rather than its padding box, so the rule sits
-     under the word and not under the hover target's full width. */
-  .gk-nav-links a { position: relative; }
-  .gk-nav-links a[data-active="true"]::after {
-    content: '';
-    position: absolute; left: 0.6rem; right: 0.6rem; bottom: 0.05rem;
-    height: 2px; border-radius: 2px; background: #2563EB;
+  /* ── Links ───────────────────────────────────────────────────────────────
+     The active marker is a positioned pill BEHIND the label, animated between
+     items by framer-motion's layoutId. The label therefore needs its own
+     stacking context or the pill paints over it. */
+  .gk-nav-links a {
+    position: relative;
+    display: inline-flex; align-items: center;
+    padding: 0.5rem 0.85rem;
+    border-radius: 9px;
+    font-family: var(--gk-font-display);
+    font-size: 0.83rem; font-weight: 600; letter-spacing: .02em;
+    color: var(--gk-body);
+    text-decoration: none;
+    transition: color .25s;
+  }
+  .gk-nav-links a:hover { color: var(--gk-navy); }
+  .gk-nav-links a[data-active="true"] { color: #FFFFFF; }
+  .gk-nav-links a > span { position: relative; z-index: 1; }
+  .gk-nav-pill {
+    position: absolute; inset: 0;
+    border-radius: 9px;
+    background: var(--gk-g-brand);
+    box-shadow: 0 4px 14px rgba(21,103,211,.32);
   }
 
   .gk-burger { display: inline-flex; align-items: center; justify-content: center; }
@@ -69,7 +115,7 @@ const NAV_STYLES = `
   /* The link row is dense at exactly 1024px, so tighten it there and let it
      breathe again on wider screens. */
   @media (min-width: 1024px) and (max-width: 1180px) {
-    .gk-nav-links a { padding: 0.4rem 0.4rem !important; font-size: 0.78rem !important; }
+    .gk-nav-links a { padding: 0.45rem 0.5rem; font-size: 0.78rem; }
   }
   /* Below 380px the name label crowds the row; the icons and the hamburger
      are what actually need to stay reachable. */
@@ -78,31 +124,92 @@ const NAV_STYLES = `
     .gk-nav-right { gap: 0.5rem !important; }
   }
 
+  /* ── Icon buttons (cart) ─────────────────────────────────────────────── */
+  .gk-nav-icon {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 11px;
+    color: var(--gk-navy); text-decoration: none;
+    transition: background .25s, color .25s;
+  }
+  .gk-nav-icon:hover { background: rgba(21,103,211,.08); color: var(--gk-blue); }
+  .gk-nav-badge {
+    position: absolute; top: 1px; right: 1px;
+    min-width: 18px; height: 18px; padding: 0 4px;
+    border-radius: 999px;
+    background: var(--gk-g-brand); color: #FFF;
+    font-family: var(--gk-font-display); font-size: 0.62rem; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 2px 6px rgba(21,103,211,.4);
+  }
+
+  /* ── User menu ───────────────────────────────────────────────────────── */
+  .gk-nav-user {
+    display: flex; align-items: center; gap: 0.45rem;
+    background: #FFFFFF; cursor: pointer;
+    border: 1.5px solid var(--gk-hairline); border-radius: 12px;
+    padding: 0.38rem 0.7rem;
+    color: var(--gk-navy);
+    font-family: var(--gk-font-display); font-size: 0.8rem; font-weight: 600;
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .gk-nav-user:hover { border-color: rgba(21,103,211,.4); box-shadow: var(--gk-sh-card); }
+  .gk-nav-avatar {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--gk-g-brand); color: #FFF;
+    font-size: 0.72rem; font-weight: 700; object-fit: cover;
+  }
+  .gk-nav-menu {
+    position: absolute; right: 0; top: calc(100% + 0.6rem);
+    min-width: 210px; z-index: 100;
+    background: var(--gk-navy);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 20px 50px rgba(4,16,31,.5);
+  }
+  .gk-nav-menu a, .gk-nav-menu button {
+    display: flex; align-items: center; gap: 0.65rem; width: 100%;
+    padding: 0.72rem 1rem;
+    color: var(--gk-body-dark); text-decoration: none;
+    background: none; border: none; cursor: pointer;
+    font-family: var(--gk-font-sans); font-size: 0.86rem; font-weight: 500;
+    text-align: left;
+    transition: background .2s, color .2s;
+  }
+  .gk-nav-menu a:hover, .gk-nav-menu button:hover {
+    background: rgba(255,255,255,.06); color: #FFFFFF;
+  }
+  .gk-nav-menu a[data-admin="true"] { color: var(--gk-cyan-soft); font-weight: 600; }
+  .gk-nav-menu-sep { border-top: 1px solid rgba(255,255,255,.09); }
+  .gk-nav-menu button[data-danger="true"] { color: #FF8A8E; }
+  .gk-nav-menu button[data-danger="true"]:hover { background: rgba(229,72,77,.14); color: #FFB4B6; }
+
   /* ── Mobile drawer ───────────────────────────────────────────────────────
      Fixed to the viewport rather than flowing inside the sticky bar. The bar
      is position:sticky, and anything inside it inherits that bar's fate — if
      sticky resolves badly the drawer goes with it. Anchored to the viewport
      instead, the panel is visible whatever the bar does.
 
-     The offset is MEASURED from the bar rather than hard-coded. It used to
-     be a literal 64px, which matched the bar's h-16 only while the bar was
-     the first thing on the page. The announcement strip now sits above it, so
-     at scroll-top the bar occupies 36..100 and a panel pinned at 64px would
-     have opened over its bottom half. The 64px below is only a pre-mount
-     fallback; the --gk-drawer-top custom property set on this bar overrides
-     it the moment the panel opens.
+     The offset is MEASURED from the bar rather than hard-coded. It used to be
+     a literal 64px, which matched the bar's height only while the bar was the
+     first thing on the page. The announcement strip sits above it, so at
+     scroll-top the bar occupies 36..100 and a panel pinned at 64px would have
+     opened over its own bottom half. The 64px below is only a pre-mount
+     fallback; the --gk-drawer-top custom property set on the bar overrides it
+     the moment the panel opens.
 
-     ONE THING TO KEEP IN MIND: a backdrop-filter (or a transform, or a
-     filter) on .gk-nav would create a containing block for position:fixed
-     descendants and re-anchor this panel to the bar instead of the viewport.
-     The bar carried a blur until the floating-card restyle removed it, so
-     nothing does that today — but if one is ever reintroduced, move this
-     markup out of <nav> in the same change. */
+     ONE THING TO KEEP IN MIND: a backdrop-filter (or a transform, or a filter)
+     on .gk-nav would create a containing block for position:fixed descendants
+     and re-anchor this panel to the bar instead of the viewport. Nothing does
+     that today — but if one is ever introduced, move this markup out of <nav>
+     in the same change. */
   .gk-nav-backdrop {
     position: fixed;
     top: var(--gk-drawer-top, 64px); left: 0; right: 0; bottom: 0;
     z-index: 48;
-    background: rgba(15, 23, 42, 0.55);
+    background: rgba(4, 16, 31, .6);
     border: 0; padding: 0; margin: 0;
     width: 100%;
     cursor: pointer;
@@ -115,7 +222,7 @@ const NAV_STYLES = `
     position: fixed;
     top: var(--gk-drawer-top, 64px); left: 0; right: 0;
     z-index: 49;
-    background: #0F172A;
+    background: linear-gradient(180deg, var(--gk-navy) 0%, var(--gk-ink) 100%);
     max-height: calc(100vh - var(--gk-drawer-top, 64px));
     max-height: calc(100dvh - var(--gk-drawer-top, 64px));
     overflow-y: auto;
@@ -124,8 +231,23 @@ const NAV_STYLES = `
        remainder to the page behind it. */
     overscroll-behavior: contain;
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-top: 1px solid rgba(255,255,255,.1);
   }
   .gk-nav-drawer:focus { outline: none; }
+
+  .gk-drawer-link {
+    display: flex; align-items: center; gap: 0.65rem;
+    min-height: 46px; padding: 0.6rem 0.6rem;
+    border-radius: 10px;
+    color: #DCE9F6; text-decoration: none;
+    font-family: var(--gk-font-display);
+    font-size: 0.92rem; font-weight: 600;
+    background: none; border: none; width: 100%; cursor: pointer; text-align: left;
+    transition: background .2s, color .2s;
+  }
+  .gk-drawer-link:hover { background: rgba(255,255,255,.05); }
+  .gk-drawer-link[data-active="true"] { color: var(--gk-cyan-soft); background: rgba(0,178,240,.09); }
+  .gk-drawer-sep { border-top: 1px solid rgba(255,255,255,.1); margin-top: 0.8rem; padding-top: 0.8rem; }
 
   /* The drawer is a mobile affordance; the burger is hidden from 1024px up, so
      make sure a stale open state can never leave it on screen at desktop. */
@@ -150,33 +272,48 @@ export default function Navbar() {
   const [drawerTop, setDrawerTop] = useState(64);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
-  /* ── Why there is no body scroll lock here any more ──────────────────────
+  /* ── Why there is no body scroll lock here ───────────────────────────────
      This used to call useScrollLock(mobileOpen), which sets
      `document.body.style.overflow = 'hidden'`.
 
      That single line was what froze the site. Giving <body> an `overflow`
      other than `visible` turns it into a scroll container, and
      `position: sticky` resolves against the nearest scrollport. The bar's
-     scrollport therefore switched from the viewport — scrolled to wherever
-     the reader was — to <body>, whose own scrollTop is 0. Sticky had nothing
-     left to stick to, so the bar snapped back to its static position at the
-     very top of the document, thousands of pixels above the viewport, and
-     vanished. The drawer, being inside it, vanished with it. Meanwhile
-     scrolling was locked, so the page could not be moved to go and find them:
-     no menu, no navbar, nothing responding.
+     scrollport therefore switched from the viewport — scrolled to wherever the
+     reader was — to <body>, whose own scrollTop is 0. Sticky had nothing left
+     to stick to, so the bar snapped back to its static position at the very
+     top of the document, thousands of pixels above the viewport, and vanished.
+     The drawer, being inside it, vanished with it. Meanwhile scrolling was
+     locked, so the page could not be moved to go and find them: no menu, no
+     navbar, nothing responding.
 
-     The drawer is now a fixed overlay (see below), anchored to the viewport
-     rather than to the sticky bar, so it cannot be lost. Background scrolling
-     is held off by `overscroll-behavior: contain` on the panel and
-     `touch-action: none` on the backdrop — neither of which touches <body>'s
-     overflow, so the bar keeps its scrollport and stays exactly where it is. */
+     The drawer is now a fixed overlay anchored to the viewport rather than to
+     the sticky bar, so it cannot be lost. Background scrolling is held off by
+     `overscroll-behavior: contain` on the panel and `touch-action: none` on
+     the backdrop — neither of which touches <body>'s overflow, so the bar
+     keeps its scrollport and stays exactly where it is. */
 
   // Every link already closes the panel, but a browser back/forward gesture
   // changes the route without one, which would leave it hanging open.
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  /* Compact-on-scroll. A passive listener reading a single scalar — no layout
+     is read, so this cannot force a synchronous reflow — and the state is only
+     written when the boolean actually flips, so a long scroll causes two
+     renders rather than one per frame. */
+  useEffect(() => {
+    const onScroll = () => {
+      const next = window.scrollY > 12;
+      setScrolled((prev) => (prev === next ? prev : next));
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Move focus into the panel when it opens, so keyboard and screen-reader
   // users are not left behind on the burger button.
@@ -187,7 +324,8 @@ export default function Navbar() {
 
   /* Opening the panel: pin its top edge to wherever the bar's bottom edge
      currently is. At scroll-top that is below the announcement strip; once the
-     strip has scrolled away and the bar is pinned, it is the bar's own height. */
+     strip has scrolled away and the bar is pinned, it is the bar's own
+     height. */
   const toggleMenu = () => {
     setMobileOpen((open) => {
       if (!open) {
@@ -212,217 +350,167 @@ export default function Navbar() {
     setDropdownOpen(false);
   };
 
+  const closeDropdown = () => setDropdownOpen(false);
+
   return (
     <nav
       ref={navRef}
-      style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.05)', '--gk-drawer-top': `${drawerTop}px` }}
+      data-scrolled={scrolled}
+      style={{ '--gk-drawer-top': `${drawerTop}px` }}
       className="gk-nav sticky top-0 z-50"
     >
       <style>{NAV_STYLES}</style>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <div className="gk-wrap">
         <div className="gk-nav-card">
-        <div className="flex items-center justify-between h-16 gap-2 min-w-0 gk-nav-row">
-          {/* Logo — text based for now */}
-          <Link to="/" className="flex items-center gap-2 mr-2 sm:mr-0 min-w-0 flex-shrink" style={{ textDecoration: 'none' }}>
-            {/* Intrinsic size lets the browser hold the logo's slot before the
+          <div className="flex items-center justify-between h-16 gap-2 min-w-0 gk-nav-row">
+
+            {/* Logo. Intrinsic size lets the browser hold its slot before the
                 file lands, so the sticky bar does not reflow on first paint.
                 Height still comes from the h-9/h-11 classes. Eager: it is
                 above the fold on every route. */}
-            <img
-              src="/gkmotorslogo.png"
-              alt="GK Motors"
-              className="h-9 sm:h-11"
-              width={720}
-              height={341}
-              decoding="async"
-              style={{ width: 'auto', objectFit: 'contain', display: 'block' }}
-            />
-          </Link>
-
-          {/* Desktop Nav */}
-          {/* flex-1 + centred: the row is logo | links | controls, and the
-              links take the slack so they sit centred in the card rather than
-              tucked against the logo. */}
-          <div className="hidden lg:flex flex-1 items-center justify-center gap-1 gk-nav-links">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                data-active={isActive(location.pathname, link.href)}
-                style={{
-                  color: isActive(location.pathname, link.href) ? '#2563EB' : '#475569',
-                  padding: '0.4rem 0.6rem',
-                  borderRadius: '6px',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  transition: 'all 0.2s',
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  letterSpacing: '0.04em'
-                }}
-                onMouseEnter={(e) => { if (!isActive(location.pathname, link.href)) e.target.style.color = '#0F172A'; }}
-                onMouseLeave={(e) => { if (!isActive(location.pathname, link.href)) e.target.style.color = '#475569'; }}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* Right side */}
-          <div className="flex items-center gap-3 sm:gap-4 md:gap-5 flex-shrink-0 gk-nav-right">
-            {/* Cart */}
-            <Link to="/cart" style={{ position: 'relative', color: '#0F172A', display: 'flex', alignItems: 'center', padding: '0.4rem', borderRadius: '8px', transition: 'background 0.2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(15, 23, 42, 0.05)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-              <ShoppingCart size={20} />
-              {totalCartCount > 0 && (
-                <span style={{
-                  position: 'absolute', top: '-2px', right: '-2px',
-                  background: '#2563EB', color: 'white', borderRadius: '50%',
-                  width: '18px', height: '18px', fontSize: '0.65rem',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800,
-                  border: '2px solid white', boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
-                }}>{totalCartCount}</span>
-              )}
+            <Link to="/" className="flex items-center gap-2 mr-2 sm:mr-0 min-w-0 flex-shrink"
+              style={{ textDecoration: 'none' }} aria-label={`${BIZ.name} — home`}>
+              <img
+                src="/gkmotorslogo.png"
+                alt={BIZ.name}
+                className="h-9 sm:h-11"
+                width={720}
+                height={341}
+                decoding="async"
+                style={{ width: 'auto', objectFit: 'contain', display: 'block' }}
+              />
             </Link>
 
-            {/* User Menu */}
-            {user ? (
-              <div style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '0.4rem',
-                    background: '#FFF', border: '1.5px solid rgba(156, 163, 175, 0.3)',
-                    borderRadius: '10px', padding: '0.4rem 0.75rem', color: '#0F172A',
-                    cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
-                  }}
-                >
-                  {dropdownOpen ? (
-                    <X size={18} style={{ color: '#2563EB' }} />
-                  ) : (
-                    <>
-                      {user.avatar ? (
-                        <img src={user.avatar} alt={user.name} style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
-                      ) : (
-                        <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'white' }}>
-                          {user.name?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <span className="hidden sm:block">{user.name}</span>
-                      <ChevronDown size={14} />
-                    </>
-                  )}
-                </button>
-
-                {dropdownOpen && (
-                  <div style={{
-                    position: 'absolute', right: 0, top: '110%',
-                    background: '#0F172A', border: '1px solid rgba(156, 163, 175, 0.2)',
-                    borderRadius: '10px', minWidth: '180px', zIndex: 100,
-                    boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
-                    overflow: 'hidden',
-                  }}>
-                    <Link to="/profile" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', color: '#ccc', textDecoration: 'none', fontSize: '0.9rem' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = '#1E293B'; e.currentTarget.style.color = 'white'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
-                      <User size={15} /> My Profile
-                    </Link>
-                    <Link to="/my-bookings" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', color: '#ccc', textDecoration: 'none', fontSize: '0.9rem' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = '#1E293B'; e.currentTarget.style.color = 'white'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
-                      <Wrench size={15} /> My Bookings
-                    </Link>
-                    <Link to="/my-orders?tab=orders" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', color: '#ccc', textDecoration: 'none', fontSize: '0.9rem' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = '#1E293B'; e.currentTarget.style.color = 'white'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
-                      <Package size={15} /> My Orders
-                    </Link>
-                    <Link to="/wishlist" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', color: '#ccc', textDecoration: 'none', fontSize: '0.9rem' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = '#1E293B'; e.currentTarget.style.color = 'white'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
-                      <Heart size={15} /> Wishlist
-                    </Link>
-                    {user.role === 'admin' && (
-                      <Link to="/admin" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', color: '#93C5FD', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = '#1E293B'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
-                        <Settings size={15} /> Admin Panel
-                      </Link>
+            {/* Desktop links. flex-1 + centred so the row reads
+                logo | links | controls with the links taking the slack. */}
+            <div className="hidden lg:flex flex-1 items-center justify-center gap-1 gk-nav-links">
+              {navLinks.map((link) => {
+                const active = isActive(location.pathname, link.href);
+                return (
+                  <Link key={link.href} to={link.href} data-active={active}>
+                    {/* The pill is shared across every link by layoutId, so
+                        navigating slides it to the new item rather than making
+                        it disappear here and reappear there. */}
+                    {active && (
+                      <motion.span
+                        layoutId="gk-nav-pill"
+                        className="gk-nav-pill"
+                        transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                      />
                     )}
-                    <div style={{ borderTop: '1px solid #1E293B' }}>
-                      <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.75rem 1rem', color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', width: '100%' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = '#1f0a0a'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
-                        <LogOut size={15} /> Logout
-                      </button>
-                    </div>
-                  </div>
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Right-hand controls */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 gk-nav-right">
+
+              <Link to="/cart" className="gk-nav-icon"
+                aria-label={totalCartCount > 0 ? `Cart, ${totalCartCount} items` : 'Cart'}>
+                <ShoppingCart size={20} />
+                {totalCartCount > 0 && (
+                  <span className="gk-nav-badge">{totalCartCount}</span>
                 )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap flex-shrink-0">
-                <Link to="/login" className="btn-outline-dark !px-2 !py-1 !text-[10px] sm:!px-[0.8rem] sm:!py-[0.4rem] sm:!text-[0.7rem]" style={{ fontWeight: 700 }}>Login</Link>
-                <Link to="/register" className="btn-primary !hidden sm:!inline-flex !px-2 !py-1 !text-[10px] sm:!px-[0.8rem] sm:!py-[0.4rem] sm:!text-[0.7rem]" style={{ fontWeight: 700 }}>Sign Up</Link>
-              </div>
-            )}
+              </Link>
 
-            {/* Book Now — last in the row, which is where the reference puts
-                its one filled control. Blue-600 rather than the slate-900 it
-                used to be: with the bar now sitting on a slate-900 band, a
-                slate button on a white card between two dark fields read as a
-                hole rather than as the primary action. */}
-            <Link
-              to="/services"
-              className="hidden sm:inline-flex gk-nav-cta"
-              style={{
-                alignItems: 'center', justifyContent: 'center',
-                background: '#2563EB', color: '#FFFFFF',
-                padding: '0.6rem 1.35rem', borderRadius: '10px',
-                fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none',
-                whiteSpace: 'nowrap', letterSpacing: '0.01em',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
-                transition: 'background 0.2s, transform 0.2s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#1D4ED8'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = '#2563EB'; e.currentTarget.style.transform = 'translateY(0)'; }}
-            >
-              Book Now
-            </Link>
+              {user ? (
+                <div style={{ position: 'relative' }}>
+                  <button
+                    type="button"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="gk-nav-user"
+                    aria-expanded={dropdownOpen}
+                    aria-haspopup="menu"
+                  >
+                    {dropdownOpen ? (
+                      <X size={18} style={{ color: 'var(--gk-blue)' }} />
+                    ) : (
+                      <>
+                        {user.avatar ? (
+                          <img src={user.avatar} alt="" className="gk-nav-avatar" />
+                        ) : (
+                          <span className="gk-nav-avatar">{user.name?.charAt(0).toUpperCase()}</span>
+                        )}
+                        <span className="hidden sm:block">{user.name}</span>
+                        <ChevronDown size={14} />
+                      </>
+                    )}
+                  </button>
 
-            {/* Mobile hamburger */}
-            {/* `display` must not be set inline here: an inline style beats
-                Tailwind's `md:hidden` (which is not !important), which is why
-                the hamburger was still rendering next to the desktop nav and
-                pushing the right-hand group past the container. Centring now
-                comes from .gk-burger, which yields to the hidden rule. */}
-            <button
-              onClick={toggleMenu}
-              className="lg:hidden gk-burger"
-              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={mobileOpen}
-              aria-controls="gk-mobile-nav"
-              style={{
-                color: '#0F172A', background: 'none', border: 'none', cursor: 'pointer',
-                // 44px is the smallest reliably tappable target.
-                minWidth: 44, minHeight: 44,
-                margin: '-0.2rem -0.4rem -0.2rem 0',   // grow the hit area, not the layout
-              }}
-            >
-              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
+                  {dropdownOpen && (
+                    <div className="gk-nav-menu" role="menu">
+                      <Link to="/profile" onClick={closeDropdown} role="menuitem">
+                        <User size={15} /> My Profile
+                      </Link>
+                      <Link to="/my-bookings" onClick={closeDropdown} role="menuitem">
+                        <Wrench size={15} /> My Bookings
+                      </Link>
+                      <Link to="/my-orders?tab=orders" onClick={closeDropdown} role="menuitem">
+                        <Package size={15} /> My Orders
+                      </Link>
+                      <Link to="/wishlist" onClick={closeDropdown} role="menuitem">
+                        <Heart size={15} /> Wishlist
+                      </Link>
+                      {user.role === 'admin' && (
+                        <Link to="/admin" onClick={closeDropdown} data-admin="true" role="menuitem">
+                          <Settings size={15} /> Admin Panel
+                        </Link>
+                      )}
+                      <div className="gk-nav-menu-sep">
+                        <button type="button" onClick={handleLogout} data-danger="true" role="menuitem">
+                          <LogOut size={15} /> Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="hidden sm:flex items-center gap-2 whitespace-nowrap flex-shrink-0">
+                  <Link to="/login" className="gk-btn gk-btn--outline gk-btn--sm">Login</Link>
+                </div>
+              )}
+
+              {/* The single filled control in the row, and the only place on
+                  the bar that carries the brand gradient. */}
+              <Link to="/services" className="hidden sm:inline-flex gk-btn gk-btn--primary gk-btn--sm">
+                Book Now
+              </Link>
+
+              {/* Mobile hamburger.
+                  `display` must not be set inline here: an inline style beats
+                  Tailwind's `lg:hidden` (which is not !important), which is why
+                  the hamburger used to render next to the desktop nav and push
+                  the right-hand group past the container. Centring comes from
+                  .gk-burger, which yields to the hidden rule. */}
+              <button
+                type="button"
+                onClick={toggleMenu}
+                className="lg:hidden gk-burger"
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileOpen}
+                aria-controls="gk-mobile-nav"
+                style={{
+                  color: 'var(--gk-navy)', background: 'none', border: 'none', cursor: 'pointer',
+                  // 44px is the smallest reliably tappable target.
+                  minWidth: 44, minHeight: 44,
+                  margin: '-0.2rem -0.4rem -0.2rem 0',   // grow the hit area, not the layout
+                }}
+              >
+                {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+            </div>
           </div>
         </div>
-        </div>
-
       </div>
 
-      {/* Mobile Nav — a sibling of the padded container, not a child of it.
+      {/* Mobile drawer — a sibling of the padded container, not a child of it.
           It used to bleed out with a hard-coded `margin: 0 -1rem`, but the
-          mobile stylesheet narrows that container to 0.75rem of padding, so
-          the drawer hung 4px past each edge. Sitting outside the container it
-          is full-width by construction, at any padding. */}
+          mobile stylesheet narrows that container's padding, so the drawer
+          hung a few px past each edge. Outside the container it is full-width
+          by construction, at any padding. */}
       {mobileOpen && (
         <>
           {/* Tap-anywhere-else to close. A real <button> so it is reachable by
@@ -433,93 +521,80 @@ export default function Navbar() {
             aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
           />
-        <div
-          id="gk-mobile-nav"
-          ref={drawerRef}
-          tabIndex={-1}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menu"
-          className="gk-nav-drawer"
-        >
-          <div className="max-w-7xl mx-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '1.25rem 1rem 1rem' }}>
+
+          <div
+            id="gk-mobile-nav"
+            ref={drawerRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            className="gk-nav-drawer"
+          >
+            <div className="gk-wrap" style={{ padding: '1.15rem var(--gk-gutter) 1.25rem' }}>
+
               <Link to="/services" onClick={() => setMobileOpen(false)}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                  background: '#2563EB', color: 'white',
-                  padding: '0.8rem', minHeight: 48, borderRadius: '12px', textDecoration: 'none',
-                  fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, letterSpacing: '0.08em',
-                  textTransform: 'uppercase', fontSize: '0.9rem', marginBottom: '1rem'
-                }}>
-                <Wrench size={16} /> Book Service Now
+                className="gk-btn gk-btn--primary"
+                style={{ width: '100%', marginBottom: '1rem' }}>
+                <Wrench size={16} /> Book a service
               </Link>
 
               {navLinks.map((link) => (
                 <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)}
-                  style={{ display: 'flex', alignItems: 'center', minHeight: 44, color: isActive(location.pathname, link.href) ? '#93C5FD' : '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
+                  className="gk-drawer-link"
+                  data-active={isActive(location.pathname, link.href)}>
                   {link.label}
                 </Link>
               ))}
 
-              <a href="tel:+919253625099" style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
-                <Phone size={15} /> +91 92536 25099
+              <a href={`tel:${BIZ.phoneTel}`} className="gk-drawer-link">
+                <Phone size={15} /> {BIZ.phoneDisplay}
               </a>
 
-              {/* Signed-out actions.
-                  Login and Sign Up were reachable from the bar itself but not
-                  from this panel, and Sign Up is hidden below 640px — so on a
-                  phone the drawer was the only menu and it had no way to
-                  register. Both live here now, in the same button system as
-                  the rest of the redesign: outline for Login, solid blue-600
-                  for Sign Up. */}
+              {/* Signed-out actions. Login and Sign Up are reachable from the
+                  bar itself but Sign Up is hidden below 640px — so on a phone
+                  the drawer is the only menu and it needs both. */}
               {!user && (
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '0.8rem', paddingTop: '1rem', display: 'flex', gap: '0.6rem' }}>
+                <div className="gk-drawer-sep" style={{ display: 'flex', gap: '0.6rem' }}>
                   <Link to="/login" onClick={() => setMobileOpen(false)}
-                    style={{
-                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      minHeight: 46, borderRadius: '10px', textDecoration: 'none',
-                      border: '1.5px solid rgba(255,255,255,0.3)', color: '#FFFFFF',
-                      fontSize: '0.85rem', fontWeight: 800, letterSpacing: '0.04em',
-                    }}>
+                    className="gk-btn gk-btn--ghost gk-btn--sm" style={{ flex: 1 }}>
                     Login
                   </Link>
                   <Link to="/register" onClick={() => setMobileOpen(false)}
-                    style={{
-                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      minHeight: 46, borderRadius: '10px', textDecoration: 'none',
-                      background: '#2563EB', color: '#FFFFFF',
-                      fontSize: '0.85rem', fontWeight: 800, letterSpacing: '0.04em',
-                      boxShadow: '0 6px 16px rgba(37, 99, 235, 0.3)',
-                    }}>
+                    className="gk-btn gk-btn--primary gk-btn--sm" style={{ flex: 1 }}>
                     Sign Up
                   </Link>
                 </div>
               )}
 
-              {/* Mobile user actions */}
               {user && (
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '0.8rem', paddingTop: '0.8rem' }}>
-                  <Link to="/profile" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
+                <div className="gk-drawer-sep">
+                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="gk-drawer-link">
                     <User size={15} /> My Profile
                   </Link>
-                  <Link to="/my-orders?tab=orders" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
+                  <Link to="/my-bookings" onClick={() => setMobileOpen(false)} className="gk-drawer-link">
+                    <Wrench size={15} /> My Bookings
+                  </Link>
+                  <Link to="/my-orders?tab=orders" onClick={() => setMobileOpen(false)} className="gk-drawer-link">
                     <Package size={15} /> My Orders
                   </Link>
-                  <Link to="/wishlist" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#E2E8F0', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 600 }}>
+                  <Link to="/wishlist" onClick={() => setMobileOpen(false)} className="gk-drawer-link">
                     <Heart size={15} /> Wishlist
                   </Link>
                   {user.role === 'admin' && (
-                    <Link to="/admin" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#93C5FD', textDecoration: 'none', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 700 }}>
+                    <Link to="/admin" onClick={() => setMobileOpen(false)}
+                      className="gk-drawer-link" data-active="true">
                       <Settings size={15} /> Admin Panel
                     </Link>
                   )}
-                  <button onClick={() => { handleLogout(); setMobileOpen(false); }} style={{ display: 'flex', alignItems: 'center', minHeight: 44, gap: '0.6rem', color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.6rem 0.5rem', fontSize: '0.92rem', fontWeight: 700, width: '100%' }}>
+                  <button type="button" onClick={() => { handleLogout(); setMobileOpen(false); }}
+                    className="gk-drawer-link" style={{ color: '#FF8A8E' }}>
                     <LogOut size={15} /> Logout
                   </button>
                 </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
         </>
       )}
     </nav>

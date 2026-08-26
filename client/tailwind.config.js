@@ -7,7 +7,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* ── Redesign palette ──────────────────────────────────────────────
+        /* ── 2026 palette — sampled from the logo ──────────────────────────
+           The badge ring's navy and the steering-wheel mark's cyan, plus the
+           blue where the two meet. These replace the generic blue-600 accent
+           below, which matched the default of every SaaS template on the
+           internet and nothing on the actual building.
+
+           src/theme.js and src/styles/gk-system.css carry the same values for
+           inline styles and stylesheet rules respectively; all three must move
+           together. The legacy names beneath are kept because the admin panel
+           and several inner pages still reference them. */
+        gk: {
+          ink:      '#04101F',
+          navy:     '#0A2246',
+          navysoft: '#12315F',
+          blue:     '#1567D3',
+          bluedeep: '#0F4FA8',
+          cyan:     '#00B2F0',
+          cyansoft: '#6FD8FF',
+          surface:  '#F6F9FD',
+          hairline: '#DCE7F3',
+          body:     '#4A5A70',
+          meta:     '#77879C',
+          gold:     '#FFB020',
+        },
+
+        /* ── Legacy palette ────────────────────────────────────────────────
            blue-600 is the single accent the design system leans on: buttons,
            links, the emphasised word in a section heading, the active nav
            state. The older #1E3A8A navy is kept as `navy` because the admin

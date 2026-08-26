@@ -1,0 +1,445 @@
+/* ╔═════════════════════════════════════════════════════════════════════════╗
+   ║  GK MOTORS DESIGN SYSTEM                                                ║
+   ║                                                                         ║
+   ║  Loaded from main.jsx immediately after index.css, so these rules win    ║
+   ║  ties against the older theme without needing !important. index.css is  ║
+   ║  left intact on purpose: the admin dashboard and a dozen inner pages    ║
+   ║  still key off its .btn-primary / .card-light / .badge-* utilities, and ║
+   ║  this rebuild's scope is the home page, nav and footer.                 ║
+   ║                                                                         ║
+   ║  The custom properties below mirror src/theme.js one-for-one. That      ║
+   ║  module is the source of truth for inline styles and computed values;   ║
+   ║  these are the source for stylesheet rules and <style> blocks. When one ║
+   ║  changes the other must, so they carry identical names.                 ║
+   ╚═════════════════════════════════════════════════════════════════════════╝ */
+
+:root {
+  /* Brand — sampled from the logo, not chosen to taste. Navy is the badge
+     ring and the wordmark; cyan is the steering-wheel mark. */
+  --gk-ink: #04101F;
+  --gk-navy: #0A2246;
+  --gk-navy-soft: #12315F;
+  --gk-blue: #1567D3;
+  --gk-blue-deep: #0F4FA8;
+  --gk-cyan: #00B2F0;
+  --gk-cyan-soft: #6FD8FF;
+
+  /* Neutrals */
+  --gk-surface: #F6F9FD;
+  --gk-surface-alt: #EDF3FA;
+  --gk-hairline: #DCE7F3;
+  --gk-body: #4A5A70;
+  --gk-meta: #77879C;
+  --gk-body-dark: #9FB3CC;
+  --gk-meta-dark: #6E85A3;
+
+  /* Status */
+  --gk-gold: #FFB020;
+  --gk-green: #15A66B;
+  --gk-red: #E5484D;
+
+  /* Gradients */
+  --gk-g-brand: linear-gradient(135deg, var(--gk-blue) 0%, var(--gk-cyan) 100%);
+  --gk-g-dark: linear-gradient(165deg, var(--gk-ink) 0%, var(--gk-navy) 55%, #0B2851 100%);
+
+  /* Shadows are brand-hued rather than neutral black, so a shadow under a
+     blue button reads as the button glowing instead of as dirt. */
+  --gk-sh-card: 0 2px 4px rgba(10, 34, 70, .04), 0 12px 32px rgba(10, 34, 70, .07);
+  --gk-sh-card-hover: 0 4px 8px rgba(10, 34, 70, .06), 0 24px 56px rgba(10, 34, 70, .14);
+  --gk-sh-brand: 0 8px 24px rgba(21, 103, 211, .34);
+
+  --gk-font-display: 'Space Grotesk', system-ui, sans-serif;
+  --gk-font-sans: 'Inter', system-ui, sans-serif;
+
+  /* The single horizontal rhythm every section shares. clamp() rather than a
+     breakpoint ladder: the gutter grows smoothly with the viewport instead of
+     jumping at four fixed widths. */
+  --gk-gutter: clamp(1rem, 4vw, 2rem);
+  --gk-max: 1280px;
+}
+
+/* Retint the page scrollbar to the new accent. */
+::-webkit-scrollbar-thumb { background: var(--gk-blue); }
+
+/* ── Layout shell ─────────────────────────────────────────────────────────
+   One container class instead of repeating the Tailwind
+   `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` incantation in fifty places. */
+.gk-wrap {
+  width: 100%;
+  max-width: var(--gk-max);
+  margin-inline: auto;
+  padding-inline: var(--gk-gutter);
+}
+
+/* Vertical rhythm. Sections come in three weights and nothing else, which is
+   what stops a long page from drifting into arbitrary padding values. */
+.gk-sec    { padding-block: clamp(3.5rem, 7vw, 6rem); }
+.gk-sec-sm { padding-block: clamp(2.5rem, 5vw, 4rem); }
+.gk-sec-lg { padding-block: clamp(4.5rem, 9vw, 7.5rem); }
+
+/* ── Type scale ───────────────────────────────────────────────────────────
+   Fluid from phone to desktop. The clamp middle terms are in vw so headings
+   shrink continuously with the viewport rather than at breakpoints — that is
+   what keeps a three-word headline from wrapping to three lines at 380px. */
+.gk-eyebrow {
+  font-family: var(--gk-font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gk-blue);
+  margin: 0 0 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+/* The short rule that precedes an eyebrow, drawn as a pseudo-element so the
+   markup stays a single element. */
+.gk-eyebrow::before {
+  content: '';
+  width: 26px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gk-g-brand);
+  flex-shrink: 0;
+}
+.gk-eyebrow--center { justify-content: center; }
+.gk-eyebrow--dark { color: var(--gk-cyan-soft); }
+
+.gk-h1 {
+  font-family: var(--gk-font-display);
+  font-size: clamp(2.3rem, 6vw, 4.3rem);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+.gk-h2 {
+  font-family: var(--gk-font-display);
+  font-size: clamp(1.8rem, 4.2vw, 2.95rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--gk-navy);
+  margin: 0;
+}
+.gk-h3 {
+  font-family: var(--gk-font-display);
+  font-size: clamp(1.02rem, 1.6vw, 1.2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--gk-navy);
+  margin: 0;
+}
+.gk-lede {
+  font-size: clamp(0.94rem, 1.25vw, 1.06rem);
+  line-height: 1.68;
+  color: var(--gk-body);
+  margin: 0;
+}
+.gk-lede--dark { color: var(--gk-body-dark); }
+
+/* The emphasised word in a heading. background-clip:text needs the
+   transparent fill AND the -webkit- prefixed pair to render everywhere that
+   supports it; the plain `color` above them is the fallback for engines that
+   do not, which is why it is a real blue rather than transparent. */
+.gk-grad {
+  color: var(--gk-cyan);
+  background: linear-gradient(100deg, var(--gk-blue) 0%, var(--gk-cyan) 58%, var(--gk-cyan-soft) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+/* On dark grounds the gradient has to start brighter or its left end vanishes
+   into the background. */
+.gk-grad--dark {
+  background: linear-gradient(100deg, var(--gk-cyan) 0%, var(--gk-cyan-soft) 55%, #FFFFFF 100%);
+}
+
+.gk-head {
+  text-align: center;
+  max-width: 640px;
+  margin-inline: auto;
+  margin-bottom: clamp(2.2rem, 4vw, 3.2rem);
+}
+.gk-head .gk-lede { margin-top: 0.9rem; }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────
+   Three variants and no more. The gradient one is the single primary action
+   per screen; everything else is ghost or outline.
+
+   The sheen is a pseudo-element swept across on hover, not an animated
+   background-position: a gradient's position cannot be composited and would
+   repaint the whole button every frame. */
+.gk-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.9rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--gk-font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1),
+              box-shadow .28s cubic-bezier(.22, 1, .36, 1),
+              background-color .2s, border-color .2s, color .2s;
+}
+.gk-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .32) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform .7s cubic-bezier(.22, 1, .36, 1);
+}
+.gk-btn:hover::after { transform: translateX(120%); }
+
+.gk-btn--primary {
+  background: var(--gk-g-brand);
+  color: #FFFFFF;
+  box-shadow: var(--gk-sh-brand);
+}
+.gk-btn--primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 38px rgba(21, 103, 211, .46);
+}
+
+.gk-btn--ghost {
+  background: rgba(255, 255, 255, .06);
+  color: #FFFFFF;
+  border: 1.5px solid rgba(255, 255, 255, .22);
+}
+.gk-btn--ghost:hover {
+  transform: translateY(-3px);
+  border-color: var(--gk-cyan-soft);
+  background: rgba(0, 178, 240, .12);
+}
+
+.gk-btn--outline {
+  background: #FFFFFF;
+  color: var(--gk-navy);
+  border: 1.5px solid var(--gk-hairline);
+  box-shadow: var(--gk-sh-card);
+}
+.gk-btn--outline:hover {
+  transform: translateY(-3px);
+  border-color: var(--gk-blue);
+  color: var(--gk-blue);
+  box-shadow: var(--gk-sh-card-hover);
+}
+
+.gk-btn--sm { padding: 0.68rem 1.35rem; font-size: 0.8rem; border-radius: 10px; }
+.gk-btn--lg { padding: 1.1rem 2.4rem; font-size: 0.95rem; border-radius: 14px; }
+
+/* Touch has no hover: a lift triggered by a tap can stay stuck until the next
+   tap lands elsewhere, so the transform goes and only the colour remains. */
+@media (hover: none) {
+  .gk-btn:hover { transform: none; }
+  .gk-btn::after { display: none; }
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────────
+   The complaint that started this rebuild was that the cards had no shape.
+   They now have one: a real radius, a hairline that turns brand-blue on
+   hover, a two-layer shadow instead of a single flat one, and — the part that
+   actually reads as designed — a gradient top edge that draws itself in. */
+.gk-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border: 1px solid var(--gk-hairline);
+  border-radius: 18px;
+  box-shadow: var(--gk-sh-card);
+  transition: border-color .35s, box-shadow .35s, transform .35s cubic-bezier(.22, 1, .36, 1);
+  overflow: hidden;
+  height: 100%;
+}
+.gk-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gk-g-brand);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .45s cubic-bezier(.22, 1, .36, 1);
+}
+.gk-card:hover::before { transform: scaleX(1); }
+.gk-card:hover {
+  border-color: rgba(21, 103, 211, .3);
+  box-shadow: var(--gk-sh-card-hover);
+}
+
+/* Icon chip — the tinted square at the top of most cards. A solid brand
+   gradient is too loud at this size repeated a dozen times, so the resting
+   state is a wash and hover promotes it to the full gradient. */
+.gk-chip {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--gk-blue);
+  background: linear-gradient(140deg, rgba(21, 103, 211, .10), rgba(0, 178, 240, .14));
+  border: 1px solid rgba(21, 103, 211, .12);
+  transition: color .35s, background .35s, box-shadow .35s,
+              transform .35s cubic-bezier(.22, 1, .36, 1);
+}
+.gk-card:hover .gk-chip,
+.gk-chip--on {
+  color: #FFFFFF;
+  background: var(--gk-g-brand);
+  border-color: transparent;
+  transform: rotate(-6deg) scale(1.06);
+  box-shadow: var(--gk-sh-brand);
+}
+.gk-chip--sm { width: 42px; height: 42px; border-radius: 12px; }
+
+/* Dark-surface card, for panels sitting on the navy sections. */
+.gk-card--dark {
+  background: rgba(255, 255, 255, .035);
+  border-color: rgba(255, 255, 255, .10);
+  box-shadow: none;
+}
+.gk-card--dark:hover {
+  border-color: rgba(0, 178, 240, .38);
+  background: rgba(255, 255, 255, .06);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, .34);
+}
+.gk-card--dark .gk-chip {
+  color: var(--gk-cyan-soft);
+  background: rgba(0, 178, 240, .12);
+  border-color: rgba(0, 178, 240, .2);
+}
+
+/* ── Dark section furniture ───────────────────────────────────────────────
+   The ambient pieces that make a navy section feel like a space rather than a
+   rectangle: two drifting colour blooms and a masked technical grid. Both are
+   decorative, both are pointer-events:none, so neither can swallow a click
+   meant for the content above it. */
+.gk-dark {
+  position: relative;
+  background: var(--gk-g-dark);
+  overflow: hidden;
+  isolation: isolate;
+}
+/* Only the content container is lifted above the ambient layer — deliberately
+   NOT `.gk-dark > *`, which would also match .gk-bloom and .gk-mesh and
+   override their own `position: absolute` at equal specificity, leaving the
+   whole ambient layer in flow at the top of the section. */
+.gk-dark > .gk-wrap { position: relative; z-index: 1; }
+
+.gk-bloom {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  /* Sized against the container, never in fixed px: a 720px circle at a
+     negative offset pushes a 360px phone's document wider than its viewport
+     and produces a horizontal scrollbar that nothing appears to cause. */
+  width: min(720px, 90%);
+  aspect-ratio: 1;
+  will-change: transform;
+}
+.gk-bloom--a {
+  top: -22%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(0, 178, 240, .22) 0%, transparent 65%);
+  animation: gk-drift 20s ease-in-out infinite;
+}
+.gk-bloom--b {
+  bottom: -28%;
+  left: -12%;
+  width: min(560px, 80%);
+  background: radial-gradient(circle, rgba(21, 103, 211, .26) 0%, transparent 68%);
+  animation: gk-drift 26s ease-in-out infinite reverse;
+}
+@keyframes gk-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+  50%      { transform: translate3d(-28px, 24px, 0) scale(1.04); opacity: .74; }
+}
+
+.gk-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .5;
+  background-image:
+    linear-gradient(rgba(111, 216, 255, .055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 216, 255, .055) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 78% 68% at 50% 40%, #000 30%, transparent 100%);
+          mask-image: radial-gradient(ellipse 78% 68% at 50% 40%, #000 30%, transparent 100%);
+}
+
+/* ── Small shared pieces ──────────────────────────────────────────────── */
+
+/* Pill: badges, the hero's location tag, discount flags. */
+.gk-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.9rem;
+  border-radius: 999px;
+  font-family: var(--gk-font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.gk-pill--dark {
+  background: rgba(0, 178, 240, .12);
+  border: 1px solid rgba(0, 178, 240, .26);
+  color: var(--gk-cyan-soft);
+}
+.gk-pill--light {
+  background: rgba(21, 103, 211, .07);
+  border: 1px solid rgba(21, 103, 211, .16);
+  color: var(--gk-blue);
+}
+
+/* The live "we're open" dot: a solid core plus a ring that expands and fades.
+   Both scale-only, so the pulse costs nothing per frame. */
+.gk-dot { position: relative; width: 8px; height: 8px; flex-shrink: 0; }
+.gk-dot::before,
+.gk-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--gk-green);
+}
+.gk-dot::after { animation: gk-ping 2s cubic-bezier(0, 0, .2, 1) infinite; }
+@keyframes gk-ping {
+  0%        { transform: scale(1);   opacity: .7; }
+  75%, 100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* Every ambient animation in this system stops together. The JS primitives in
+   components/common/Motion.jsx check the same media query, so a visitor who
+   has asked their OS to stop animation gets a completely still page — not a
+   half-still one. */
+@media (prefers-reduced-motion: reduce) {
+  .gk-bloom { animation: none; }
+  .gk-dot::after { animation: none; }
+  .gk-btn::after { display: none; }
+  .gk-card, .gk-chip, .gk-btn { transition-duration: .01ms; }
+}

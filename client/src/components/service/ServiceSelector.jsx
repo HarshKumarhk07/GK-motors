@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Info, AlertCircle } from 'lucide-react';
 import { useServiceCart } from '../../context/CartContext';
 import ServicePackageCard from './ServicePackageCard';
+import { BIZ } from '../../theme';
 
 const TIER_LABEL = {
   basic: 'Basic',
@@ -214,7 +215,7 @@ export default function ServiceSelector({ category, packages = [], selectedCar }
         </p>
         <p style={{ color: '#64748B', fontSize: '0.85rem', fontWeight: 500 }}>
           We're adding packages here soon. Try another category, or call us on
-          {' '}<a href="tel:+919253625099" style={{ color: '#2563EB', fontWeight: 700 }}>+91 92536 25099</a>.
+          {' '}<a href={`tel:${BIZ.phoneTel}`} style={{ color: 'var(--gk-blue)', fontWeight: 700 }}>{BIZ.phoneDisplay}</a>.
         </p>
       </div>
     );

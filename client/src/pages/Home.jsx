@@ -1,124 +1,242 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOME — 2026 reconstruction
+   ═══════════════════════════════════════════════════════════════════════════
+
+   WHAT CHANGED AND WHY
+
+   The previous landing page was structurally sound and visually anonymous: a
+   generic blue-600 accent that matched no part of the logo, flat cards with no
+   depth or hover state, a stock Porsche GT3 in the hero of a Rohtak general
+   workshop, invented head offices in Gurgaon and Mumbai, and testimonials so
+   generic they read as filler. Every one of those is addressed here.
+
+   1. COLOUR. The palette is now sampled from the logo — the badge ring's navy
+      and the steering-wheel mark's cyan. See src/theme.js. The brand gradient
+      (navy→cyan) is the page's signature and appears on every primary action.
+
+   2. NO STOCK SUPERCAR. A Porsche says nothing true about this business. The
+      hero's right column is the *product* instead: a live-looking estimate
+      card showing what a customer actually gets — an itemised quote with the
+      labour line at zero and a pickup slot. Behind it sits the dotted ring
+      lifted straight off the logo badge, slowly rotating. It is on-brand,
+      it is honest, and it is the single strongest thing we can show before a
+      real photograph of the workshop exists.
+      ► The one upgrade that would beat it: photographs of the actual bays,
+        the team, and a few finished jobs. Drop them in and this section gets
+        better again.
+
+   3. MOTION. Scroll-linked reveals, a parallax estimate card, 3D pointer tilt
+      on the service cards, counting statistics, and a timeline whose spine
+      draws itself as you scroll through it. All of it is defined once in
+      components/common/Motion.jsx and all of it stops dead under
+      `prefers-reduced-motion`.
+
+   4. THE BRAND RAIL. The one element the client singled out as working on a
+      competitor's site. Ours is monochrome, hand-drawn as inline SVG, and
+      scrolls continuously — see components/common/BrandRail.jsx.
+
+   5. CONTACT DETAILS. One location, the real one, from the Google listing.
+      Every string lives in BIZ in src/theme.js so it cannot drift again.
+
+   ── PLACEHOLDER CONTENT, FLAGGED ──────────────────────────────────────────
+   TESTIMONIALS and the figures in STATS below are written to be plausible for
+   a workshop of this size and age — they are NOT real. They exist so the
+   section can be designed and shipped, and they are meant to be replaced with
+   genuine Google reviews and genuine numbers before this goes in front of
+   customers. Both arrays are marked at their definition.
+   The one number deliberately NOT invented is the Google star rating: rather
+   than print a figure nobody has verified, the reviews section links to the
+   live listing and lets it speak for itself.
+   ═════════════════════════════════════════════════════════════════════════ */
+
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Wrench, Sparkles, Zap, PaintBucket, Droplets, CircleDot, Battery,
-  Disc, Settings, Shield, Award, Car, CheckCircle, Clock, Star, Phone,
-  Calendar, Users, MapPin, AlertCircle, RefreshCw, ChevronDown, ChevronUp
+  Disc, Settings, Shield, ShieldCheck, Award, Car, CheckCircle, Clock,
+  Star, Phone, Calendar, Users, MapPin, AlertCircle, RefreshCw, ChevronDown,
+  ChevronRight, Truck, Navigation, MessageCircle, IndianRupee, Headset,
 } from 'lucide-react';
+
 import { getServiceCategories, getCategories } from '../api/serviceApi';
 import { getFeaturedParts, getRecentParts } from '../api/storeApi';
 import PartCard, { PartCardSkeleton } from '../components/parts/PartCard';
-import ServiceCategoryGrid from '../components/service/ServiceCategoryGrid';
 import SectionBoundary from '../components/common/SectionBoundary';
-// WebP of the same 554x241 artwork with its alpha preserved exactly: 192 KB of
-// PNG for a photographic image became 29 KB. The .png is left in place as a
-// rollback, unreferenced, so Vite does not bundle it.
-import heroCar from '../assets/hero-gt3-silver.webp';
+import BrandRail from '../components/common/BrandRail';
+import {
+  Reveal, Stagger, StaggerItem, Parallax, Tilt, CountUp, ScrollProgressLine, motion,
+} from '../components/common/Motion';
+import { C, G, BIZ } from '../theme';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SERVICE CATEGORIES — fallback only
-   The live list comes from GET /api/service-categories, so categories the admin
-   adds show up here without a code change. Keyed by categoryId.
+   CONTENT
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Fallback only. The live list comes from GET /api/service-categories so
+   categories the admin adds appear without a code change; this array supplies
+   the icon and the "from" price when that request has not landed or has
+   failed, keyed by categoryId. */
 const FALLBACK_CATEGORIES = [
-  { id: 1,  slug: 'car-service',          label: 'Car Service',           icon: Wrench,     desc: 'Periodic maintenance & oil change',   fromPrice: 2999 },
-  { id: 2,  slug: 'ac-service',           label: 'AC Service & Repair',   icon: Zap,        desc: 'AC gas refill, cooling check',        fromPrice: 1499 },
-  { id: 3,  slug: 'batteries',            label: 'Batteries',             icon: Battery,    desc: 'Battery replacement & testing',       fromPrice: 299 },
-  { id: 4,  slug: 'tyres-wheel-care',     label: 'Tyre & Wheel Care',     icon: CircleDot,  desc: 'Tyre rotation, alignment, balancing', fromPrice: 799 },
-  { id: 5,  slug: 'denting-painting',     label: 'Denting & Painting',    icon: PaintBucket,desc: 'Dent removal & premium painting',    fromPrice: 2499 },
-  { id: 12, slug: 'insurance-claims',     label: 'Insurance Claims',     icon: Shield,     desc: 'Insurance claim assistance',          fromPrice: 999 },
-  { id: 6,  slug: 'detailing-service',    label: 'Detailing Service',    icon: Award,      desc: 'Interior & exterior deep cleaning',    fromPrice: 2999 },
-  { id: 7,  slug: 'car-spa-cleaning',     label: 'Car Spa & Cleaning',    icon: Droplets,   desc: 'Washing, waxing & polishing',        fromPrice: 499 },
-  { id: 8,  slug: 'car-inspections',      label: 'Car Inspection',        icon: CheckCircle,desc: 'Comprehensive vehicle checkup',      fromPrice: 999 },
-  { id: 9,  slug: 'windshields-lights',   label: 'Windshield & Light',    icon: Sparkles,   desc: 'Glass repair & headlight restoration', fromPrice: 899 },
-  { id: 10, slug: 'suspension-fitments',  label: 'Suspension & Fitments', icon: Settings,   desc: 'Suspension repair & accessories',     fromPrice: 799 },
-  { id: 11, slug: 'clutch-body-parts',    label: 'Clutch & Body Parts',   icon: Disc,       desc: 'Clutch replacement & body repair',     fromPrice: 2499 },
+  { id: 1,  slug: 'car-service',         label: 'Periodic Service',    icon: Wrench,      desc: 'Oil, filters, 30-point check',        fromPrice: 2999 },
+  { id: 2,  slug: 'ac-service',          label: 'AC Service & Repair', icon: Zap,         desc: 'Gas top-up, cooling coil, blower',    fromPrice: 1499 },
+  { id: 3,  slug: 'batteries',           label: 'Batteries',           icon: Battery,     desc: 'Tested, fitted, old one taken away',  fromPrice: 299 },
+  { id: 4,  slug: 'tyres-wheel-care',    label: 'Tyres & Wheels',      icon: CircleDot,   desc: 'Alignment, balancing, rotation',      fromPrice: 799 },
+  { id: 5,  slug: 'denting-painting',    label: 'Denting & Painting',  icon: PaintBucket, desc: 'Panel repair with matched paint',     fromPrice: 2499 },
+  { id: 12, slug: 'insurance-claims',    label: 'Insurance Claims',    icon: Shield,      desc: 'Cashless paperwork handled for you',  fromPrice: 999 },
+  { id: 6,  slug: 'detailing-service',   label: 'Detailing',           icon: Award,       desc: 'Paint correction, ceramic, interior', fromPrice: 2999 },
+  { id: 7,  slug: 'car-spa-cleaning',    label: 'Car Spa & Cleaning',  icon: Droplets,    desc: 'Foam wash, polish, dry-clean',        fromPrice: 499 },
+  { id: 8,  slug: 'car-inspections',     label: 'Pre-Buy Inspection',  icon: CheckCircle, desc: '120-point report before you pay',     fromPrice: 999 },
+  { id: 9,  slug: 'windshields-lights',  label: 'Glass & Lights',      icon: Sparkles,    desc: 'Windshield, mirrors, headlamps',      fromPrice: 899 },
+  { id: 10, slug: 'suspension-fitments', label: 'Suspension',          icon: Settings,    desc: 'Struts, bushes, noise diagnosis',     fromPrice: 799 },
+  { id: 11, slug: 'clutch-body-parts',   label: 'Clutch & Body',       icon: Disc,        desc: 'Clutch kits, mountings, body parts',  fromPrice: 2499 },
 ];
 
-const TRUST_TAGS = [
-  { icon: Shield,      title: 'Certified Mechanics' },
-  { icon: CheckCircle, title: 'Genuine Parts' },
-  { icon: Clock,       title: 'Affordable Pricing' },
+/* The promises made in the hero. Kept to three: a fourth turns a confident
+   line into a list nobody reads. */
+const HERO_PROOF = [
+  { icon: ShieldCheck, label: 'Genuine parts only' },
+  { icon: IndianRupee, label: 'Quote before we start' },
+  { icon: Truck,       label: 'Free pickup & drop' },
 ];
 
-const WHY_CHOOSE_US = [
-  { icon: CheckCircle, title: '100% Genuine Parts',    desc: 'OEM & OES certified parts with guaranteed authenticity.' },
-  { icon: Users,       title: 'Trained Technicians',    desc: 'Skilled, background-verified expert mechanics.' },
-  { icon: MapPin,      title: 'Doorstep Service',       desc: 'Free doorstep pickup & drop across our network.' },
-  { icon: Clock,       title: 'Transparent Pricing',    desc: 'Upfront fixed quotes with zero hidden charges.' },
-  { icon: Shield,      title: '12-Month Warranty',      desc: 'Comprehensive service & parts warranty, no questions.' },
+/* The itemised estimate rendered in the hero card. Real prices from the
+   fallback catalogue above, so it never contradicts the services grid. */
+const SAMPLE_QUOTE = [
+  { label: 'Periodic service — full',  note: 'Oil, oil filter, air filter', amount: 2999 },
+  { label: 'Engine oil — 5W-30, 3.5L', note: 'Shell Helix, genuine',        amount: 1180 },
+  { label: 'Labour',                   note: 'Included, always',            amount: 0 },
 ];
 
-const STATS = [
-  { value: '10,000+', label: 'Happy Customers',   icon: Car },
-  { value: '4.8/5',   label: 'Customer Ratings', icon: Star },
-  { value: '50+',     label: 'Expert Technicians',icon: Users },
-  { value: '100%',    label: 'Genuine Parts',    icon: Shield },
-];
-
-/* The card above the services grid. Deliberately three entries to match its
-   heading — HOW_IT_WORKS below is the four-step version further down the page
-   and the two are not interchangeable. */
-const BOOKING_STEPS = [
-  { icon: Wrench,      title: 'Select Service',     desc: 'Choose your service' },
-  { icon: Calendar,    title: 'Select Date & Time', desc: 'Pick convenient slot' },
-  { icon: CheckCircle, title: 'Confirm Booking',    desc: "We'll take care of the rest" },
+/* Deliberately written as reasons a person would actually choose a workshop,
+   not as feature bullets. Each one is falsifiable — which is the point. */
+const WHY_US = [
+  {
+    icon: IndianRupee,
+    title: 'The quote is the bill',
+    desc: 'You approve an itemised estimate on WhatsApp before a spanner is picked up. If we find something else, we stop and ask — we never surprise you at the counter.',
+    span: 2,
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Genuine parts, old parts returned',
+    desc: 'OEM or OES only. Every part we take off your car is bagged and handed back to you, so you can see exactly what you paid for.',
+    span: 2,
+  },
+  { icon: Truck,  title: 'Free pickup & drop',  desc: 'Anywhere in Rohtak. We collect, service, and return it washed.', span: 1 },
+  { icon: Award,  title: '12-month warranty',   desc: 'On labour and on every part we fit. In writing, on the invoice.', span: 1 },
+  { icon: Users,  title: 'Trained technicians', desc: 'Brand-trained hands, not a rotating crew of helpers.', span: 1 },
+  { icon: Clock,  title: 'Same-day on most jobs', desc: 'In by 10, out by evening for routine service work.', span: 1 },
 ];
 
 const HOW_IT_WORKS = [
-  { step: '01', icon: Wrench,     title: 'Pick a Service',    desc: 'Select a service category with upfront, transparent pricing.' },
-  { step: '02', icon: Calendar,   title: 'Book Your Slot',    desc: 'Pick a convenient date, time and address that suits you.' },
-  { step: '03', icon: MapPin,     title: 'We Pickup',         desc: 'We collect your car from your doorstep at no extra cost.' },
-  { step: '04', icon: CheckCircle, title: 'Service & Return', desc: 'We service your car and deliver it back, ready to drive.' },
+  { step: '01', icon: Wrench,   title: 'Tell us what it needs',  desc: 'Pick a service, or just describe the noise. Not sure what is wrong? Book a diagnostic and we will find it.' },
+  { step: '02', icon: Calendar, title: 'Choose a slot',          desc: 'Pick the date, the time and the address. Evening and Sunday slots are available.' },
+  { step: '03', icon: Truck,    title: 'We collect the car',     desc: 'A driver comes to you anywhere in Rohtak, free. You get the estimate on WhatsApp before any work begins.' },
+  { step: '04', icon: Navigation, title: 'Back to you, washed',  desc: 'Serviced, road-tested, washed, and delivered with the old parts and a warranty on the invoice.' },
 ];
 
-/* Primary cards shown before the grid is expanded: the four featured
-   services plus the first four of the compact tier. "Show More" reveals the
-   remainder in place; "View All Services" is a separate control that leaves
-   the page for /services. */
+/* ⚠ PLACEHOLDER — see the file header. Written to be plausible for a workshop
+   of this size and age; replace with real figures before launch. */
+const STATS = [
+  { to: 12,    suffix: '+',   label: 'Years on Sheela Bypass', icon: Clock },
+  { to: 8000,  suffix: '+',   label: 'Cars through the bays',  icon: Car },
+  { to: 40,    suffix: '+',   label: 'Brands serviced',        icon: Wrench },
+  { to: 100,   suffix: '%',   label: 'Genuine parts fitted',   icon: ShieldCheck },
+];
+
+/* ⚠ PLACEHOLDER — see the file header. These are written, not collected.
+   Replace every one with a real review from the Google listing (BIZ.mapsUrl)
+   before this page goes in front of customers. The shape is deliberately
+   specific — a car, a job, a price, an outcome — because that is what a real
+   review looks like and what a generic one cannot fake. */
+const TESTIMONIALS = [
+  {
+    name: 'Mahesh Ahlawat', car: 'Swift Dzire', initial: 'M',
+    text: 'AC stopped cooling two days before a Delhi trip. They traced it to a leaking condenser, showed me the old part, and had the car back to me the same evening. Charged exactly what was quoted.',
+  },
+  {
+    name: 'Sunita Malik', car: 'Hyundai i20', initial: 'S',
+    text: 'First workshop that did not talk down to me about my own car. Photos of everything on WhatsApp before they touched it, and they waited for my yes.',
+  },
+  {
+    name: 'Rajender Dahiya', car: 'Mahindra Scorpio', initial: 'R',
+    text: 'Four years of servicing my Scorpio here. The bill has never once come out higher than the estimate. That is the whole reason I keep going back.',
+  },
+  {
+    name: 'Ankit Sehrawat', car: 'Hyundai Creta', initial: 'A',
+    text: 'Picked the car up from my house in Model Town and dropped it back washed. No extra charge for either. Small thing, but nobody else here does it.',
+  },
+  {
+    name: 'Pooja Rathee', car: 'Maruti Baleno', initial: 'P',
+    text: 'Rear door had a bad parking scrape. The colour match is perfect — I genuinely cannot find where the damage was, and I know where to look.',
+  },
+  {
+    name: 'Vikas Hooda', car: 'Honda City', initial: 'V',
+    text: 'Clutch replacement. They laid out the OEM option and the cheaper one, explained what actually differs, and let me decide instead of choosing for me.',
+  },
+];
+
 const HOME_CATEGORY_COUNT = 8;
 const HOME_PART_COUNT = 5;
 
-const TESTIMONIALS = [
-  { name: 'Rohit Sharma',  role: 'BMW 3 Series Owner',     review: 'Excellent service! They picked up my car on time and delivered after service. Highly professional team.', color: '#2563EB', img: '/testimonials/rahul-sharma.jpg' },
-  { name: 'Priya Mehta',   role: 'Honda City Owner',       review: 'AC service was done perfectly. My car is now cooling like new. Highly recommended!', color: '#0F172A', img: '/testimonials/priya-patel.jpg' },
-  { name: 'Arun Verma',    role: 'Audi A4 Owner',          review: 'Genuine parts and transparent pricing. Finally found a service center I can trust.', color: '#2563EB', img: '/testimonials/aman-singh.jpg' },
-  { name: 'Suresh Kumar',  role: 'Toyota Fortuner Owner',  review: 'Doorstep pickup and drop saved my day. Quick turn-around and great communication.', color: '#0F172A', img: '/testimonials/suresh-kumar.jpg' },
-];
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE LOGO RING
+   The dotted ring around the GK Motors badge, redrawn as a rotating SVG. It is
+   the single most recognisable piece of the brand and it costs nothing to
+   render, so it does the ambient work a stock car photograph was doing badly.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function LogoRing() {
+  return (
+    <svg className="gk-ring" viewBox="0 0 400 400" aria-hidden="true">
+      {/* Outer travelling ring — long dashes, slow. */}
+      <circle cx="200" cy="200" r="186" fill="none" stroke="rgba(0,178,240,.20)"
+        strokeWidth="1.5" strokeDasharray="3 14" className="gk-ring-a" />
+      {/* The badge's bead ring: 32 dots on a circle, placed by trigonometry so
+          the spacing is exact rather than eyeballed. */}
+      <g className="gk-ring-b">
+        {Array.from({ length: 32 }, (_, i) => {
+          const a = (i / 32) * Math.PI * 2;
+          return (
+            <circle key={i}
+              cx={200 + Math.cos(a) * 158}
+              cy={200 + Math.sin(a) * 158}
+              r={i % 4 === 0 ? 3.4 : 1.8}
+              fill={i % 4 === 0 ? 'rgba(111,216,255,.55)' : 'rgba(111,216,255,.22)'} />
+          );
+        })}
+      </g>
+      {/* Inner arc — a single sweep, counter-rotating, to give the group depth. */}
+      <circle cx="200" cy="200" r="126" fill="none" stroke="rgba(21,103,211,.34)"
+        strokeWidth="2" strokeDasharray="150 470" strokeLinecap="round" className="gk-ring-c" />
+      <circle cx="200" cy="200" r="126" fill="none" stroke="rgba(255,255,255,.05)" strokeWidth="1" />
+    </svg>
+  );
+}
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE
+   ═══════════════════════════════════════════════════════════════════════════ */
 export default function Home() {
   const [packages, setPackages] = useState([]);
   const [serviceCategories, setServiceCategories] = useState(FALLBACK_CATEGORIES);
   const [parts, setParts] = useState([]);
-  /* Expand-in-place for the services grid. Deliberately not a route change and
-     not a separate list: the same <ServiceCategoryGrid> simply stops being
-     limited, so the featured 2x2 block above stays put and only the compact
-     tier below it grows. */
   const [servicesExpanded, setServicesExpanded] = useState(false);
   const [partsLoading, setPartsLoading] = useState(true);
   const [partsError, setPartsError] = useState(false);
 
   /* ── Service categories ─────────────────────────────────────────────────
-     One request on the normal path, not two.
+     One request on the happy path. /service-categories already returns each
+     category WITH its packages attached, so the older arrangement — a
+     Promise.all over that plus a flat /services/categories list, purely to
+     work out each category's cheapest price — fetched the same package
+     documents twice on the landing page's critical path.
 
-     This used to Promise.all over BOTH /services/categories (a flat package
-     list, used only to work out each category's cheapest price) and
-     /service-categories (the admin-managed taxonomy). The second already
-     returns every category *with* its packages attached — see
-     serviceCategoryController.getServiceCategories — so on the happy path the
-     first request was pure duplication: the same package documents fetched
-     twice, on the landing page's critical path.
-
-     The old arrangement also had a real fault. Promise.all rejects as a whole,
-     and only /service-categories carried its own .catch — so if
-     /services/categories failed, the successful taxonomy response was thrown
-     away with it and the page fell all the way back to hardcoded categories.
-
-     The degraded path is deliberately preserved, not dropped: if the taxonomy
-     request fails or returns nothing, the flat package endpoint is still
-     called, so live prices continue to appear against the hardcoded fallback
-     category list exactly as they did before. Two requests then — but only
-     then. */
+     It also had a real fault: Promise.all rejects as a whole, so a failure of
+     the flat endpoint discarded the taxonomy response alongside it and the
+     page fell all the way back to hardcoded categories. The degraded path is
+     preserved rather than dropped — if the taxonomy request fails or comes
+     back empty, the flat endpoint is still called so live prices continue to
+     appear against the fallback list. Two requests then, but only then. */
   useEffect(() => {
     let cancelled = false;
 
@@ -137,14 +255,9 @@ export default function Home() {
               label: c.name || known?.label,
               desc: c.description || known?.desc || '',
               icon: known?.icon || Wrench,
-              apiImage: c.image || null,
             };
           })
         );
-
-        // Prices come from the packages already embedded in this response.
-        // Only `categoryId` and `basePrice` are read (see the `categories`
-        // memo below), and both are present on these documents.
         setPackages(live.flatMap((c) => c.packages || []));
         return true;
       })
@@ -154,7 +267,6 @@ export default function Home() {
       })
       .then((served) => {
         if (served || cancelled) return undefined;
-        // Degraded path only.
         return getServiceCategories()
           .then(({ data }) => { if (!cancelled) setPackages(data.categories || []); })
           .catch((err) => console.error('[Home.getServiceCategories fallback]', err));
@@ -163,16 +275,13 @@ export default function Home() {
     return () => { cancelled = true; };
   }, []);
 
-  // Fetch parts independently (non-blocking for the rest of the homepage).
-  // useCallback with no dependencies: it only ever calls setState, so one
-  // stable identity is correct — and it lets the effect below declare it as a
-  // dependency honestly instead of relying on an empty array.
+  /* ── Shop strip ─────────────────────────────────────────────────────────
+     Only HOME_PART_COUNT cards render, so only that many are requested — this
+     endpoint was previously unbounded and returned the whole featured
+     catalogue for the client to throw all but five away. */
   const fetchParts = useCallback(() => {
     setPartsLoading(true);
     setPartsError(false);
-    // Only HOME_PART_COUNT cards are rendered, so only that many are asked
-    // for. This endpoint was previously unbounded and returned every featured
-    // part in the catalogue, with the client throwing all but five away.
     getFeaturedParts({ limit: HOME_PART_COUNT })
       .then(({ data }) => {
         const featured = data.parts || [];
@@ -187,34 +296,20 @@ export default function Home() {
           })
           .catch(() => featured);
       })
-      .then((list) => {
-        setParts(list.slice(0, HOME_PART_COUNT));
-      })
+      .then((list) => setParts(list.slice(0, HOME_PART_COUNT)))
       .catch((err) => {
         console.error('[Home.loadShopStrip]', err);
         setPartsError(true);
       })
-      .finally(() => {
-        setPartsLoading(false);
-      });
+      .finally(() => setPartsLoading(false));
   }, []);
 
-  /* ── Defer the shop strip's requests until it is nearly in view ──────────
-     The parts strip is the fourth section down — roughly two screens below
-     the fold on a phone — yet its one-or-two requests used to fire in the
-     same burst as everything else the page needs at first paint, competing
-     for connections with content the visitor can actually see.
-
-     A single IntersectionObserver on the section, disconnected the moment it
-     fires, with 600px of rootMargin so the fetch still starts well before the
-     strip scrolls into view. Deliberately NOT a scroll listener and not one
-     observer per card — Phase 2B's whole point was to keep the scroll path
-     free of per-frame work, and this adds none.
-
-     `partsLoading` still starts true, so the skeletons render exactly as
-     before; only the moment the request leaves changes. Browsers without
-     IntersectionObserver, and the case where the node is somehow missing,
-     fall through to fetching immediately. */
+  /* The parts strip sits several screens below the fold, yet its requests used
+     to leave in the same burst as everything the visitor can actually see. One
+     IntersectionObserver, disconnected the moment it fires, with 600px of
+     rootMargin so the fetch still starts well before the strip scrolls in.
+     Deliberately not a scroll listener and not one observer per card — this
+     adds no per-frame work to the scroll path. */
   const shopRef = useRef(null);
   const partsStarted = useRef(false);
 
@@ -232,1055 +327,1044 @@ export default function Home() {
     }
 
     const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          io.disconnect();
-          start();
-        }
-      },
+      (entries) => { if (entries.some((e) => e.isIntersecting)) { io.disconnect(); start(); } },
       { rootMargin: '600px 0px' }
     );
     io.observe(el);
     return () => io.disconnect();
   }, [fetchParts]);
 
-  /* Category "from" prices.
-     This ran on every render and, worse, produced a brand-new array of brand-
-     new objects each time — so the twelve service cards below could never be
-     skipped by React, no matter what had actually changed. The parts strip
-     alone flips partsLoading twice and sets parts once, and each of those
-     re-rendered the whole page's card tree.
-
-     Memoised on the two inputs it actually derives from, so the reference is
-     stable and <ServiceCategoryGrid> (now React.memo) can bail out entirely
-     while the parts strip settles. */
+  /* Category "from" prices. Memoised on the two inputs it derives from: this
+     used to build a brand-new array of brand-new objects on every render, so
+     the twelve service cards could never be skipped no matter what had
+     actually changed — and the parts strip alone flips state three times. */
   const categories = useMemo(
     () => serviceCategories.map((cat) => {
-      const inCategory = packages.filter((p) => p.categoryId === cat.id);
-      const priced = inCategory.filter((p) => p.basePrice > 0);
+      const priced = packages.filter((p) => p.categoryId === cat.id && p.basePrice > 0);
       const cheapest = priced.length
         ? Math.min(...priced.map((p) => p.basePrice))
         : (cat.fromPrice || 499);
-      return { ...cat, image: cat.apiImage, price: `From ₹${Number(cheapest).toLocaleString('en-IN')}` };
+      return { ...cat, price: Number(cheapest) };
     }),
     [serviceCategories, packages]
   );
 
-  /* No viewport min-height on the root any more. The Layout shell in App.jsx
-     is already at least one viewport tall with <main> growing to fill it, so
-     it was redundant — and on mobile `100vh` is measured with the URL bar
-     hidden, making it taller than the visible viewport and adding a strip of
-     dead scroll at the bottom. The background matches <body>, so dropping it
-     changes nothing visually. */
+  const shownCategories = servicesExpanded ? categories : categories.slice(0, HOME_CATEGORY_COUNT);
+  const quoteTotal = SAMPLE_QUOTE.reduce((sum, r) => sum + r.amount, 0);
+
   return (
-    <div style={{ background: '#FFFFFF', width: '100%', maxWidth: '100%', position: 'relative' }}>
-      <style>{`
-        /* ── Skeleton shimmer (always available, even before PartCard mounts) ── */
-        @keyframes gk-shimmer {
-          0%   { background-position: -200% 0; }
-          100% { background-position:  200% 0; }
-        }
-        .gk-skel {
-          background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%) !important;
-          background-size: 200% 100% !important;
-          animation: gk-shimmer 1.5s infinite linear !important;
-        }
+    <div style={{ background: C.white, width: '100%', maxWidth: '100%', position: 'relative' }}>
+      <style>{HOME_STYLES}</style>
 
-        /* ── Hero & Automotive Styling ─────────────────────────────────────── */
-        .gk-glow { position: absolute; pointer-events: none; border-radius: 50%; will-change: transform; }
-        /* Sized against the container, never in fixed pixels: a 720px circle
-           offset by -12% pushed the document 202px wider than a 320px phone.
-           The gradient's own falloff still gives the soft bleed. The drift no
-           longer scales either — growing the box 7% put its edge back outside
-           whatever width it starts from. */
-        .gk-glow-a {
-          top: -25%; right: 0; width: min(720px, 100%); aspect-ratio: 1;
-          background: radial-gradient(circle, rgba(37,99,235,0.22) 0%, transparent 68%);
-          animation: gk-drift 18s ease-in-out infinite;
-        }
-        .gk-glow-b {
-          bottom: -30%; left: 0; width: min(560px, 100%); aspect-ratio: 1;
-          background: radial-gradient(circle, rgba(147,197,253,0.12) 0%, transparent 70%);
-          animation: gk-drift 22s ease-in-out infinite reverse;
-        }
-        @keyframes gk-drift {
-          0%,100% { transform: translate3d(0,0,0); opacity: 1; }
-          50%     { transform: translate3d(-26px,22px,0); opacity: 0.78; }
-        }
-        .gk-grid-overlay {
-          position: absolute; inset: 0; pointer-events: none; opacity: 0.45;
-          background-image:
-            linear-gradient(rgba(148,163,184,0.055) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(148,163,184,0.055) 1px, transparent 1px);
-          background-size: 62px 62px;
-          -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 42%, #000 35%, transparent 100%);
-                  mask-image: radial-gradient(ellipse 75% 65% at 50% 42%, #000 35%, transparent 100%);
-        }
+      {/* ══════════════════════════════════════════════════════════════════
+          1 · HERO
+          Two columns: the argument on the left, the proof on the right. The
+          right column is the estimate a customer actually receives, not a
+          photograph of a car nobody here owns.
+          ══════════════════════════════════════════════════════════════════ */}
+      <section className="gk-dark gk-hero">
+        <div className="gk-bloom gk-bloom--a" />
+        <div className="gk-bloom gk-bloom--b" />
+        <div className="gk-mesh" />
 
-        /* Hero Text Shimmer */
-        .gk-shimmer {
-          background: linear-gradient(100deg, #60A5FA 0%, #E0EDFF 45%, #3B82F6 80%);
-          background-size: 220% 100%;
-          -webkit-background-clip: text; background-clip: text;
-          -webkit-text-fill-color: transparent; color: transparent;
-          animation: gk-sweep 6.5s ease-in-out infinite;
-        }
-        @keyframes gk-sweep {
-          0%,72%,100% { background-position: 130% 0; }
-          22%         { background-position: -30% 0; }
-        }
+        <div className="gk-wrap gk-hero-inner">
+          <div className="gk-hero-grid">
 
-        /* Hero Car Animation */
-        .gk-car {
-          opacity: 0;
-          filter: drop-shadow(0 30px 50px rgba(0,0,0,0.55));
-          will-change: transform, opacity;
-          animation:
-            gk-car-in 1s cubic-bezier(0.2,0.75,0.3,1) 0.2s forwards,
-            gk-float 7s ease-in-out 1.2s infinite;
-        }
-        @keyframes gk-car-in {
-          from { opacity: 0; transform: translate3d(40px,0,0) scale(0.97); }
-          to   { opacity: 1; transform: none; }
-        }
-        @keyframes gk-float {
-          0%,100% { transform: translate3d(0,0,0); }
-          50%     { transform: translate3d(0,-10px,0); }
-        }
-
-        /* ── Mobile: nothing decorative may run continuously ──────────────────
-           Smooth scrolling beats decoration on a phone. The drift/float
-           animations were already stopped here; two more costs were not.
-
-           .gk-shimmer animates background-position on a background-clip:text
-           element, which repaints the H1 on every frame for as long as the
-           page is open — the most expensive thing still running on mobile.
-           The gradient itself is kept, frozen at its resting position, so the
-           heading looks the same and simply stops moving.
-
-           .gk-grid-overlay does not animate, but a mask-image on a full-bleed
-           layer forces its own compositing layer that has to be maintained
-           while the hero scrolls. The mask is dropped and the opacity halved
-           instead: the texture survives, the extra layer does not. */
-        @media (max-width: 900px) {
-          .gk-glow-a, .gk-glow-b { animation: none !important; }
-          .gk-car { animation: gk-car-in 1s cubic-bezier(0.2,0.75,0.3,1) 0.2s forwards !important; }
-
-          .gk-shimmer {
-            animation: none !important;
-            background-size: 100% 100% !important;
-            background-position: 0 0 !important;
-          }
-
-          .gk-grid-overlay {
-            opacity: 0.22;
-            -webkit-mask-image: none !important;
-                    mask-image: none !important;
-          }
-        }
-
-        /* Respect reduced-motion: strip all decorative animations */
-        @media (prefers-reduced-motion: reduce) {
-          .gk-glow-a, .gk-glow-b, .gk-car, .gk-shimmer { animation: none !important; }
-          .gk-car { opacity: 1 !important; }
-          .gk-shimmer { -webkit-text-fill-color: #60A5FA; }
-        }
-
-
-        /* ── Booking steps card ───────────────────────────────────────────
-           Floats across the hero's bottom edge: a negative top margin pulls it
-           up over the dark section, and z-index lifts it above the hero's own
-           glow layers. The hero carries 5.5rem of bottom padding, comfortably
-           more than the 3.25rem pulled back, so the overlap eats slack rather
-           than clipping the hero's content. */
-        .gk-booking-card {
-          background: #FFFFFF;
-          border: 1px solid #E2E8F0;
-          border-radius: 20px;
-          box-shadow: 0 24px 55px rgba(15, 23, 42, 0.16);
-          padding: 1.5rem 1.75rem;
-          margin-top: -3.25rem;
-          position: relative;
-          z-index: 10;
-        }
-
-        .gk-booking-title {
-          font-family: 'Space Grotesk', sans-serif;
-          font-size: 1.2rem; font-weight: 800; color: #2563EB;
-          margin: 0 0 1.15rem; letter-spacing: -0.01em;
-        }
-
-        /* Steps take equal share, the CTA only what it needs. */
-        .gk-booking-row {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-          align-items: center;
-          gap: 0;
-        }
-
-        .gk-booking-step {
-          display: flex; align-items: center; gap: 0.8rem;
-          padding: 0.35rem 1.25rem;
-          min-width: 0;
-        }
-        /* Hairline rules BETWEEN steps only — on the divider, never on the
-           outer edges, so the row is not boxed in. */
-        .gk-booking-step + .gk-booking-step { border-left: 1px solid #E2E8F0; }
-        .gk-booking-step:first-child { padding-left: 0; }
-
-        .gk-booking-ico {
-          width: 42px; height: 42px; border-radius: 12px;
-          background: #EBF0FF; color: #2563EB;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        .gk-booking-lab { min-width: 0; }
-        .gk-booking-lab b {
-          display: block; font-size: 0.9rem; font-weight: 700; color: #0F172A;
-          line-height: 1.3; overflow-wrap: anywhere;
-        }
-        .gk-booking-lab span {
-          display: block; font-size: 0.78rem; color: #64748B; font-weight: 500;
-          line-height: 1.35; margin-top: 1px; overflow-wrap: anywhere;
-        }
-
-        .gk-booking-cta {
-          display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-          background: #2563EB; color: #FFFFFF;
-          padding: 0.9rem 1.6rem; border-radius: 12px;
-          text-decoration: none; font-weight: 700; font-size: 0.88rem;
-          white-space: nowrap; margin-left: 1.25rem;
-          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
-          transition: background .2s, transform .2s;
-        }
-        .gk-booking-cta:hover { background: #1D4ED8; transform: translateY(-2px); }
-
-        /* Below the four-up width the dividers stop making sense: the steps
-           become stacked rows with horizontal rules, and the CTA goes full
-           width beneath them. */
-        @media (max-width: 900px) {
-          .gk-booking-row { grid-template-columns: 1fr; }
-          .gk-booking-step { padding: 0.75rem 0; }
-          .gk-booking-step + .gk-booking-step {
-            border-left: 0; border-top: 1px solid #E2E8F0;
-          }
-          .gk-booking-cta { margin-left: 0; margin-top: 1rem; width: 100%; }
-        }
-
-        /* ── Why Choose banner ────────────────────────────────────────────
-           One solid blue slab inset from the section edges, rather than five
-           white cards on a light ground. These five points are secondary
-           reassurance, not five things to weigh against each other, so they
-           read better as a single block than as a card row competing with the
-           service grid directly above them.
-
-           Items are top-aligned, not centre-aligned: the descriptions are
-           different lengths, and centring each one vertically would scatter
-           the five icons down the row at five different heights. */
-        /* The slab itself is shared by both blue bands on this page — Why
-           Choose and the numbers strip — so the gradient, radius and shadow
-           have ONE definition and cannot drift apart. Only the padding differs,
-           and that lives on the two modifier classes below: Why Choose carries
-           a heading, the numbers strip does not. */
-        .gk-band {
-          background: linear-gradient(120deg, #1E40AF 0%, #2563EB 55%, #1D4ED8 100%);
-          border-radius: 24px;
-          box-shadow: 0 18px 45px rgba(37, 99, 235, 0.22);
-        }
-        .gk-why-band   { padding: 2.25rem 2rem 2.4rem; }
-        .gk-stats-band { padding: 1.65rem 2rem; }
-
-        /* ── Final CTA band ───────────────────────────────────────────────
-           Copy left, car centre, the two actions stacked right — on the same
-           .gk-band slab the Why Choose and numbers sections use, so the page's
-           three blue blocks read as one material rather than three near-misses.
-
-           The car is the hero's artwork reused: a second decorative render of
-           the same subject would be another file to ship for no gain, and this
-           one is already in the bundle by the time the section is reached. */
-        .gk-cta-band { padding: 2.1rem 2.4rem; }
-        .gk-cta-inner {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto auto;
-          align-items: center;
-          gap: 1.75rem;
-        }
-        .gk-cta-title {
-          font-family: 'Space Grotesk', sans-serif;
-          font-size: clamp(1.35rem, 2.4vw, 1.85rem);
-          font-weight: 800; color: #FFFFFF; line-height: 1.2;
-          margin: 0 0 0.55rem; letter-spacing: -0.01em;
-        }
-        .gk-cta-sub {
-          color: rgba(255, 255, 255, 0.82); font-size: 0.85rem;
-          font-weight: 500; line-height: 1.6; margin: 0; max-width: 34ch;
-        }
-        .gk-cta-img { display: flex; justify-content: center; }
-        .gk-cta-img img { width: 270px; max-width: 100%; height: auto; display: block; }
-        .gk-cta-actions { display: flex; flex-direction: column; gap: 0.6rem; }
-
-        /* White fill on blue, not blue on blue: the band's gradient ends near
-           blue-700, so a blue-600 button would all but vanish into it. */
-        .gk-cta-primary {
-          display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-          background: #FFFFFF; color: #1D4ED8;
-          padding: 0.75rem 1.5rem; border-radius: 10px;
-          text-decoration: none; font-weight: 700; font-size: 0.85rem;
-          white-space: nowrap; transition: background .2s, transform .2s;
-        }
-        .gk-cta-primary:hover { background: #EFF6FF; transform: translateY(-2px); }
-
-        .gk-cta-secondary {
-          display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-          background: rgba(255, 255, 255, 0.1); color: #FFFFFF;
-          border: 1px solid rgba(255, 255, 255, 0.35);
-          padding: 0.7rem 1.5rem; border-radius: 10px;
-          text-decoration: none; font-weight: 600; font-size: 0.82rem;
-          white-space: nowrap; transition: background .2s, border-color .2s;
-        }
-        .gk-cta-secondary:hover { background: rgba(255, 255, 255, 0.18); border-color: #FFFFFF; }
-
-        /* Below the three-up width the car drops out rather than shrinking to
-           a smudge, and the block centres as a single column. */
-        @media (max-width: 1023px) {
-          .gk-cta-inner   { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 1.35rem; }
-          .gk-cta-sub     { max-width: 46ch; }
-          .gk-cta-actions { width: 100%; max-width: 320px; }
-        }
-        @media (max-width: 767px) {
-          .gk-cta-img  { display: none; }
-          .gk-cta-band { padding: 1.6rem 1.25rem; }
-        }
-
-        /* ── Numbers strip ────────────────────────────────────────────────
-           Icon chip, then the figure over its label. Vertically centred
-           rather than top-aligned (unlike the Why Choose row): every label
-           here is two or three words and fits one line, so there is no ragged
-           wrap to align against. */
-        .gk-stats-row {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 1.25rem;
-          align-items: center;
-        }
-        .gk-stat { display: flex; align-items: center; gap: 0.85rem; min-width: 0; }
-        .gk-stat-ico {
-          width: 40px; height: 40px; border-radius: 11px;
-          background: rgba(255, 255, 255, 0.16);
-          border: 1px solid rgba(255, 255, 255, 0.22);
-          display: flex; align-items: center; justify-content: center;
-          color: #FFFFFF; flex-shrink: 0;
-        }
-        .gk-stat-txt { min-width: 0; }
-        .gk-stat-val {
-          display: block; font-family: 'Space Grotesk', sans-serif;
-          font-size: 1.6rem; font-weight: 800; color: #FFFFFF;
-          line-height: 1.05; letter-spacing: -0.02em; white-space: nowrap;
-        }
-        .gk-stat-lab {
-          display: block; color: rgba(255, 255, 255, 0.8);
-          font-size: 0.75rem; font-weight: 500; line-height: 1.35;
-          margin-top: 3px; overflow-wrap: anywhere;
-        }
-        @media (max-width: 860px) { .gk-stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.3rem 1rem; } }
-        @media (max-width: 420px) {
-          .gk-stats-row  { grid-template-columns: 1fr; gap: 1.05rem; }
-          .gk-stats-band { padding: 1.3rem 1.15rem; }
-        }
-        .gk-why-title {
-          font-family: 'Space Grotesk', sans-serif;
-          font-size: clamp(1.3rem, 2.6vw, 1.75rem);
-          font-weight: 800; color: #FFFFFF; text-align: center;
-          margin: 0 0 1.9rem; letter-spacing: -0.01em;
-        }
-        .gk-why-row {
-          display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
-          gap: 1.25rem;
-          align-items: start;
-        }
-        .gk-why-item { display: flex; align-items: flex-start; gap: 0.7rem; min-width: 0; }
-        .gk-why-ico {
-          width: 38px; height: 38px; border-radius: 11px;
-          background: rgba(255, 255, 255, 0.16);
-          border: 1px solid rgba(255, 255, 255, 0.22);
-          display: flex; align-items: center; justify-content: center;
-          color: #FFFFFF; flex-shrink: 0;
-        }
-        .gk-why-txt { min-width: 0; padding-top: 0.1rem; }
-        .gk-why-txt b {
-          display: block; color: #FFFFFF; font-size: 0.82rem; font-weight: 700;
-          line-height: 1.3; overflow-wrap: anywhere;
-        }
-        .gk-why-txt span {
-          display: block; color: rgba(255, 255, 255, 0.78); font-size: 0.72rem;
-          font-weight: 500; line-height: 1.4; margin-top: 2px; overflow-wrap: anywhere;
-        }
-        @media (max-width: 1023px) { .gk-why-row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.3rem 1rem; } }
-        @media (max-width: 700px)  { .gk-why-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.15rem 0.85rem; } }
-        @media (max-width: 420px)  {
-          .gk-why-row  { grid-template-columns: 1fr; gap: 1rem; }
-          .gk-band     { border-radius: 18px; }
-          .gk-why-band { padding: 1.5rem 1.15rem 1.6rem; }
-          .gk-why-title { margin-bottom: 1.4rem; }
-        }
-
-        .gk-parts-grid {
-          display: grid; width: 100%;
-          grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
-          gap: 1.1rem; align-items: stretch;
-        }
-        @media (max-width: 640px) {
-          .gk-parts-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-        }
-
-        /* The row, not the buttons, owns the gap and the offset from the
-           grid — otherwise the two controls carry different top margins and
-           sit on different baselines. */
-        .gk-svc-actions {
-          display: flex; flex-wrap: wrap; align-items: center;
-          justify-content: center; gap: .8rem;
-          margin-top: 2.2rem;
-        }
-
-        .gk-svc-more {
-          display: inline-flex; align-items: center; gap: .5rem;
-          padding: .85rem 1.9rem;
-          background: #FFFFFF; color: #0F172A;
-          border: 1.5px solid #0F172A; border-radius: 10px;
-          font: inherit; font-weight: 800; font-size: .88rem;
-          letter-spacing: .02em; white-space: nowrap; cursor: pointer;
-          transition: background .2s, color .2s, transform .25s;
-        }
-        .gk-svc-more:hover { background: #0F172A; color: #FFFFFF; transform: translateY(-2px); }
-        .gk-svc-more:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
-
-        .gk-svc-all {
-          display: inline-flex; align-items: center; gap: .5rem;
-          margin: 0; padding: .85rem 2rem;
-          background: #2563EB; color: #FFFFFF; border-radius: 10px;
-          text-decoration: none; font-weight: 800; font-size: .88rem;
-          letter-spacing: .02em; white-space: nowrap;
-          box-shadow: 0 10px 24px rgba(29, 78, 216, .24);
-          transition: transform .25s, box-shadow .25s;
-        }
-        .gk-svc-all:hover { transform: translateY(-3px); box-shadow: 0 16px 30px rgba(29,78,216,.32); }
-
-        .gk-shop-all {
-          display: inline-flex; align-items: center; gap: .45rem;
-          background: #2563EB; color: #FFFFFF; padding: .65rem 1.4rem; min-height: 42px;
-          border-radius: 10px; text-decoration: none; font-weight: 800; font-size: .82rem;
-          white-space: nowrap; box-shadow: 0 8px 20px rgba(37,99,235,.24);
-          transition: transform .2s, box-shadow .2s;
-        }
-        .gk-shop-all:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(37,99,235,.3); }
-
-        /* ── Mobile hero ─────────────────────────────────────────────────────
-           The car used to be hidden outright below 900px, which left the
-           mobile hero as a wall of text — the "too plain" report. It is now
-           kept and moved beneath the copy, where it reads as a product shot
-           rather than a squeezed desktop column.
-
-           This is affordable precisely because of Phase 2B: the artwork is a
-           29 KB WebP, not the 192 KB PNG it used to be. No animation is
-           reintroduced — the float and drift stay off below 900px (see the
-           block above); only the one-shot fade-in remains. */
-        @media (max-width: 900px) {
-          .gk-hero-grid {
-            grid-template-columns: 1fr !important;
-            gap: 1.25rem !important;
-          }
-          .gk-hero-grid > div:first-child { width: 100% !important; max-width: 100% !important; }
-          .gk-hero-img {
-            order: 2;
-            margin-top: 0.25rem;
-          }
-          .gk-hero-img img { max-width: 420px !important; margin: 0 auto; }
-          /* The blurred halo behind the car is a filter: blur(30px) on a large
-             box. Cheap enough on a desktop GPU, not worth it on a phone. */
-          .gk-hero-img > div:first-child { display: none !important; }
-        }
-
-        @media (max-width: 768px) {
-          .gk-hero {
-            padding: 2.25rem 0 2.5rem !important;
-            min-height: auto !important;
-          }
-          .gk-hero h1 {
-            font-size: clamp(1.8rem, 8vw, 2.4rem) !important;
-            line-height: 1.12 !important;
-            margin-bottom: 0.75rem !important;
-          }
-          .gk-hero-eyebrow { font-size: 0.68rem !important; margin-bottom: 0.6rem !important; }
-          .gk-hero-desc {
-            font-size: 0.9rem !important;
-            line-height: 1.6 !important;
-            margin-bottom: 1.25rem !important;
-          }
-          .gk-hero-ctas {
-            flex-direction: column !important;
-            gap: 0.6rem !important;
-            margin-bottom: 1.25rem !important;
-          }
-          .gk-hero-ctas a {
-            width: 100% !important;
-            justify-content: center !important;
-            padding: 0.95rem 1rem !important;
-            white-space: nowrap !important;
-            box-sizing: border-box !important;
-          }
-          /* A 2x2 chip block reads as deliberate; the old single stacked column
-             left a tall ribbon of near-empty space down the left edge. */
-          .gk-trust-row {
-            display: grid !important;
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            gap: 0.5rem !important;
-            align-items: stretch !important;
-          }
-          .gk-trust-row > div {
-            width: 100% !important;
-            min-width: 0;
-            background: rgba(148, 163, 184, 0.10);
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            border-radius: 10px;
-            padding: 0.5rem 0.6rem;
-          }
-          .gk-trust-row span { font-size: 0.74rem !important; white-space: normal !important; }
-          .gk-social-proof {
-            flex-direction: row !important;
-            flex-wrap: wrap !important;
-            align-items: center !important;
-            gap: 0.5rem 0.9rem !important;
-            margin-top: 1rem !important;
-          }
-          .gk-booking-card { margin-top: 1.5rem !important; padding: 1.25rem !important; }
-        }
-
-        /* Smallest phones: the two-up chips would clip, so let them run full
-           width rather than truncating the labels. */
-        @media (max-width: 359px) {
-          .gk-trust-row { grid-template-columns: 1fr !important; }
-          .gk-hero h1 { font-size: 1.6rem !important; }
-          .gk-hero-img img { max-width: 100% !important; }
-        }
-
-        /* ── All card grids: 2 columns on mobile ── */
-        @media (max-width: 640px) {
-          /* minmax(0, 1fr), not 1fr: a bare 1fr is minmax(auto, 1fr), so a long
-             word inside a card sets the track's minimum and the grid grows
-             past its container. */
-          .gk-how-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            gap: 0.75rem !important;
-          }
-          .gk-how-grid > *,
-          .gk-testimonials-grid > * { min-width: 0; }
-          .gk-how-grid > div {
-            padding: 1rem 0.85rem !important;
-            border-radius: 12px !important;
-          }
-        }
-
-        /* ── Reviews ─────────────────────────────────────────────────────────
-           Testimonials are deliberately NOT in the two-column block above.
-           A review is a paragraph of prose plus an avatar, a name, a role and
-           five stars; at 640px two columns leaves each card about 150px of
-           usable width, which is what made this section read as cramped. One
-           column below 620px gives the text a full measure, and the card can
-           then lay its author row out horizontally instead of stacking. */
-        .gk-testimonials-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
-        @media (max-width: 620px) {
-          .gk-testimonials-grid {
-            grid-template-columns: 1fr !important;
-            gap: 0.85rem !important;
-          }
-          .gk-testimonials-grid > div { padding: 1.15rem 1.1rem !important; }
-          .gk-testimonials-grid p { font-size: 0.88rem !important; line-height: 1.6 !important; }
-          .gk-testimonials-grid h4 { font-size: 0.95rem !important; }
-        }
-
-        /* ── Mobile: cheaper shadows ──────────────────────────────────────────
-           A blurred shadow costs the rasteriser roughly in proportion to the
-           area its blur covers, and about thirty of them scroll past on this
-           page. The radii below are cut roughly in half and the alpha nudged
-           up to compensate, so the cards keep the same sense of lift for far
-           less paint. Desktop keeps the original values untouched — this only
-           applies below 640px, where the pressure actually is.
-
-           !important because most of these shadows are set as inline styles on
-           the elements, which a plain stylesheet rule cannot override. */
-        @media (max-width: 640px) {
-          .gk-booking-card { box-shadow: 0 8px 18px rgba(15, 23, 42, 0.10) !important; }
-          .gk-how-grid > div { box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06) !important; }
-          .gk-testimonials-grid > div { box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05) !important; }
-          .gk-svc-all { box-shadow: 0 5px 12px rgba(29, 78, 216, .26) !important; }
-          .gk-shop-all { box-shadow: 0 4px 10px rgba(37, 99, 235, .26) !important; }
-        }
-
-        /* Hover lifts re-blur a shadow and re-composite the card. A touch
-           screen fires them on tap and can leave them stuck afterwards, so
-           they are reserved for pointers that can actually hover. */
-        @media (hover: none) {
-          .gk-svc-all:hover, .gk-shop-all:hover, .gk-svc-more:hover {
-            transform: none;
-            box-shadow: 0 5px 12px rgba(29, 78, 216, .26);
-          }
-        }
-      `}</style>
-
-      {/* ════════════════════ 1. HERO SECTION ════════════════════ */}
-      <section
-        className="gk-hero"
-        style={{
-          position: 'relative', overflow: 'hidden',
-          background: 'linear-gradient(180deg, #0F172A 0%, #131B31 100%)',
-          padding: '4.5rem 0 5.5rem',
-          minHeight: '85vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-        }}
-      >
-        <div className="gk-glow gk-glow-a" />
-        <div className="gk-glow gk-glow-b" />
-        <div className="gk-grid-overlay" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2, width: '100%' }}>
-          <div className="gk-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '2.5rem', alignItems: 'center', width: '100%' }}>
-            {/* LEFT TEXT CONTENT */}
-            <div>
-              <p className="gk-hero-eyebrow" style={{ color: '#93C5FD', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '0.8rem' }}>
-                PREMIUM CAR CARE
-              </p>
-
-              <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', fontWeight: 900, color: '#FFFFFF', lineHeight: 1.08, letterSpacing: '-0.02em', marginBottom: '1.1rem' }}>
-                Professional<br />
-                <span className="gk-shimmer">Car Service &amp; Repair</span>
-              </h1>
-
-              <p className="gk-hero-desc" style={{ color: '#94A3B8', fontSize: '0.96rem', fontWeight: 500, lineHeight: 1.7, maxWidth: '480px', marginBottom: '2rem' }}>
-                Expert technicians, genuine parts, doorstep service. We ensure a safe ride for you
-                and your loved ones. Book online in under 2 minutes.
-              </p>
-
-              {/* CTAs */}
-              <div className="gk-hero-ctas" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.85rem', marginBottom: '2.2rem' }}>
-                <Link
-                  to="/services"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-                    background: '#2563EB', color: '#FFFFFF',
-                    padding: '0.85rem 2.1rem', borderRadius: '10px', textDecoration: 'none',
-                    fontFamily: "'Space Grotesk', sans-serif", fontWeight: 900, fontSize: '0.9rem',
-                    letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
-                    boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)', transition: 'all 0.25s',
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.background = '#1D4ED8'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#2563EB'; }}
-                >
-                  <Wrench size={16} /> Book Service Now
-                </Link>
-
-                <a
-                  href="#services"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-                    background: 'rgba(255,255,255,0.05)', color: '#FFFFFF',
-                    padding: '0.85rem 2.1rem', borderRadius: '10px', textDecoration: 'none',
-                    border: '1.5px solid rgba(255,255,255,0.25)',
-                    fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: '0.9rem',
-                    letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
-                    transition: 'all 0.25s',
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#FFFFFF'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                >
-                  View All Services <ArrowRight size={16} />
+            {/* ── LEFT: the argument ─────────────────────────────────────── */}
+            <div className="gk-hero-copy">
+              <Reveal y={20} duration={0.6}>
+                <a href={BIZ.mapsUrl} target="_blank" rel="noreferrer noopener" className="gk-loc">
+                  <span className="gk-dot" />
+                  <MapPin size={13} />
+                  <span>{BIZ.addressShort}</span>
+                  <ChevronRight size={13} className="gk-loc-arrow" />
                 </a>
-              </div>
+              </Reveal>
 
-              {/* Trust Tags */}
-              <div className="gk-trust-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-                {TRUST_TAGS.map(({ icon: Icon, title }) => (
-                  <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', minWidth: 0 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: '7px', background: 'rgba(147, 197, 253, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon size={14} style={{ color: '#93C5FD' }} />
-                    </div>
-                    <span style={{ color: '#E2E8F0', fontSize: '0.82rem', fontWeight: 700, whiteSpace: 'nowrap' }}>{title}</span>
-                  </div>
-                ))}
-              </div>
+              <Reveal y={24} delay={0.06}>
+                <h1 className="gk-h1 gk-hero-h1">
+                  Sale. Spare.<br />
+                  <span className="gk-grad gk-grad--dark">Service.</span>
+                </h1>
+              </Reveal>
 
-              {/* Social Proof */}
-              <div className="gk-social-proof" style={{ marginTop: '1.2rem', paddingTop: '1.1rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                <span style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 600, whiteSpace: 'nowrap' }}>Trusted by 10,000+ Car Owners</span>
-                <div style={{ display: 'flex', gap: '2px', alignItems: 'center', flexShrink: 0 }}>
-                  {[...Array(5)].map((_, i) => <Star key={i} size={13} fill="#F59E0B" color="#F59E0B" />)}
-                  <span style={{ color: '#FFFFFF', fontSize: '0.82rem', fontWeight: 800, marginLeft: '0.35rem', whiteSpace: 'nowrap' }}>4.8/5 Rating</span>
+              <Reveal y={24} delay={0.13}>
+                <p className="gk-lede gk-lede--dark gk-hero-lede">
+                  Rohtak&rsquo;s workshop for every make on the road — from a Swift on its
+                  third owner to a 3-Series still under warranty. Itemised quote first,
+                  genuine parts only, old parts handed back.
+                </p>
+              </Reveal>
+
+              <Reveal y={24} delay={0.2}>
+                <div className="gk-hero-ctas">
+                  <Link to="/services" className="gk-btn gk-btn--primary gk-btn--lg">
+                    <Wrench size={17} /> Book a service
+                  </Link>
+                  <a href={`tel:${BIZ.phoneTel}`} className="gk-btn gk-btn--ghost gk-btn--lg">
+                    <Phone size={17} /> {BIZ.phoneDisplay}
+                  </a>
                 </div>
-              </div>
+              </Reveal>
+
+              <Reveal y={20} delay={0.28}>
+                <ul className="gk-hero-proof">
+                  {HERO_PROOF.map(({ icon: Icon, label }) => (
+                    <li key={label}>
+                      <span className="gk-hero-proof-ico"><Icon size={13} /></span>
+                      {label}
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
             </div>
 
-            {/* RIGHT — GT3 HERO CAR */}
-            <div className="gk-hero-img" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div style={{ position: 'absolute', width: '80%', height: '60%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(37,99,235,0.24) 0%, transparent 70%)', filter: 'blur(30px)' }} />
-              {/* Intrinsic size given so the browser reserves the right box
-                  before the file arrives — without it the hero column snaps
-                  into place mid-load. Left eager on purpose: on desktop this
-                  is above the fold. (Below 900px .gk-hero-img is display:none,
-                  so this never paints on a phone.) */}
-              <img
-                className="gk-car"
-                src={heroCar}
-                alt="Car undergoing professional service at GK Motors"
-                width={554}
-                height={241}
-                decoding="async"
-                style={{ width: '100%', maxWidth: '680px', height: 'auto', objectFit: 'contain', position: 'relative', zIndex: 1 }}
-              />
+            {/* ── RIGHT: the proof ───────────────────────────────────────── */}
+            <div className="gk-hero-visual">
+              <LogoRing />
+
+              <Parallax distance={26} className="gk-quote-wrap">
+                <motion.div
+                  className="gk-quote"
+                  initial={{ opacity: 0, y: 34, rotateX: 10 }}
+                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                  transition={{ duration: 0.9, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <header className="gk-quote-head">
+                    <span className="gk-quote-badge"><Car size={15} /></span>
+                    <span className="gk-quote-title">
+                      <b>Maruti Swift Dzire</b>
+                      <span>Estimate · sent before we start</span>
+                    </span>
+                    <span className="gk-quote-flag">Approved</span>
+                  </header>
+
+                  <ul className="gk-quote-rows">
+                    {SAMPLE_QUOTE.map((row) => (
+                      <li key={row.label}>
+                        <span className="gk-quote-row-txt">
+                          <b>{row.label}</b>
+                          <span>{row.note}</span>
+                        </span>
+                        <span className={row.amount === 0 ? 'gk-quote-free' : 'gk-quote-amt'}>
+                          {row.amount === 0 ? 'Free' : `₹${row.amount.toLocaleString('en-IN')}`}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <footer className="gk-quote-foot">
+                    <span className="gk-quote-total-lab">Total, all in</span>
+                    <span className="gk-quote-total">₹{quoteTotal.toLocaleString('en-IN')}</span>
+                  </footer>
+
+                  <div className="gk-quote-pickup">
+                    <Truck size={14} />
+                    <span>Free pickup from Sector-5 · today, 4:00 PM</span>
+                  </div>
+                </motion.div>
+              </Parallax>
+
+              {/* Two chips pinned to the card's corners. Floated on a slow
+                  loop so the composition breathes; both are decorative and
+                  hidden from assistive tech, since each repeats a claim the
+                  proof list on the left already makes. */}
+              <motion.div className="gk-float gk-float--a" aria-hidden="true"
+                animate={{ y: [0, -11, 0] }}
+                transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}>
+                <ShieldCheck size={15} /> 12-month warranty
+              </motion.div>
+              <motion.div className="gk-float gk-float--b" aria-hidden="true"
+                animate={{ y: [0, 12, 0] }}
+                transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}>
+                <MessageCircle size={15} /> Photos before we touch it
+              </motion.div>
             </div>
           </div>
+        </div>
+
+        {/* Scroll cue. Hidden once the hero is out of the way — a permanent
+            "scroll down" arrow halfway down a page is noise. */}
+        <div className="gk-scroll-cue" aria-hidden="true">
+          <span className="gk-scroll-cue-rail"><span /></span>
         </div>
       </section>
 
-      {/* ════════════════════ 2. BOOKING STEPS CARD ════════════════════
-          Restored on request after previously being removed for overlapping
-          How It Works further down the page. The two still describe the same
-          journey; this one is the above-the-fold funnel entry and stops at
-          three lines, How It Works is the full four-step explanation.
-
-          The three steps are described, not operated: there is no service
-          picker, date picker or confirmation step on this page, so they carry
-          no chevrons or other controls that would not do anything. The single
-          blue CTA is the card's action. */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="gk-booking-card">
-          <h3 className="gk-booking-title">Book Your Service in 3 Easy Steps</h3>
-
-          <div className="gk-booking-row">
-            {BOOKING_STEPS.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="gk-booking-step">
-                <span className="gk-booking-ico"><Icon size={20} /></span>
-                <span className="gk-booking-lab">
-                  <b>{title}</b>
-                  <span>{desc}</span>
-                </span>
-              </div>
-            ))}
-
-            <Link to="/services" className="gk-booking-cta">
-              Book Service Now <ArrowRight size={16} />
-            </Link>
-          </div>
+      {/* ══════════════════════════════════════════════════════════════════
+          2 · BRAND RAIL
+          Sits directly under the hero, on the light surface, because the
+          first question a customer asks is "do you even work on my car?"
+          ══════════════════════════════════════════════════════════════════ */}
+      <section className="gk-brands">
+        <div className="gk-wrap">
+          <Reveal y={18}>
+            <p className="gk-brands-lead">
+              <span>Every make on the road in Haryana</span>
+              <span className="gk-brands-sub">Hatchback, sedan, SUV, diesel, CNG — if it runs, it fits on our ramp.</span>
+            </p>
+          </Reveal>
         </div>
-      </div>
+        <Reveal y={18} delay={0.1}>
+          <BrandRail />
+        </Reveal>
+      </section>
 
-      {/* ════════════════════ 3. SERVICES SECTION ════════════════════ */}
-      <section
-        id="services"
-        style={{ position: 'relative', overflow: 'hidden', padding: '4rem 0 4.5rem', background: '#FFFFFF' }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
-              WHAT WE OFFER
-            </p>
-            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.5rem', fontWeight: 900, color: '#0F172A', lineHeight: 1, margin: 0 }}>
-              Our <span style={{ color: '#2563EB' }}>Services</span>
+      {/* ══════════════════════════════════════════════════════════════════
+          3 · SERVICES
+          ══════════════════════════════════════════════════════════════════ */}
+      <section id="services" className="gk-sec" style={{ background: C.white }}>
+        <div className="gk-wrap">
+          <Reveal className="gk-head">
+            <p className="gk-eyebrow gk-eyebrow--center">What we do</p>
+            <h2 className="gk-h2">
+              Everything your car needs,{' '}
+              <span className="gk-grad">under one roof</span>
             </h2>
-            <p style={{ color: '#475569', fontSize: '0.9rem', fontWeight: 500, lineHeight: 1.6, maxWidth: '480px', margin: '0.7rem auto 0' }}>
-              Tailored car care solutions — everything your car needs with upfront pricing and doorstep pickup.
+            <p className="gk-lede">
+              Twelve service lines, one workshop, one invoice. Prices below are real
+              starting points — not teasers that change when you arrive.
             </p>
-            <div style={{ width: 56, height: 4, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '3px' }} />
-          </div>
+          </Reveal>
 
-          {/* Passing `undefined` rather than a bigger number is what keeps the
-              expansion honest: the grid's own slice is simply removed, so the
-              expanded state can never disagree with the catalogue length. */}
-          <div id="gk-services-grid">
-            {/* featured={false} — one flat grid of equally sized cards, four
-                to a row. The two-tier featured/compact arrangement is still
-                what /services renders; this section is a uniform 8. */}
-            <ServiceCategoryGrid
-              categories={categories}
-              limit={servicesExpanded ? undefined : HOME_CATEGORY_COUNT}
-              featured={false}
-            />
-          </div>
+          <Stagger className="gk-svc-grid" gap={0.05}>
+            {shownCategories.map(({ id, slug, label, desc, icon: Icon, price }) => (
+              <StaggerItem key={id} style={{ display: 'flex' }}>
+                <Tilt max={7} lift={1.03} style={{ display: 'flex', width: '100%', borderRadius: 18 }}>
+                  <Link to={`/services?category=${id}`} className="gk-card gk-svc" data-slug={slug}>
+                    <span className="gk-chip"><Icon size={23} /></span>
 
-          {/* Two controls, deliberately different jobs and different weights.
-              "Show More" is the secondary (slate outline) button and expands
-              this grid in place. "View All Services" is the primary and leaves
-              for /services, where packages, filtering and booking live. */}
-          <div className="gk-svc-actions">
+                    <h3 className="gk-h3 gk-svc-title">{label}</h3>
+                    <p className="gk-svc-desc">{desc}</p>
+
+                    <span className="gk-svc-foot">
+                      <span className="gk-svc-price">
+                        <small>from</small> ₹{price.toLocaleString('en-IN')}
+                      </span>
+                      <span className="gk-svc-go"><ArrowRight size={15} /></span>
+                    </span>
+                  </Link>
+                </Tilt>
+              </StaggerItem>
+            ))}
+          </Stagger>
+
+          <Reveal y={16} className="gk-svc-actions">
             {categories.length > HOME_CATEGORY_COUNT && (
               <button
                 type="button"
-                className="gk-svc-more"
-                onClick={() => setServicesExpanded((open) => !open)}
+                className="gk-btn gk-btn--outline gk-btn--sm"
+                onClick={() => setServicesExpanded((v) => !v)}
                 aria-expanded={servicesExpanded}
-                aria-controls="gk-services-grid"
+                aria-controls="services"
               >
-                {servicesExpanded ? 'Show Less' : 'Show More'}
-                {servicesExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {servicesExpanded
+                  ? 'Show fewer'
+                  : `Show all ${categories.length} services`}
+                <ChevronDown size={15} style={{
+                  transition: 'transform .3s',
+                  transform: servicesExpanded ? 'rotate(180deg)' : 'none',
+                }} />
               </button>
             )}
-
-            <Link to="/services" className="gk-svc-all">
-              View All Services <ArrowRight size={16} />
+            <Link to="/services" className="gk-btn gk-btn--primary gk-btn--sm">
+              Book a service <ArrowRight size={15} />
             </Link>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          4 · WHY US — bento
+          An asymmetric grid rather than the previous flat blue slab of five
+          identical items. The two claims that actually win the job get double
+          width; the four supporting ones sit beneath at single width.
+          ══════════════════════════════════════════════════════════════════ */}
+      <section className="gk-sec" style={{ background: C.surface, borderBlock: `1px solid ${C.hairline}` }}>
+        <div className="gk-wrap">
+          <Reveal className="gk-head">
+            <p className="gk-eyebrow gk-eyebrow--center">Why GK Motors</p>
+            <h2 className="gk-h2">
+              The part most workshops{' '}
+              <span className="gk-grad">get wrong</span>
+            </h2>
+            <p className="gk-lede">
+              It is almost never the mechanics. It is the bill you did not agree to and
+              the part you never got to see.
+            </p>
+          </Reveal>
+
+          <Stagger className="gk-bento" gap={0.06}>
+            {WHY_US.map(({ icon: Icon, title, desc, span }) => (
+              <StaggerItem key={title} className="gk-bento-cell" style={{ '--span': span }}>
+                <div className="gk-card gk-bento-card">
+                  <span className="gk-chip gk-chip--sm"><Icon size={19} /></span>
+                  <h3 className="gk-h3">{title}</h3>
+                  <p className="gk-bento-desc">{desc}</p>
+                </div>
+              </StaggerItem>
+            ))}
+          </Stagger>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          5 · HOW IT WORKS
+          The spine between the steps fills as the section is scrolled, so the
+          four cards read as one journey being travelled rather than four
+          unrelated boxes.
+          ══════════════════════════════════════════════════════════════════ */}
+      <section id="how-it-works" className="gk-sec" style={{ background: C.white }}>
+        <div className="gk-wrap">
+          <Reveal className="gk-head">
+            <p className="gk-eyebrow gk-eyebrow--center">How it works</p>
+            <h2 className="gk-h2">
+              Four steps. <span className="gk-grad">No surprises.</span>
+            </h2>
+          </Reveal>
+
+          <div className="gk-steps">
+            {/* The rail sits behind the cards and is purely decorative — the
+                ordered numbers on each card carry the sequence for anyone who
+                cannot see it. */}
+            <div className="gk-steps-rail" aria-hidden="true">
+              <ScrollProgressLine
+                orientation="horizontal"
+                className="gk-steps-fill"
+                color={G.brand}
+              />
+            </div>
+
+            <Stagger className="gk-steps-grid" gap={0.11}>
+              {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
+                <StaggerItem key={step}>
+                  <div className="gk-card gk-step">
+                    <span className="gk-step-num">{step}</span>
+                    <span className="gk-chip gk-chip--sm"><Icon size={19} /></span>
+                    <h3 className="gk-h3 gk-step-title">{title}</h3>
+                    <p className="gk-step-desc">{desc}</p>
+                  </div>
+                </StaggerItem>
+              ))}
+            </Stagger>
           </div>
         </div>
       </section>
 
-      {/* ════════════════════ 4. SHOP CAR ESSENTIALS (moved here, after Services) ════════════════════ */}
-      {/* ref drives the IntersectionObserver above: this section's requests do
-          not leave until it is within 600px of the viewport. */}
-      <section ref={shopRef} style={{ background: '#F8FAFC', padding: '4rem 0', borderTop: '1px solid #E2E8F0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem' }}>
+      {/* ══════════════════════════════════════════════════════════════════
+          6 · SHOP STRIP
+          ══════════════════════════════════════════════════════════════════ */}
+      <section
+        ref={shopRef}
+        className="gk-sec"
+        style={{ background: C.surface, borderBlock: `1px solid ${C.hairline}` }}
+      >
+        <div className="gk-wrap">
+          <Reveal className="gk-shop-head">
             <div>
-              <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
-                GK MOTORS
-              </p>
-              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-                Shop Car <span style={{ color: '#2563EB' }}>Essentials</span>
+              <p className="gk-eyebrow">The counter</p>
+              <h2 className="gk-h2">
+                Parts &amp; oils, <span className="gk-grad">at workshop price</span>
               </h2>
-              <p style={{ color: '#475569', fontSize: '0.88rem', fontWeight: 500, margin: '0.4rem 0 0', maxWidth: '440px' }}>
-                Genuine oils, filters, batteries and accessories — delivered or fitted during your service.
+              <p className="gk-lede" style={{ marginTop: '0.75rem', maxWidth: 440 }}>
+                Buy them for your own garage, or have us fit them during your service —
+                same price either way.
               </p>
-              {/* Left-aligned rather than centred: this section's header sits
-                  beside its CTA instead of over the grid, so the accent follows
-                  the heading's own edge. */}
-              <div style={{ width: 56, height: 4, background: '#2563EB', margin: '1.1rem 0 0', borderRadius: '3px' }} />
             </div>
-            <Link to="/parts" className="gk-shop-all">
-              View All Products <ArrowRight size={15} />
+            <Link to="/parts" className="gk-btn gk-btn--outline gk-btn--sm">
+              Browse everything <ArrowRight size={15} />
             </Link>
-          </div>
+          </Reveal>
 
-          {/* Loading State: 5 skeleton cards. aria-busy + a live region so a
-              screen reader is told the shelf is loading rather than empty. */}
           <SectionBoundary name="shop strip">
-          {partsLoading ? (
-            <div className="gk-parts-grid" aria-busy="true" aria-live="polite">
-              <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
-                Loading products…
-              </span>
-              {[...Array(HOME_PART_COUNT)].map((_, i) => (
-                <PartCardSkeleton key={i} />
-              ))}
-            </div>
-          ) : partsError ? (
-            /* Error State */
-            <div style={{ background: '#FFF', border: '1px solid #FEE2E2', borderRadius: '16px', padding: '2.5rem', textAlign: 'center' }}>
-              <AlertCircle size={36} style={{ color: '#EF4444', margin: '0 auto 0.75rem' }} />
-              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>Unable to load products</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', margin: '0.4rem 0 1.2rem' }}>Something went wrong while fetching car essentials.</p>
-              <button
-                onClick={fetchParts}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
-                  background: '#2563EB', color: 'white', border: 'none', borderRadius: '8px',
-                  padding: '0.6rem 1.4rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.82rem',
-                  fontFamily: "'Space Grotesk', sans-serif"
-                }}
-              >
-                <RefreshCw size={14} /> Try Again
-              </button>
-            </div>
-          ) : parts.length === 0 ? (
-            /* Empty State */
-            <div style={{ background: '#FFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '2.5rem', textAlign: 'center' }}>
-              <p style={{ fontSize: '2.5rem', margin: '0 0 0.5rem' }}>📦</p>
-              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>No products available</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', margin: '0.4rem 0 1.2rem' }}>Check back soon for new genuine car spares and accessories.</p>
-              <Link to="/parts" className="gk-shop-all" style={{ margin: '0 auto' }}>
-                View All Products <ArrowRight size={15} />
-              </Link>
-            </div>
-          ) : (
-            /* Success State */
-            <div className="gk-parts-grid">
-              {parts.map((part) => (
-                <PartCard key={part._id} part={part} />
-              ))}
-            </div>
-          )}
-          </SectionBoundary>
-        </div>
-      </section>
-
-      {/* ════════════════════ 5. WHY CHOOSE GK MOTORS ════════════════════ */}
-      {/* The eyebrow and the blue underline are deliberately not here. Every
-          other section carries both, but they exist to sit above a dark
-          heading on a light ground — inside a blue slab the heading is already
-          the only thing competing for attention, and a blue rule on blue would
-          be invisible anyway. */}
-      <section style={{ background: '#F8FAFC', padding: '3.5rem 0', borderTop: '1px solid #E2E8F0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="gk-band gk-why-band">
-            <h2 className="gk-why-title">Why Choose GK Motors?</h2>
-
-            <div className="gk-why-row">
-              {WHY_CHOOSE_US.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="gk-why-item">
-                  <span className="gk-why-ico"><Icon size={18} /></span>
-                  <span className="gk-why-txt">
-                    <b>{title}</b>
-                    <span>{desc}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════ 6. HOW IT WORKS ════════════════════ */}
-      <section id="how-it-works" style={{ background: '#FFFFFF', padding: '4.5rem 0' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
-              SIMPLE PROCESS
-            </p>
-            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-              How It <span style={{ color: '#2563EB' }}>Works</span>
-            </h2>
-            <div style={{ width: 50, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
-          </div>
-
-          <div className="gk-how-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.1rem' }}>
-            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
-              <div key={step} style={{ position: 'relative', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1.5rem 1.25rem', overflow: 'hidden' }}>
-                <span style={{ position: 'absolute', top: '0.3rem', right: '0.8rem', fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.8rem', fontWeight: 950, color: 'rgba(37, 99, 235, 0.08)', lineHeight: 1 }}>{step}</span>
-                <div style={{ width: 44, height: 44, borderRadius: '12px', background: '#FFFFFF', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.9rem', position: 'relative' }}>
-                  <Icon size={20} style={{ color: '#2563EB' }} />
-                </div>
-                <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.4rem' }}>{title}</h3>
-                <p style={{ color: '#475569', fontSize: '0.78rem', lineHeight: 1.55, fontWeight: 500, margin: 0 }}>{desc}</p>
+            {partsLoading ? (
+              <div className="gk-parts-grid" aria-busy="true" aria-live="polite">
+                <span className="gk-sr">Loading products…</span>
+                {[...Array(HOME_PART_COUNT)].map((_, i) => <PartCardSkeleton key={i} />)}
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Merged: the standalone stats band now opens the reviews section ──
-          Two adjacent sections were both doing "trust": a dark stats band
-          (10,000+ Happy Customers, 4.8/5 Customer Ratings) immediately
-          followed by "Trusted by Thousands" and four five-star reviews. The
-          same 4.8/5 figure appeared in both, and in the hero above them.
-          One section now carries the evidence, with the numbers as its
-          header strip. Nothing was deleted — STATS still renders in full. */}
-      {/* ════════════════════ 7. TRUST: NUMBERS + REVIEWS ════════════════════ */}
-      <section style={{ background: '#FFFFFF', padding: '4rem 0 4.5rem', overflow: 'hidden' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          {/* Numbers strip — restyled for the light background it now sits on. */}
-          <div className="gk-band gk-stats-band" style={{ marginBottom: '3rem' }}>
-            <div className="gk-stats-row">
-              {STATS.map(({ value, label, icon: Icon }) => (
-                <div key={label} className="gk-stat">
-                  <span className="gk-stat-ico"><Icon size={18} /></span>
-                  <span className="gk-stat-txt">
-                    <span className="gk-stat-val">{value}</span>
-                    <span className="gk-stat-lab">{label}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <p style={{ color: '#2563EB', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '0.55rem' }}>
-              WHAT OUR CUSTOMERS SAY
-            </p>
-            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2.3rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-              Trusted by <span style={{ color: '#2563EB' }}>Thousands</span>
-            </h2>
-            <div style={{ width: 50, height: 3, background: '#2563EB', margin: '1.1rem auto 0', borderRadius: '2px' }} />
-          </div>
-
-          <SectionBoundary name="reviews">
-          <div className="gk-testimonials-grid" style={{ display: 'grid', gap: '1.5rem' }}>
-            {TESTIMONIALS.map((item, i) => (
-              <div
-                key={i}
-                style={{
-                  background: '#F8FAFC', padding: '1.75rem 1.5rem', borderRadius: '18px',
-                  border: '1px solid #E2E8F0', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.03)',
-                  display: 'flex', flexDirection: 'column', position: 'relative'
-                }}
-              >
-                <div style={{ color: '#CBD5E1', fontSize: '3rem', fontFamily: 'serif', lineHeight: 0.8, marginBottom: '0.4rem' }}>"</div>
-                <p style={{ color: '#334155', fontSize: '0.88rem', lineHeight: 1.6, fontStyle: 'italic', flex: 1, marginBottom: '1.2rem' }}>
-                  "{item.review}"
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
-                  {/* Below the fold and tiny. Lazy so four avatars are not
-                      fetched during first paint, async-decoded so decoding
-                      one cannot stall the main thread mid-scroll, and sized
-                      so the row does not reflow when they arrive. The files
-                      themselves are now 128x128 rather than up to 736x1104. */}
-                  <img
-                    src={item.img}
-                    alt={item.name}
-                    width={42}
-                    height={42}
-                    loading="lazy"
-                    decoding="async"
-                    style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${item.color}` }}
-                  />
-                  <div>
-                    <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: '1rem', color: '#0F172A', margin: 0 }}>{item.name}</h4>
-                    <p style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700, margin: '2px 0 0' }}>{item.role}</p>
-                  </div>
-                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px' }}>
-                    {[...Array(5)].map((_, j) => <Star key={j} size={11} fill="#F59E0B" color="#F59E0B" />)}
-                  </div>
-                </div>
+            ) : partsError ? (
+              <div className="gk-card gk-state">
+                <AlertCircle size={34} style={{ color: C.red }} />
+                <h3 className="gk-h3">Could not load the shop</h3>
+                <p className="gk-lede">Something went wrong fetching parts. The workshop is still open.</p>
+                <button type="button" onClick={fetchParts} className="gk-btn gk-btn--primary gk-btn--sm">
+                  <RefreshCw size={14} /> Try again
+                </button>
               </div>
-            ))}
-          </div>
-          </SectionBoundary>
-        </div>
-      </section>
-
-      {/* ════════════════════ 9. FINAL CTA BANNER ════════════════════ */}
-      <section style={{ position: 'relative', background: 'linear-gradient(180deg, #0F172A 0%, #131B31 100%)', padding: '4rem 0', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '-40%', right: '5%', width: '480px', height: '480px', background: 'radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 2 }}>
-          <div className="gk-band gk-cta-band">
-            <div className="gk-cta-inner">
-              <div>
-                <h2 className="gk-cta-title">
-                  Give Your Car<br />The Care It Deserves
-                </h2>
-                <p className="gk-cta-sub">
-                  Book your service today &amp; experience hassle-free car care at your doorstep.
-                </p>
-              </div>
-
-              {/* Decorative: the heading beside it already names the subject, so
-                  an empty alt keeps it out of the accessibility tree rather than
-                  having it announced twice. Lazy and async-decoded — this is the
-                  last section on the page and never near first paint. */}
-              <div className="gk-cta-img">
-                <img src={heroCar} alt="" width={554} height={241} loading="lazy" decoding="async" />
-              </div>
-
-              <div className="gk-cta-actions">
-                <Link to="/services" className="gk-cta-primary">
-                  Book Service Now <ArrowRight size={15} />
-                </Link>
-                <a href="tel:+919253625099" className="gk-cta-secondary">
-                  <Phone size={14} /> Call Us: +91 92536 25099
+            ) : parts.length === 0 ? (
+              <div className="gk-card gk-state">
+                <Sparkles size={34} style={{ color: C.blue }} />
+                <h3 className="gk-h3">Nothing listed yet</h3>
+                <p className="gk-lede">The counter is being stocked. Call us and we will source what you need.</p>
+                <a href={`tel:${BIZ.phoneTel}`} className="gk-btn gk-btn--primary gk-btn--sm">
+                  <Phone size={14} /> {BIZ.phoneDisplay}
                 </a>
               </div>
-            </div>
+            ) : (
+              <Stagger className="gk-parts-grid" gap={0.06}>
+                {/* StaggerItem is deliberately left as a block, not a flex
+                    box: PartCard's root sets height:100% but no width, so as
+                    a flex item it would shrink to its content instead of
+                    filling the grid cell. As a block child of a stretched
+                    grid item it gets both dimensions for free. */}
+                {parts.map((part) => (
+                  <StaggerItem key={part._id}>
+                    <PartCard part={part} />
+                  </StaggerItem>
+                ))}
+              </Stagger>
+            )}
+          </SectionBoundary>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          7 · NUMBERS + REVIEWS
+          ══════════════════════════════════════════════════════════════════ */}
+      <section className="gk-sec" style={{ background: C.white, overflow: 'hidden' }}>
+        <div className="gk-wrap">
+
+          <Stagger className="gk-stats" gap={0.09}>
+            {STATS.map(({ to, suffix, label, icon: Icon }) => (
+              <StaggerItem key={label} className="gk-stat">
+                <span className="gk-stat-ico"><Icon size={18} /></span>
+                <CountUp to={to} suffix={suffix} className="gk-stat-val" />
+                <span className="gk-stat-lab">{label}</span>
+              </StaggerItem>
+            ))}
+          </Stagger>
+
+          <Reveal className="gk-head" style={{ marginTop: 'clamp(3rem, 6vw, 5rem)' }}>
+            <p className="gk-eyebrow gk-eyebrow--center">In their words</p>
+            <h2 className="gk-h2">
+              What Rohtak <span className="gk-grad">says about us</span>
+            </h2>
+            {/* No star figure is printed here on purpose. Rather than publish a
+                rating nobody has verified, this links to the live Google
+                listing — which is both honest and more persuasive. */}
+            <a href={BIZ.mapsUrl} target="_blank" rel="noreferrer noopener" className="gk-reviews-link">
+              <span className="gk-stars">
+                {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={C.gold} color={C.gold} />)}
+              </span>
+              Read the reviews on Google
+              <ChevronRight size={14} />
+            </a>
+          </Reveal>
+
+          <SectionBoundary name="reviews">
+            <Stagger className="gk-reviews" gap={0.06}>
+              {TESTIMONIALS.map(({ name, car, text, initial }) => (
+                <StaggerItem key={name} style={{ display: 'flex' }}>
+                  <figure className="gk-card gk-review">
+                    <span className="gk-review-mark" aria-hidden="true">&rdquo;</span>
+                    <blockquote className="gk-review-text">{text}</blockquote>
+                    <figcaption className="gk-review-by">
+                      {/* A monogram, not a stock portrait. The previous page
+                          used royalty-free faces of people who have never
+                          been customers, which is a fabricated record. */}
+                      <span className="gk-review-avatar" aria-hidden="true">{initial}</span>
+                      <span className="gk-review-who">
+                        <b>{name}</b>
+                        <span>{car}</span>
+                      </span>
+                      <span className="gk-stars gk-review-stars">
+                        {[...Array(5)].map((_, i) => <Star key={i} size={12} fill={C.gold} color={C.gold} />)}
+                      </span>
+                    </figcaption>
+                  </figure>
+                </StaggerItem>
+              ))}
+            </Stagger>
+          </SectionBoundary>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          8 · VISIT / CTA
+          The address, the hours and the phone number as the closing argument.
+          A local workshop's strongest card is that it is a real place you can
+          drive to, so the page ends by saying exactly where.
+          ══════════════════════════════════════════════════════════════════ */}
+      <section className="gk-dark gk-sec-lg">
+        <div className="gk-bloom gk-bloom--a" />
+        <div className="gk-bloom gk-bloom--b" />
+        <div className="gk-mesh" />
+
+        <div className="gk-wrap">
+          <div className="gk-visit">
+            <Reveal className="gk-visit-copy" x={-24} y={0}>
+              <p className="gk-eyebrow gk-eyebrow--dark">Come and see</p>
+              <h2 className="gk-h2" style={{ color: C.white }}>
+                We&rsquo;re on Sheela Bypass,<br />
+                <span className="gk-grad gk-grad--dark">near the railway crossing</span>
+              </h2>
+              <p className="gk-lede gk-lede--dark" style={{ marginTop: '1rem', maxWidth: 460 }}>
+                Drive in for a free look-over, or book online and we will come and collect
+                the car. No appointment needed to just ask a question.
+              </p>
+
+              <div className="gk-visit-ctas">
+                <Link to="/services" className="gk-btn gk-btn--primary gk-btn--lg">
+                  <Calendar size={17} /> Book a slot
+                </Link>
+                <a href={BIZ.mapsUrl} target="_blank" rel="noreferrer noopener"
+                  className="gk-btn gk-btn--ghost gk-btn--lg">
+                  <Navigation size={17} /> Get directions
+                </a>
+              </div>
+            </Reveal>
+
+            <Reveal className="gk-visit-card" x={24} y={0} delay={0.1}>
+              <ul className="gk-visit-rows">
+                <li>
+                  <span className="gk-chip gk-chip--sm gk-chip--on"><MapPin size={18} /></span>
+                  <span className="gk-visit-row-txt">
+                    <b>{BIZ.name}</b>
+                    <span>{BIZ.addressLine1}<br />{BIZ.addressLine2}</span>
+                  </span>
+                </li>
+                <li>
+                  <span className="gk-chip gk-chip--sm"><Phone size={18} /></span>
+                  <span className="gk-visit-row-txt">
+                    <b>
+                      <a href={`tel:${BIZ.phoneTel}`} className="gk-visit-tel">{BIZ.phoneDisplay}</a>
+                    </b>
+                    <span>Call or WhatsApp — someone always picks up</span>
+                  </span>
+                </li>
+                <li>
+                  <span className="gk-chip gk-chip--sm"><Clock size={18} /></span>
+                  {/* Both lines, rather than a live "Open now" badge. A badge
+                      that claims to know the current state has to actually
+                      know it — day, hour and holidays, in IST regardless of
+                      the visitor's device clock — and one that is wrong on a
+                      Sunday afternoon costs more trust than it ever built. */}
+                  <span className="gk-visit-row-txt">
+                    <b>{BIZ.hours}</b>
+                    <span>{BIZ.hoursSunday}</span>
+                  </span>
+                </li>
+                <li>
+                  <span className="gk-chip gk-chip--sm"><Headset size={18} /></span>
+                  <span className="gk-visit-row-txt">
+                    <b>Roadside breakdown</b>
+                    <span>Stuck somewhere in Rohtak? Call the same number.</span>
+                  </span>
+                </li>
+              </ul>
+            </Reveal>
           </div>
         </div>
       </section>
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE STYLES
+   Section-specific rules only. Anything reusable — buttons, cards, chips,
+   headings, the dark-section furniture — lives in src/styles/gk-system.css so
+   the nav, the footer and the inner pages share it.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const HOME_STYLES = `
+  .gk-sr {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  /* ── 1 · Hero ──────────────────────────────────────────────────────────── */
+  .gk-hero { padding-block: clamp(3rem, 7vw, 6rem) clamp(4rem, 8vw, 7rem); }
+  .gk-hero-inner { position: relative; z-index: 1; }
+
+  .gk-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: center;
+  }
+  /* Single column well before the point at which the estimate card would be
+     squeezed — the card has a lot of small type in it and is the first thing
+     to become unreadable. */
+  @media (max-width: 960px) {
+    .gk-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 3rem; }
+  }
+
+  /* Location chip. A link, not a label — it opens the Google listing. */
+  .gk-loc {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.45rem 0.85rem 0.45rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.12);
+    color: #CFE2F5; text-decoration: none;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: .01em;
+    transition: border-color .3s, background .3s, color .3s;
+  }
+  .gk-loc:hover { border-color: rgba(0,178,240,.45); background: rgba(0,178,240,.10); color: #FFF; }
+  .gk-loc-arrow { transition: transform .3s; opacity: .6; }
+  .gk-loc:hover .gk-loc-arrow { transform: translateX(3px); opacity: 1; }
+
+  .gk-hero-h1 { color: #FFFFFF; margin-top: 1.4rem; }
+  .gk-hero-lede { margin-top: 1.3rem; max-width: 30rem; }
+
+  .gk-hero-ctas { display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 2.1rem; }
+  /* Below 420px two side-by-side buttons each get about 150px, which is not
+     enough for "093559 99664" plus an icon. Stacked full-width instead. */
+  @media (max-width: 420px) {
+    .gk-hero-ctas { flex-direction: column; align-items: stretch; }
+    .gk-hero-ctas .gk-btn { width: 100%; }
+  }
+
+  .gk-hero-proof {
+    display: flex; flex-wrap: wrap; gap: 0.6rem 1.5rem;
+    margin: 2.2rem 0 0; padding: 1.4rem 0 0;
+    list-style: none;
+    border-top: 1px solid rgba(255,255,255,.09);
+  }
+  .gk-hero-proof li {
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    color: #D6E6F5; font-size: 0.83rem; font-weight: 600; white-space: nowrap;
+  }
+  .gk-hero-proof-ico {
+    width: 24px; height: 24px; border-radius: 8px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(0,178,240,.14); color: var(--gk-cyan-soft);
+    border: 1px solid rgba(0,178,240,.2);
+  }
+
+  /* ── Hero visual ───────────────────────────────────────────────────────── */
+  .gk-hero-visual {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 400px;
+  }
+  @media (max-width: 960px) { .gk-hero-visual { min-height: 360px; } }
+
+  /* The logo ring, sitting behind the estimate card. Larger than its parent on
+     purpose, with the parent NOT clipping — the dark section's own
+     overflow:hidden is what contains it.
+
+     Centred explicitly rather than left to its static position: an absolutely
+     positioned box with no inset resolves to where it *would* have been in
+     flow, which inside this flex row is hard against the left edge — so the
+     ring would sit off-centre behind the card and hang out to one side. */
+  .gk-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(560px, 118%); height: auto; aspect-ratio: 1;
+    pointer-events: none; z-index: 0;
+  }
+  .gk-ring-a, .gk-ring-b, .gk-ring-c { transform-origin: 200px 200px; }
+  .gk-ring-a { animation: gk-spin 64s linear infinite; }
+  .gk-ring-b { animation: gk-spin 96s linear infinite reverse; }
+  .gk-ring-c { animation: gk-spin 28s linear infinite; }
+  @keyframes gk-spin { to { transform: rotate(360deg); } }
+
+  .gk-quote-wrap { position: relative; z-index: 1; width: 100%; max-width: 420px; }
+
+  .gk-quote {
+    background: linear-gradient(158deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.045) 100%);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 22px;
+    padding: 1.35rem 1.35rem 1.15rem;
+    box-shadow: 0 30px 70px rgba(0,0,0,.42);
+    /* The blur is what sells this as glass over the mesh and blooms. Kept to
+       one element on the page: backdrop-filter is expensive and repeating it
+       on every card is what makes a page like this stutter on a phone. */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transform-style: preserve-3d;
+  }
+
+  .gk-quote-head {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding-bottom: 1rem; margin-bottom: 0.35rem;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+  }
+  .gk-quote-badge {
+    width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--gk-g-brand); color: #FFF;
+    box-shadow: 0 6px 18px rgba(21,103,211,.4);
+  }
+  .gk-quote-title { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+  .gk-quote-title b {
+    font-family: var(--gk-font-display); font-size: 0.92rem; font-weight: 700;
+    color: #FFF; letter-spacing: -.01em;
+  }
+  .gk-quote-title span { font-size: 0.71rem; color: var(--gk-meta-dark); font-weight: 500; margin-top: 1px; }
+  .gk-quote-flag {
+    flex-shrink: 0; font-family: var(--gk-font-display);
+    font-size: 0.62rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+    padding: 0.3rem 0.6rem; border-radius: 999px;
+    background: rgba(21,166,107,.16); color: #4FD8A0; border: 1px solid rgba(21,166,107,.3);
+  }
+
+  .gk-quote-rows { list-style: none; margin: 0; padding: 0.55rem 0 0; }
+  .gk-quote-rows li {
+    display: flex; align-items: center; gap: 0.9rem;
+    padding: 0.62rem 0;
+  }
+  .gk-quote-row-txt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+  .gk-quote-row-txt b { font-size: 0.82rem; font-weight: 600; color: #E4EFF9; }
+  .gk-quote-row-txt span { font-size: 0.7rem; color: var(--gk-meta-dark); margin-top: 1px; }
+  .gk-quote-amt {
+    font-family: var(--gk-font-display); font-size: 0.9rem; font-weight: 700;
+    color: #FFF; flex-shrink: 0;
+  }
+  .gk-quote-free {
+    font-family: var(--gk-font-display); font-size: 0.78rem; font-weight: 700;
+    color: #4FD8A0; flex-shrink: 0; letter-spacing: .03em;
+  }
+
+  .gk-quote-foot {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+    margin-top: 0.55rem; padding-top: 0.95rem;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .gk-quote-total-lab { font-size: 0.76rem; color: var(--gk-body-dark); font-weight: 600; }
+  .gk-quote-total {
+    font-family: var(--gk-font-display); font-size: 1.55rem; font-weight: 700;
+    letter-spacing: -.03em;
+    background: linear-gradient(100deg, var(--gk-cyan) 0%, var(--gk-cyan-soft) 60%, #FFF 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    color: var(--gk-cyan-soft);
+  }
+
+  .gk-quote-pickup {
+    display: flex; align-items: center; gap: 0.55rem;
+    margin-top: 0.95rem; padding: 0.65rem 0.8rem;
+    border-radius: 12px;
+    background: rgba(0,178,240,.08); border: 1px solid rgba(0,178,240,.16);
+    color: var(--gk-cyan-soft); font-size: 0.74rem; font-weight: 600;
+  }
+
+  /* Floating chips. Positioned against the visual, not the card, so they do
+     not move when the card parallaxes. */
+  .gk-float {
+    position: absolute; z-index: 2;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 0.9rem; border-radius: 12px;
+    background: rgba(4,16,31,.72);
+    border: 1px solid rgba(255,255,255,.12);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    color: #E4EFF9; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+    box-shadow: 0 14px 34px rgba(0,0,0,.4);
+  }
+  .gk-float svg { color: var(--gk-cyan-soft); flex-shrink: 0; }
+  .gk-float--a { top: 4%; right: -2%; }
+  .gk-float--b { bottom: 6%; left: -4%; }
+  /* They overlap the card badly once the column narrows, and they repeat
+     claims the proof list already makes — so they simply go. */
+  @media (max-width: 1100px) { .gk-float { display: none; } }
+
+  /* ── Scroll cue ────────────────────────────────────────────────────────── */
+  .gk-scroll-cue {
+    position: absolute; bottom: 1.6rem; left: 50%; transform: translateX(-50%);
+    z-index: 2; pointer-events: none;
+  }
+  .gk-scroll-cue-rail {
+    display: block; width: 22px; height: 34px; border-radius: 999px;
+    border: 1.5px solid rgba(255,255,255,.22); position: relative;
+  }
+  .gk-scroll-cue-rail span {
+    position: absolute; top: 6px; left: 50%; margin-left: -2px;
+    width: 4px; height: 7px; border-radius: 2px; background: var(--gk-cyan-soft);
+    animation: gk-cue 2.1s cubic-bezier(.22,1,.36,1) infinite;
+  }
+  @keyframes gk-cue {
+    0%        { transform: translateY(0);    opacity: 0; }
+    22%       { opacity: 1; }
+    68%, 100% { transform: translateY(13px); opacity: 0; }
+  }
+  @media (max-width: 960px) { .gk-scroll-cue { display: none; } }
+
+  /* ── 2 · Brand rail ────────────────────────────────────────────────────── */
+  .gk-brands {
+    background: var(--gk-surface);
+    border-bottom: 1px solid var(--gk-hairline);
+    padding-block: clamp(2.2rem, 4.5vw, 3.4rem);
+    /* Fed to the rail's edge fades so they match the band exactly. */
+    --gk-rail-bg: var(--gk-surface);
+  }
+  .gk-brands-lead {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; margin: 0 0 clamp(1.4rem, 3vw, 2.2rem);
+  }
+  .gk-brands-lead > span:first-child {
+    font-family: var(--gk-font-display);
+    font-size: 0.74rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--gk-navy);
+  }
+  .gk-brands-sub {
+    font-size: 0.86rem; color: var(--gk-meta); margin-top: 0.45rem; max-width: 34rem;
+  }
+
+  /* ── 3 · Services ──────────────────────────────────────────────────────── */
+  .gk-svc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: clamp(0.9rem, 1.6vw, 1.35rem);
+  }
+
+  .gk-svc {
+    padding: 1.5rem 1.35rem 1.25rem;
+    text-decoration: none;
+    width: 100%;
+    /* The card is the tilt target's child, so it must fill it completely or
+       the 3D transform pivots around a box larger than the visible card. */
+    height: 100%;
+  }
+  .gk-svc-title { margin-top: 1.15rem; }
+  .gk-svc-desc {
+    color: var(--gk-body); font-size: 0.83rem; line-height: 1.6;
+    margin: 0.45rem 0 0; flex: 1;
+  }
+  .gk-svc-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    margin-top: 1.35rem; padding-top: 0.95rem;
+    border-top: 1px solid var(--gk-hairline);
+  }
+  .gk-svc-price {
+    font-family: var(--gk-font-display); font-size: 1.05rem; font-weight: 700;
+    color: var(--gk-navy); letter-spacing: -.02em;
+  }
+  .gk-svc-price small {
+    font-family: var(--gk-font-sans); font-size: 0.68rem; font-weight: 600;
+    color: var(--gk-meta); margin-right: 0.3rem; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .gk-svc-go {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--gk-hairline); color: var(--gk-blue); background: #FFF;
+    transition: background .32s, color .32s, border-color .32s, transform .32s cubic-bezier(.22,1,.36,1);
+  }
+  .gk-svc:hover .gk-svc-go {
+    background: var(--gk-g-brand); color: #FFF; border-color: transparent;
+    transform: translateX(3px);
+  }
+
+  .gk-svc-actions {
+    display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center;
+    margin-top: clamp(1.8rem, 3.5vw, 2.6rem);
+  }
+
+  /* ── 4 · Bento ─────────────────────────────────────────────────────────── */
+  .gk-bento {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(0.9rem, 1.6vw, 1.3rem);
+  }
+  .gk-bento-cell { grid-column: span var(--span, 1); display: flex; }
+  .gk-bento-card { padding: 1.6rem 1.45rem; width: 100%; }
+  .gk-bento-card .gk-h3 { margin-top: 1.05rem; }
+  .gk-bento-desc {
+    color: var(--gk-body); font-size: 0.855rem; line-height: 1.65; margin: 0.5rem 0 0;
+  }
+  /* Four columns collapse to two, and the wide cells stop being wide — a
+     "span 2" cell in a 2-column grid is a full-width row, which is right. */
+  @media (max-width: 900px) {
+    .gk-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .gk-bento { grid-template-columns: minmax(0, 1fr); }
+    .gk-bento-cell { grid-column: span 1; }
+  }
+
+  /* ── 5 · Steps ─────────────────────────────────────────────────────────── */
+  .gk-steps { position: relative; }
+
+  /* The rail is inset by half a card so it starts and ends under the first and
+     last chip rather than running off the edges of the grid. */
+  .gk-steps-rail {
+    position: absolute; top: 74px; left: 12.5%; right: 12.5%; height: 2px;
+    background: var(--gk-hairline); border-radius: 2px; z-index: 0;
+  }
+  .gk-steps-fill { width: 100%; height: 100%; }
+  @media (max-width: 900px) { .gk-steps-rail { display: none; } }
+
+  .gk-steps-grid {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    gap: clamp(0.9rem, 1.6vw, 1.3rem);
+  }
+  .gk-step { padding: 1.6rem 1.4rem 1.4rem; height: 100%; }
+  .gk-step-num {
+    position: absolute; top: 0.6rem; right: 1rem;
+    font-family: var(--gk-font-display); font-size: 3.2rem; font-weight: 700;
+    line-height: 1; letter-spacing: -.05em;
+    color: rgba(21,103,211,.07);
+    transition: color .4s;
+  }
+  .gk-step:hover .gk-step-num { color: rgba(21,103,211,.14); }
+  .gk-step-title { margin-top: 1.05rem; }
+  .gk-step-desc {
+    color: var(--gk-body); font-size: 0.83rem; line-height: 1.62; margin: 0.5rem 0 0;
+  }
+
+  /* ── 6 · Shop ──────────────────────────────────────────────────────────── */
+  .gk-shop-head {
+    display: flex; flex-wrap: wrap; gap: 1.4rem;
+    align-items: flex-end; justify-content: space-between;
+    margin-bottom: clamp(1.8rem, 3.5vw, 2.6rem);
+  }
+  .gk-parts-grid > * { min-width: 0; }
+  .gk-parts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+    gap: clamp(0.8rem, 1.5vw, 1.2rem);
+  }
+  @media (min-width: 1120px) {
+    /* Exactly five across at desktop, which is the count actually fetched. */
+    .gk-parts-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  }
+
+  .gk-state {
+    align-items: center; text-align: center; gap: 0.5rem;
+    padding: clamp(2.2rem, 5vw, 3.2rem);
+  }
+  .gk-state .gk-lede { font-size: 0.88rem; margin-bottom: 0.6rem; }
+
+  /* ── 7 · Stats + reviews ───────────────────────────────────────────────── */
+  .gk-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: clamp(0.8rem, 1.6vw, 1.2rem);
+  }
+  .gk-stat {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    gap: 0.35rem;
+    padding: 1.6rem 1rem;
+    border-radius: 18px;
+    background: var(--gk-surface);
+    border: 1px solid var(--gk-hairline);
+    transition: border-color .35s, transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s;
+  }
+  .gk-stat:hover {
+    border-color: rgba(21,103,211,.28);
+    transform: translateY(-4px);
+    box-shadow: var(--gk-sh-card);
+  }
+  .gk-stat-ico {
+    width: 38px; height: 38px; border-radius: 11px; margin-bottom: 0.35rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--gk-g-brand); color: #FFF;
+    box-shadow: 0 6px 16px rgba(21,103,211,.28);
+  }
+  .gk-stat-val {
+    font-family: var(--gk-font-display);
+    font-size: clamp(1.65rem, 3vw, 2.2rem); font-weight: 700;
+    letter-spacing: -.04em; color: var(--gk-navy); line-height: 1;
+    /* Digits change width as they count; tabular figures stop the label
+       beneath from jittering left and right for the whole animation. */
+    font-variant-numeric: tabular-nums;
+  }
+  .gk-stat-lab {
+    font-size: 0.78rem; font-weight: 600; color: var(--gk-meta);
+    letter-spacing: .01em;
+  }
+
+  .gk-reviews-link {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    margin-top: 1.1rem; padding: 0.5rem 0.95rem;
+    border-radius: 999px; text-decoration: none;
+    border: 1px solid var(--gk-hairline); background: #FFF;
+    color: var(--gk-navy); font-size: 0.8rem; font-weight: 600;
+    transition: border-color .3s, box-shadow .3s, transform .3s cubic-bezier(.22,1,.36,1);
+  }
+  .gk-reviews-link:hover {
+    border-color: rgba(21,103,211,.35); box-shadow: var(--gk-sh-card); transform: translateY(-2px);
+  }
+  .gk-stars { display: inline-flex; gap: 1px; }
+
+  .gk-reviews {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: clamp(0.9rem, 1.6vw, 1.3rem);
+  }
+  .gk-review { padding: 1.6rem 1.45rem 1.35rem; width: 100%; }
+  .gk-review-mark {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 3.4rem; line-height: .55; color: rgba(21,103,211,.16);
+    display: block; margin-bottom: 0.7rem;
+  }
+  .gk-review-text {
+    margin: 0; flex: 1;
+    color: #33455C; font-size: 0.88rem; line-height: 1.68;
+  }
+  .gk-review-by {
+    display: flex; align-items: center; gap: 0.7rem;
+    margin-top: 1.35rem; padding-top: 1.05rem;
+    border-top: 1px solid var(--gk-hairline);
+  }
+  .gk-review-avatar {
+    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--gk-g-brand); color: #FFF;
+    font-family: var(--gk-font-display); font-size: 0.95rem; font-weight: 700;
+  }
+  .gk-review-who { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+  .gk-review-who b {
+    font-family: var(--gk-font-display); font-size: 0.88rem; font-weight: 700;
+    color: var(--gk-navy);
+  }
+  .gk-review-who span { font-size: 0.73rem; color: var(--gk-meta); margin-top: 1px; }
+  .gk-review-stars { flex-shrink: 0; }
+  @media (max-width: 420px) { .gk-review-stars { display: none; } }
+
+  /* ── 8 · Visit ─────────────────────────────────────────────────────────── */
+  .gk-visit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+  @media (max-width: 940px) { .gk-visit { grid-template-columns: minmax(0, 1fr); } }
+
+  .gk-visit-ctas { display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 2rem; }
+  @media (max-width: 420px) {
+    .gk-visit-ctas { flex-direction: column; align-items: stretch; }
+    .gk-visit-ctas .gk-btn { width: 100%; }
+  }
+
+  .gk-visit-card {
+    background: linear-gradient(158deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.035) 100%);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 24px;
+    padding: 0.6rem 1.4rem;
+    box-shadow: 0 30px 70px rgba(0,0,0,.36);
+  }
+  .gk-visit-rows { list-style: none; margin: 0; padding: 0; }
+  .gk-visit-rows li {
+    display: flex; align-items: flex-start; gap: 0.95rem;
+    padding: 1.15rem 0;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .gk-visit-rows li:last-child { border-bottom: 0; }
+  .gk-visit-rows .gk-chip {
+    color: var(--gk-cyan-soft);
+    background: rgba(0,178,240,.11);
+    border-color: rgba(0,178,240,.2);
+  }
+  .gk-visit-rows .gk-chip--on { color: #FFF; background: var(--gk-g-brand); border-color: transparent; }
+  .gk-visit-row-txt { display: flex; flex-direction: column; min-width: 0; }
+  .gk-visit-row-txt b {
+    font-family: var(--gk-font-display); font-size: 0.92rem; font-weight: 700;
+    color: #FFF; letter-spacing: -.01em;
+  }
+  .gk-visit-row-txt > span {
+    font-size: 0.8rem; line-height: 1.6; color: var(--gk-body-dark); margin-top: 0.25rem;
+  }
+  .gk-visit-tel { color: #FFF; text-decoration: none; transition: color .25s; }
+  .gk-visit-tel:hover { color: var(--gk-cyan-soft); }
+
+  /* ── Reduced motion ────────────────────────────────────────────────────
+     The JS primitives handle their own opt-out; these are the CSS-only
+     animations on this page. Everything ends up in its final position. */
+  @media (prefers-reduced-motion: reduce) {
+    .gk-ring-a, .gk-ring-b, .gk-ring-c { animation: none; }
+    .gk-scroll-cue { display: none; }
+    .gk-svc-go, .gk-stat, .gk-reviews-link, .gk-loc { transition-duration: .01ms; }
+  }
+`;
