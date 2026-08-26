@@ -28,6 +28,7 @@ const SERVICE_LINKS = [
   ['Batteries', 3],
   ['Tyres & Wheels', 4],
   ['Denting & Painting', 5],
+  ['Insurance Claims', 12],
   ['Car Spa & Cleaning', 7],
 ];
 

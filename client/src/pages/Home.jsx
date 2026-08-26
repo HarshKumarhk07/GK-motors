@@ -55,7 +55,7 @@ import {
   ArrowRight, Wrench, Sparkles, Zap, PaintBucket, Droplets, CircleDot, Battery,
   Disc, Settings, Shield, ShieldCheck, Award, Car, CheckCircle, Clock,
   Star, Phone, Calendar, Users, MapPin, AlertCircle, RefreshCw, ChevronDown,
-  ChevronRight, Truck, Navigation, IndianRupee, Headset,
+  ChevronRight, Truck, Navigation, IndianRupee, Headset, MessageCircle,
 } from 'lucide-react';
 
 import { getServiceCategories, getCategories } from '../api/serviceApi';
@@ -201,6 +201,41 @@ const PROMOS = [
     desc: 'Surveyor coordination, paperwork and follow-up done for you. You pay the excess, we deal with the insurer.',
     to: '/services?category=12',
   },
+];
+
+/* ── Insurance ─────────────────────────────────────────────────────────────
+   GK Motors does not sell cars. It sells service, spares, and — the part that
+   was buried as one tile in a twelve-tile grid — insurance claim work. A claim
+   is the highest-value job a workshop like this takes and the one a customer
+   is most anxious about, so it gets its own section rather than a price card.
+
+   The four steps describe what actually happens, in the order it happens, and
+   each one names who does the work. That is the whole argument: the customer
+   makes one phone call and the workshop does the rest. */
+const CLAIM_STEPS = [
+  { n: '01', icon: MessageCircle, title: 'Send us the damage',   desc: 'WhatsApp a few photos. We tell you honestly whether claiming is worth it, or whether paying cash will cost you less over the policy term.' },
+  { n: '02', icon: Shield,        title: 'We file the claim',    desc: 'We raise it with your insurer and coordinate the surveyor visit. You do not chase anyone.' },
+  { n: '03', icon: Wrench,        title: 'Cashless repair',      desc: 'Approved work carried out with genuine panels and matched paint, in our own bays.' },
+  { n: '04', icon: Car,           title: 'You collect and go',   desc: 'Pay only the excess your policy specifies. The insurer settles the rest directly with us.' },
+];
+
+/* What the customer is charged for, spelled out. The point of the table is the
+   last row: everything above it is free, and the one thing that is not is set
+   by their policy rather than by us. */
+const CLAIM_COSTS = [
+  { label: 'Claim filing & paperwork',   value: 'Free',  free: true },
+  { label: 'Surveyor coordination',      value: 'Free',  free: true },
+  { label: 'Pickup & drop',              value: 'Free',  free: true },
+  { label: 'Your policy excess',         value: 'As per your policy', free: false },
+];
+
+/* ⚠ CONFIRM BEFORE LAUNCH. Naming an insurer here tells a customer you handle
+   their claims. Cut any of these GK Motors does not actually work with — an
+   owner who picks the workshop because their insurer is on this list and then
+   finds out otherwise is a complaint, not a customer. */
+const INSURERS = [
+  'HDFC ERGO', 'ICICI Lombard', 'Bajaj Allianz', 'TATA AIG', 'New India Assurance',
+  'Reliance General', 'Go Digit', 'SBI General', 'Cholamandalam MS', 'IFFCO Tokio',
 ];
 
 const HOME_CATEGORY_COUNT = 8;
@@ -716,6 +751,89 @@ export default function Home() {
               </Stagger>
             )}
           </SectionBoundary>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          4b · INSURANCE CLAIMS
+          Directly after the parts counter, and dark — the three sections
+          before it are all light, so the tonal switch is what makes this read
+          as a distinct offer rather than another row of cards.
+
+          It is the only section on the page with its own full-width banner
+          treatment, which is deliberate: a claim is the biggest single job
+          that comes through the door.
+          ══════════════════════════════════════════════════════════════════ */}
+      <section id="insurance" className="gk-dark gk-sec">
+        <div className="gk-bloom gk-bloom--a" />
+        <div className="gk-bloom gk-bloom--b" />
+        <div className="gk-mesh" />
+
+        <div className="gk-wrap">
+          <div className="gk-ins-top">
+            <Reveal x={-20} y={0}>
+              <p className="gk-eyebrow gk-eyebrow--dark">Insurance claims</p>
+              <h2 className="gk-h2" style={{ color: C.white }}>
+                Someone hit your car.<br />
+                <span className="gk-grad gk-grad--dark">Don&rsquo;t pay for it twice.</span>
+              </h2>
+              <p className="gk-lede gk-lede--dark" style={{ marginTop: '1.1rem', maxWidth: 480 }}>
+                Most people skip a claim because the paperwork is worse than the dent.
+                We do the paperwork. You make one phone call and pay only what your
+                policy says you owe.
+              </p>
+
+              <div className="gk-ins-ctas">
+                <Link to="/services?category=12" className="gk-btn gk-btn--primary gk-btn--lg">
+                  <Shield size={17} /> Start a claim
+                </Link>
+                <a href={`https://wa.me/${BIZ.whatsapp}`} target="_blank" rel="noreferrer noopener"
+                  className="gk-btn gk-btn--ghost gk-btn--lg">
+                  <MessageCircle size={17} /> Send photos on WhatsApp
+                </a>
+              </div>
+            </Reveal>
+
+            {/* The cost table. Its job is the contrast between three "Free"
+                rows and one row we explicitly do NOT control. */}
+            <Reveal x={20} y={0} delay={0.1} className="gk-ins-costcard">
+              <p className="gk-ins-costhead">What a claim costs you</p>
+              <ul className="gk-ins-costs">
+                {CLAIM_COSTS.map(({ label, value, free }) => (
+                  <li key={label}>
+                    <span className="gk-ins-cost-lab">
+                      {free && <Check size={14} />}
+                      {label}
+                    </span>
+                    <span className={free ? 'gk-ins-cost-free' : 'gk-ins-cost-val'}>{value}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="gk-ins-costnote">
+                No filing fee, no &ldquo;handling charge&rdquo;, no cut of your settlement.
+              </p>
+            </Reveal>
+          </div>
+
+          <Stagger className="gk-ins-steps" gap={0.08}>
+            {CLAIM_STEPS.map(({ n, icon: Icon, title, desc }) => (
+              <StaggerItem key={n} depth={14}>
+                <div className="gk-ins-step">
+                  <span className="gk-ins-step-n">{n}</span>
+                  <span className="gk-ins-step-ico"><Icon size={19} /></span>
+                  <h3 className="gk-ins-step-title">{title}</h3>
+                  <p className="gk-ins-step-desc">{desc}</p>
+                </div>
+              </StaggerItem>
+            ))}
+          </Stagger>
+
+          <Reveal y={18} className="gk-ins-insurers">
+            <span className="gk-ins-insurers-lab">Claims filed with</span>
+            <ul>
+              {INSURERS.map((name) => <li key={name}>{name}</li>)}
+            </ul>
+          </Reveal>
         </div>
       </section>
 
@@ -1301,6 +1419,147 @@ const HOME_STYLES = `
   .gk-svc-actions {
     display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center;
     margin-top: clamp(1.8rem, 3.5vw, 2.6rem);
+  }
+
+  /* ── 4b · Insurance ────────────────────────────────────────────────────── */
+  .gk-ins-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(2rem, 4.5vw, 4rem);
+    align-items: center;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+  @media (max-width: 940px) { .gk-ins-top { grid-template-columns: minmax(0, 1fr); } }
+
+  .gk-ins-ctas { display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 2rem; }
+  @media (max-width: 520px) {
+    .gk-ins-ctas { flex-direction: column; align-items: stretch; }
+    .gk-ins-ctas .gk-btn { width: 100%; }
+  }
+
+  /* Cost table */
+  .gk-ins-costcard {
+    background: linear-gradient(158deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.04) 100%);
+    border: 1px solid rgba(255,255,255,.13);
+    border-radius: 24px;
+    padding: 1.5rem 1.5rem 1.3rem;
+    box-shadow: 0 30px 70px rgba(0,0,0,.38);
+  }
+  .gk-ins-costhead {
+    font-family: var(--gk-font-display);
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: var(--gk-cyan-soft);
+    margin: 0 0 1.1rem;
+  }
+  .gk-ins-costs { list-style: none; margin: 0; padding: 0; }
+  .gk-ins-costs li {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 0.82rem 0;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .gk-ins-costs li:last-child { border-bottom: 0; }
+  .gk-ins-cost-lab {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    color: #DDEAF7; font-size: 0.87rem; font-weight: 500;
+  }
+  .gk-ins-cost-lab svg { color: #4FD8A0; flex-shrink: 0; }
+  .gk-ins-cost-free {
+    font-family: var(--gk-font-display); font-size: 0.85rem; font-weight: 700;
+    color: #4FD8A0; flex-shrink: 0; letter-spacing: .02em;
+  }
+  /* The one row that is not free is set apart in white rather than green, so
+     the eye does not read it as another included item. */
+  .gk-ins-cost-val {
+    font-family: var(--gk-font-display); font-size: 0.82rem; font-weight: 700;
+    color: #FFFFFF; flex-shrink: 0; text-align: right;
+  }
+  .gk-ins-costnote {
+    margin: 1.1rem 0 0; padding-top: 0.95rem;
+    border-top: 1px solid rgba(255,255,255,.08);
+    font-size: 0.78rem; line-height: 1.55; color: var(--gk-meta-dark);
+  }
+
+  /* Claim steps */
+  .gk-ins-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr));
+    gap: clamp(0.9rem, 1.6vw, 1.25rem);
+  }
+  .gk-ins-step {
+    position: relative; height: 100%;
+    padding: 1.5rem 1.35rem 1.35rem;
+    border-radius: 20px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.10);
+    overflow: hidden;
+    transition: border-color .35s, background .35s, transform .35s cubic-bezier(.22,1,.36,1);
+  }
+  .gk-ins-step:hover {
+    border-color: rgba(0,178,240,.4);
+    background: rgba(255,255,255,.07);
+    transform: translateY(-5px);
+  }
+  @media (hover: none) { .gk-ins-step:hover { transform: none; } }
+  .gk-ins-step-n {
+    position: absolute; top: .5rem; right: 1rem;
+    font-family: var(--gk-font-display); font-size: 2.9rem; font-weight: 700;
+    line-height: 1; letter-spacing: -.05em;
+    color: rgba(111,216,255,.10);
+    transition: color .4s;
+  }
+  .gk-ins-step:hover .gk-ins-step-n { color: rgba(111,216,255,.2); }
+  .gk-ins-step-ico {
+    width: 44px; height: 44px; border-radius: 13px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(0,178,240,.13);
+    border: 1px solid rgba(0,178,240,.24);
+    color: var(--gk-cyan-soft);
+    transition: background .35s, color .35s;
+  }
+  .gk-ins-step:hover .gk-ins-step-ico {
+    background: var(--gk-g-brand); color: #FFF; border-color: transparent;
+  }
+  .gk-ins-step-title {
+    font-family: var(--gk-font-display);
+    font-size: 1rem; font-weight: 700; letter-spacing: -.015em;
+    color: #FFFFFF; margin: 1.05rem 0 0;
+  }
+  .gk-ins-step-desc {
+    font-size: 0.81rem; line-height: 1.6;
+    color: var(--gk-body-dark); margin: 0.5rem 0 0;
+  }
+
+  /* Insurer strip */
+  .gk-ins-insurers {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 0.7rem 1rem;
+    margin-top: clamp(2rem, 4vw, 3rem);
+    padding-top: clamp(1.6rem, 3vw, 2.2rem);
+    border-top: 1px solid rgba(255,255,255,.09);
+  }
+  .gk-ins-insurers-lab {
+    font-family: var(--gk-font-display);
+    font-size: 0.68rem; font-weight: 700;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--gk-meta-dark);
+    margin-right: 0.4rem;
+  }
+  .gk-ins-insurers ul {
+    display: flex; flex-wrap: wrap; gap: 0.55rem;
+    list-style: none; margin: 0; padding: 0;
+  }
+  .gk-ins-insurers li {
+    padding: 0.42rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.11);
+    color: #C6DAEE;
+    font-size: 0.77rem; font-weight: 600; white-space: nowrap;
+    transition: border-color .3s, color .3s, background .3s;
+  }
+  .gk-ins-insurers li:hover {
+    border-color: rgba(0,178,240,.4); color: #FFFFFF; background: rgba(0,178,240,.1);
   }
 
   /* ── 4 · Bento ─────────────────────────────────────────────────────────── */
