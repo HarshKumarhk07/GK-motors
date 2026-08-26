@@ -55,21 +55,20 @@ const BRANDS = [
 
 function BrandItem({ brand }) {
   return (
-    <li
-      className="gk-brand"
-      style={{
-        width: brand.w,
-        /* Consumed by the mask-image declarations in the stylesheet. Set here
-           rather than generating sixteen CSS rules for what is one rule with
-           one changing URL. */
-        '--gk-brand-src': `url(/brands/${brand.file}.svg)`,
-      }}
-    >
-      {/* The glyph is decorative; the name is the accessible content and is
-          visually hidden rather than dropped, so the rail is a readable list
-          of brands to a screen reader and to search engines. */}
-      <span className="gk-brand-mark" aria-hidden="true" />
-      <span className="gk-brand-name">{brand.name}</span>
+    <li className="gk-brand" style={{ width: brand.w }}>
+      {/* A real <img>, not a CSS mask.
+          The rail used to load each SVG as a mask-image over a currentColor
+          background, which gave one calm monochrome set — technically tidier,
+          but on a white band sixteen grey glyphs read as a disabled state
+          rather than as a wall of brands. Full colour is the whole point of a
+          logo wall: Toyota red and Hyundai blue and Kia black are what make a
+          visitor's eye stop on the one they own. */}
+      <img
+        src={`/brands/${brand.file}.svg`}
+        alt={`${brand.name} — serviced at GK Motors`}
+        loading="lazy"
+        decoding="async"
+      />
     </li>
   );
 }
@@ -134,43 +133,25 @@ const RAIL_STYLES = `
   .gk-brand {
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
-    height: 34px;
-    color: var(--gk-navy);
-    transition: color .35s ease, opacity .35s ease, transform .35s cubic-bezier(.22,1,.36,1);
-    opacity: .42;
+    height: 36px;
+    transition: opacity .35s ease, transform .35s cubic-bezier(.22,1,.36,1), filter .35s ease;
+    /* Full colour, only very slightly held back so the rail supports the
+       section rather than shouting over it. */
+    opacity: .92;
   }
-
-  /* The mask is what lets a red Toyota glyph render in our navy: the SVG
-     supplies the shape, currentColor supplies the paint. mask-size:contain
-     keeps every glyph inside its box whatever its intrinsic aspect ratio. */
-  .gk-brand-mark {
-    display: block;
+  .gk-brand img {
     width: 100%; height: 100%;
-    background-color: currentColor;
-    -webkit-mask-image: var(--gk-brand-src);
-            mask-image: var(--gk-brand-src);
-    -webkit-mask-size: contain;
-            mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-            mask-position: center;
-  }
-
-  /* Visually hidden, not display:none — the brand names are the accessible
-     content of this list and must stay in the accessibility tree. */
-  .gk-brand-name {
-    position: absolute; width: 1px; height: 1px;
-    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+    object-fit: contain;
+    display: block;
   }
 
   /* Dim the rest of the rail when one is pointed at, so the hovered mark reads
      as selected rather than merely brighter. */
-  .gk-rail:hover .gk-brand { opacity: .22; }
+  .gk-rail:hover .gk-brand { opacity: .3; filter: saturate(.35); }
   .gk-rail .gk-brand:hover {
-    color: var(--gk-blue);
     opacity: 1;
-    transform: scale(1.12);
+    filter: none;
+    transform: scale(1.14);
   }
 
   .gk-rail-fade {
@@ -182,8 +163,9 @@ const RAIL_STYLES = `
 
   /* Dark variant: set --gk-rail-bg to the surrounding colour so the fades
      match, and add .gk-rail--dark for the inverted treatment. */
-  .gk-rail--dark .gk-brand { color: #FFFFFF; opacity: .34; }
-  .gk-rail--dark .gk-brand:hover { color: var(--gk-cyan-soft); opacity: 1; }
+  /* On a dark band the darker marks (Kia, Jeep) disappear, so the whole set
+     gets a slight lift rather than a recolour. */
+  .gk-rail--dark .gk-brand { filter: brightness(1.35) saturate(1.1); }
 
   @media (max-width: 640px) {
     .gk-rail-track { animation-duration: 34s; }

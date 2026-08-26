@@ -8,9 +8,10 @@
    nobody asked for. So the <video> element is not rendered at all until three
    conditions are met:
 
-     1. The viewport is wide enough that the layer is actually visible. Below
-        the breakpoint the poster alone is used — on a small screen a dim,
-        blurred backdrop is indistinguishable from a still anyway.
+     1. The viewport is wide enough that the layer is actually visible, and
+        the connection is not metered or slow — Data Saver and 2g both opt
+        out, since 2.6 MB of decoration is not a reasonable thing to spend
+        somebody's data allowance on.
      2. The section is within one screen of the viewport. Scrolling to it is
         what triggers the fetch.
      3. The visitor has not asked their OS to reduce motion.
@@ -28,8 +29,11 @@ export default function AmbientVideo({
   src,
   poster,
   className,
-  /* Below this width the video is never fetched. */
-  minWidth = 1024,
+  /* Below this width the video is never fetched. Deliberately low: it was
+     1024, which meant the clip simply never played on a phone — and the
+     section it sits behind ("Come and see") is exactly the one a local
+     customer on a phone is most likely to reach. */
+  minWidth = 420,
   /* How far ahead of the viewport to start loading. */
   rootMargin = '400px 0px',
 }) {
@@ -44,6 +48,23 @@ export default function AmbientVideo({
 
     const wide = window.matchMedia(`(min-width: ${minWidth}px)`);
     if (!wide.matches) return undefined;
+
+    /* Now that phones are included, the connection has to be checked rather
+       than assumed. The Network Information API is Chromium-only, which is
+       fine — it is used to OPT OUT, so browsers without it keep the previous
+       behaviour rather than losing anything.
+
+       Two signals:
+         • saveData: the visitor has explicitly turned on Data Saver. Loading
+           2.6 MB of decoration over that is ignoring a direct instruction.
+         • effectiveType: on 2g or slow-2g the clip would still be arriving
+           long after they had scrolled past, while competing for bandwidth
+           with things they actually asked for. */
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn) {
+      if (conn.saveData) return undefined;
+      if (/(^|-)2g$/.test(conn.effectiveType || '')) return undefined;
+    }
 
     const el = hostRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') return undefined;

@@ -129,11 +129,32 @@ const NAV_STYLES = `
   @media (min-width: 1024px) and (max-width: 1180px) {
     .gk-nav-links a { padding: 0.45rem 0.5rem; font-size: 0.78rem; }
   }
-  /* Below 380px the name label crowds the row; the icons and the hamburger
-     are what actually need to stay reachable. */
+  /* ── Phone bar ───────────────────────────────────────────────────────── */
+  .gk-nav-cta-short { display: none; }
+  @media (max-width: 640px) {
+    /* A shorter bar: 64px of chrome is a lot of a phone screen to give up
+       before any content starts. */
+    .gk-nav-row { height: 54px !important; gap: 0.4rem; }
+    .gk-nav-right { gap: 0.25rem !important; }
+    .gk-nav-card { padding: 0 0.5rem; border-radius: 14px; }
+    .gk-nav { padding: 0.4rem 0; }
+
+    .gk-nav-icon { width: 36px; height: 36px; }
+    .gk-nav-cta { padding: 0.55rem 0.85rem; font-size: 0.76rem; border-radius: 10px; }
+    .gk-nav-cta-full { display: none; }
+    .gk-nav-cta-short { display: inline; }
+
+    /* The signed-in chip keeps its avatar but drops the name and chevron —
+       the name is the first thing in the drawer anyway. */
+    .gk-nav-user { padding: 0.3rem; border-radius: 10px; }
+    .gk-nav-user svg:last-child { display: none; }
+  }
+  @media (min-width: 641px) { .gk-nav-call { display: none; } }
+
+  /* Below 380px even the burger and the CTA are competing for room. */
   @media (max-width: 380px) {
-    .gk-nav-row { gap: 0.35rem; }
-    .gk-nav-right { gap: 0.5rem !important; }
+    .gk-nav-cta { padding: 0.5rem 0.7rem; font-size: 0.72rem; }
+    .gk-nav-icon { width: 32px; height: 32px; }
   }
 
   /* ── Icon buttons (cart) ─────────────────────────────────────────────── */
@@ -522,10 +543,25 @@ export default function Navbar() {
                 </div>
               )}
 
+              {/* Tap-to-call, phones only. On a small screen this is the
+                  single most likely action and it was previously buried two
+                  taps deep inside the drawer. */}
+              <a href={`tel:${BIZ.phoneTel}`} className="gk-nav-icon gk-nav-call sm:hidden"
+                aria-label={`Call ${BIZ.phoneDisplay}`}>
+                <Phone size={19} />
+              </a>
+
               {/* The single filled control in the row, and the only place on
-                  the bar that carries the brand gradient. */}
-              <Link to="/services" className="hidden sm:inline-flex gk-btn gk-btn--primary gk-btn--sm">
-                Book Now
+                  the bar that carries the brand gradient.
+
+                  It used to be `hidden sm:inline-flex`, and Login was hidden
+                  below 640px too — so on a phone the bar was a logo on the
+                  left, a cart and a burger on the right, and a wide band of
+                  empty white in between. It now shows at every width and just
+                  loses its second word. */}
+              <Link to="/services" className="gk-btn gk-btn--primary gk-btn--sm gk-nav-cta">
+                <span className="gk-nav-cta-full">Book Now</span>
+                <span className="gk-nav-cta-short">Book</span>
               </Link>
 
               {/* Mobile hamburger.

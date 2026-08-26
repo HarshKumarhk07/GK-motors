@@ -49,6 +49,8 @@ const JOBS = [
   // wi2 is the documentary-looking one — kept as the third option.
   { from: 'wi2.png',         to: 'workshop/bay-real.webp',   width: 1600, quality: 80 },
 
+  // The parts-shelf shot for the shop section.
+  { from: 'parts.png',       to: 'shop/parts.webp',          width: 1400, quality: 84 },
   // Insurance section banner.
   { from: 'crash.png',       to: 'insurance/damage.webp',    width: 1400, quality: 82 },
 

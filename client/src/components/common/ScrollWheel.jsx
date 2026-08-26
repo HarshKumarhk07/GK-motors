@@ -32,8 +32,8 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 import { useRef } from 'react';
 import {
-  motion, useScroll, useSpring, useTransform, useMotionValue,
-  useAnimationFrame, useReducedMotion,
+  motion, useScroll, useSpring, useTransform, useMotionValue, useVelocity,
+  useMotionTemplate, useAnimationFrame, useReducedMotion,
 } from 'framer-motion';
 
 /* An alloy wheel: tyre, rim, ten spokes, hub. Drawn once and reused at any
@@ -88,9 +88,19 @@ export default function ScrollWheel({
   idle = 4,
   /* Lower stiffness = heavier wheel = more coast. */
   stiffness = 40,
+  /* How much the wheel reacts to how FAST you are scrolling, on top of how
+     far. 0 disables the effect entirely. */
+  reactivity = 1,
 }) {
   const reduced = useReducedMotion();
   const { scrollY } = useScroll();
+
+  /* Scroll speed in px/s. This is what makes the wheel visibly "adapt" rather
+     than merely turn: a flick of the wheel spikes it into the thousands, a
+     slow drag keeps it in the low hundreds. */
+  const velocity = useVelocity(scrollY);
+  const smoothVelocity = useSpring(velocity, { stiffness: 300, damping: 40, mass: 0.2 });
+  const speed = useTransform(smoothVelocity, (v) => Math.min(Math.abs(v), 4000));
 
   /* Accumulated one-directional distance. useTransform cannot do this on its
      own because it is a pure mapping of the current value; the running total
@@ -117,6 +127,22 @@ export default function ScrollWheel({
 
   const rotate = useTransform([spun, drift], ([a, b]) => a + b);
 
+  /* Two speed-reactive touches, both capped so a hard flick cannot wash the
+     section out:
+
+       • A radial blur standing in for motion blur. A real wheel photographed
+         while spinning smears; a perfectly crisp one at speed reads as a
+         static graphic being rotated.
+       • A small brightness lift, so the wheel catches the light as it winds
+         up and settles back when it coasts. */
+  const blurPx = useTransform(speed, [0, 4000], [0, 3.2 * reactivity]);
+  const bright = useTransform(speed, [0, 2500], [1, 1 + 0.55 * reactivity]);
+  /* Both effects go into ONE filter string. Brightness deliberately does not
+     use `opacity`: the placement classes set their own opacity (.12, .07 and
+     so on) and an inline opacity would override it outright, turning a faint
+     background wheel into a solid one the moment the page moved. */
+  const filter = useMotionTemplate`blur(${blurPx}px) brightness(${bright})`;
+
   // A large rotating object in peripheral vision is precisely what this
   // setting exists to prevent, so it is removed rather than slowed.
   if (reduced) return null;
@@ -124,7 +150,12 @@ export default function ScrollWheel({
   return (
     <motion.div
       className={className}
-      style={{ ...style, rotate, willChange: 'transform' }}
+      style={{
+        ...style,
+        rotate,
+        filter: reactivity ? filter : undefined,
+        willChange: 'transform, filter',
+      }}
       aria-hidden="true"
     >
       <WheelArt />

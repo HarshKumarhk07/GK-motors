@@ -65,6 +65,7 @@ import SectionBoundary from '../components/common/SectionBoundary';
 import BrandRail from '../components/common/BrandRail';
 import AmbientVideo from '../components/common/AmbientVideo';
 import ScrollWheel from '../components/common/ScrollWheel';
+import ProcessFlow from '../components/common/ProcessFlow';
 import {
   Reveal, Stagger, StaggerItem, Parallax, ScrollRecede, CountUp, ScrollProgressLine, motion,
 } from '../components/common/Motion';
@@ -131,10 +132,10 @@ const WHY_US = [
 ];
 
 const HOW_IT_WORKS = [
-  { step: '01', icon: Wrench,   title: 'Tell us what it needs',  desc: 'Pick a service, or just describe the noise. Not sure what is wrong? Book a diagnostic and we will find it.' },
-  { step: '02', icon: Calendar, title: 'Choose a slot',          desc: 'Pick the date, the time and the address. Evening and Sunday slots are available.' },
-  { step: '03', icon: Truck,    title: 'We collect the car',     desc: 'A driver comes to you anywhere in Rohtak, free. You get the estimate on WhatsApp before any work begins.' },
-  { step: '04', icon: Navigation, title: 'Back to you, washed',  desc: 'Serviced, road-tested, washed, and delivered with the old parts and a warranty on the invoice.' },
+  { n: '01', icon: Wrench,   title: 'Tell us what it needs',  desc: 'Pick a service, or just describe the noise. Not sure what is wrong? Book a diagnostic and we will find it.' },
+  { n: '02', icon: Calendar, title: 'Choose a slot',          desc: 'Pick the date, the time and the address. Evening and Sunday slots are available.' },
+  { n: '03', icon: Truck,    title: 'We collect the car',     desc: 'A driver comes to you anywhere in Rohtak, free. You get the estimate on WhatsApp before any work begins.' },
+  { n: '04', icon: Navigation, title: 'Back to you, washed',  desc: 'Serviced, road-tested, washed, and delivered with the old parts and a warranty on the invoice.' },
 ];
 
 /* ⚠ PLACEHOLDER — see the file header. Written to be plausible for a workshop
@@ -146,30 +147,36 @@ const STATS = [
   { to: 100,   suffix: '%',   label: 'Genuine parts fitted',   icon: ShieldCheck },
 ];
 
-/* ⚠ PLACEHOLDER — see the file header. These are written, not collected.
+/* ⚠ PLACEHOLDER — see the file header. These are written, not collected, and
+   the portraits are stock photographs of people who have never been customers
+   here. Added on request so the section reads as finished; both the words and
+   the faces must be replaced with real reviewers before this goes live, or the
+   photographs dropped and the monograms used throughout. Publishing invented
+   quotes under real-looking faces is the one thing on this page that would be
+   genuinely dishonest rather than merely unverified.
    Replace every one with a real review from the Google listing (BIZ.mapsUrl)
    before this page goes in front of customers. The shape is deliberately
    specific — a car, a job, a price, an outcome — because that is what a real
    review looks like and what a generic one cannot fake. */
 const TESTIMONIALS = [
   {
-    name: 'Mahesh Ahlawat', car: 'Swift Dzire', initial: 'M',
+    name: 'Mahesh Ahlawat', img: '/testimonials/rahul-sharma.jpg', car: 'Swift Dzire', initial: 'M',
     text: 'AC stopped cooling two days before a Delhi trip. They traced it to a leaking condenser, showed me the old part, and had the car back to me the same evening. Charged exactly what was quoted.',
   },
   {
-    name: 'Sunita Malik', car: 'Hyundai i20', initial: 'S',
+    name: 'Sunita Malik', img: '/testimonials/priya-patel.jpg', car: 'Hyundai i20', initial: 'S',
     text: 'First workshop that did not talk down to me about my own car. Photos of everything on WhatsApp before they touched it, and they waited for my yes.',
   },
   {
-    name: 'Rajender Dahiya', car: 'Mahindra Scorpio', initial: 'R',
+    name: 'Rajender Dahiya', img: '/testimonials/suresh-kumar.jpg', car: 'Mahindra Scorpio', initial: 'R',
     text: 'Four years of servicing my Scorpio here. The bill has never once come out higher than the estimate. That is the whole reason I keep going back.',
   },
   {
-    name: 'Ankit Sehrawat', car: 'Hyundai Creta', initial: 'A',
+    name: 'Ankit Sehrawat', img: '/testimonials/aman-singh.jpg', car: 'Hyundai Creta', initial: 'A',
     text: 'Picked the car up from my house in Model Town and dropped it back washed. No extra charge for either. Small thing, but nobody else here does it.',
   },
   {
-    name: 'Pooja Rathee', car: 'Maruti Baleno', initial: 'P',
+    name: 'Pooja Rathee', img: '/testimonials/anjali-mehta.jpg', car: 'Maruti Baleno', initial: 'P',
     text: 'Rear door had a bad parking scrape. The colour match is perfect — I genuinely cannot find where the damage was, and I know where to look.',
   },
   {
@@ -454,15 +461,14 @@ export default function Home() {
               </Reveal>
 
               <Reveal y={24} delay={0.06}>
-                {/* NOT "Sale. Spare. Service." — that is what the physical
-                    logo says, but GK Motors does not sell cars, and leading
-                    with a service the business does not offer is the fastest
-                    way to lose a visitor who came for the one it does. The
-                    three things it actually sells, in the order it sells
-                    them. */}
+                {/* Reverted to the logo's own wording on request. Noted for
+                    the record: "Sale" is the one of the three GK Motors does
+                    not do — the lede immediately below carries the correction
+                    by spelling out service, spares and insurance, so nobody
+                    reads the headline as an offer to sell them a car. */}
                 <h1 className="gk-h1 gk-hero-h1">
-                  Service. Spares.<br />
-                  <span className="gk-grad gk-grad--dark">Insurance.</span>
+                  Sale. Spare.<br />
+                  <span className="gk-grad gk-grad--dark">Service.</span>
                 </h1>
               </Reveal>
 
@@ -534,9 +540,12 @@ export default function Home() {
                     <span className="gk-quote-badge"><Car size={15} /></span>
                     <span className="gk-quote-title">
                       <b>Maruti Swift Dzire</b>
-                      <span>Estimate · sent before we start</span>
+                      {/* It was not obvious this was an EXAMPLE of the message
+                          a customer receives rather than a live control they
+                          were meant to interact with. Now it says so. */}
+                      <span>Example of the estimate we WhatsApp you</span>
                     </span>
-                    <span className="gk-quote-flag">Approved</span>
+                    <span className="gk-quote-flag">Sample</span>
                   </header>
 
                   <ul className="gk-quote-rows">
@@ -648,7 +657,8 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════
           3 · SERVICES
           ══════════════════════════════════════════════════════════════════ */}
-      <section id="services" className="gk-sec" style={{ background: C.white }}>
+      <section id="services" className="gk-sec" style={{ background: C.white, position: 'relative', overflow: 'hidden' }}>
+        <ScrollWheel className="gk-wheel gk-wheel--light gk-wheel--svc" factor={0.1} idle={2.5} stiffness={24} />
         <div className="gk-wrap">
           <Reveal className="gk-head">
             <p className="gk-eyebrow gk-eyebrow--center">What we do</p>
@@ -753,14 +763,10 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* ► Swap for a dedicated shot of the parts shelf when there is
-                one — a prompt for it is in the handover notes. This is the
-                workshop render standing in, and it at least shows real stock
-                on a real wall rather than a stock photo of somebody else's. */}
             <div className="gk-shop-shot">
-              <img src="/workshop/bay-real.webp"
-                alt="The parts and tool wall at the GK Motors workshop"
-                width={1600} height={1067} loading="lazy" decoding="async" />
+              <img src="/shop/parts.webp"
+                alt="Oils, filters, batteries and brake parts on the shelf at GK Motors"
+                width={1400} height={875} loading="lazy" decoding="async" />
             </div>
           </Reveal>
 
@@ -822,6 +828,7 @@ export default function Home() {
             should claim that". */}
         <img className="gk-ins-bg" src="/insurance/damage.webp" alt="" aria-hidden="true"
           loading="lazy" decoding="async" />
+        <ScrollWheel className="gk-wheel gk-wheel--ins" factor={0.22} idle={6} stiffness={52} />
         <div className="gk-bloom gk-bloom--b" />
         <div className="gk-mesh" />
 
@@ -942,38 +949,19 @@ export default function Home() {
             </h2>
           </Reveal>
 
-          <div className="gk-steps">
-            {/* The rail sits behind the cards and is purely decorative — the
-                ordered numbers on each card carry the sequence for anyone who
-                cannot see it. */}
-            <div className="gk-steps-rail" aria-hidden="true">
-              <ScrollProgressLine
-                orientation="horizontal"
-                className="gk-steps-fill"
-                color={G.brand}
-              />
-            </div>
-
-            <Stagger className="gk-steps-grid" gap={0.11}>
-              {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
-                <StaggerItem key={step} depth={16}>
-                  <div className="gk-card gk-step">
-                    <span className="gk-step-num">{step}</span>
-                    <span className="gk-chip gk-chip--sm"><Icon size={19} /></span>
-                    <h3 className="gk-h3 gk-step-title">{title}</h3>
-                    <p className="gk-step-desc">{desc}</p>
-                  </div>
-                </StaggerItem>
-              ))}
-            </Stagger>
-          </div>
+          {/* Four cards became one drawn line — see ProcessFlow. Four
+              bordered boxes say "here are four things"; a line through four
+              nodes says "here is one journey", which is what this section
+              actually means. */}
+          <ProcessFlow steps={HOW_IT_WORKS} />
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
           7 · NUMBERS + REVIEWS
           ══════════════════════════════════════════════════════════════════ */}
-      <section className="gk-sec" style={{ background: C.white, overflow: 'hidden' }}>
+      <section className="gk-sec" style={{ background: C.white, overflow: 'hidden', position: 'relative' }}>
+        <ScrollWheel className="gk-wheel gk-wheel--light gk-wheel--rev" factor={0.14} idle={3.5} stiffness={34} />
         <div className="gk-wrap">
 
           <Stagger className="gk-stats" gap={0.09}>
@@ -1005,16 +993,16 @@ export default function Home() {
 
           <SectionBoundary name="reviews">
             <Stagger className="gk-reviews" gap={0.06}>
-              {TESTIMONIALS.map(({ name, car, text, initial }) => (
+              {TESTIMONIALS.map(({ name, car, text, initial, img }) => (
                 <StaggerItem key={name} depth={12} style={{ display: 'flex' }}>
                   <figure className="gk-card gk-review">
                     <span className="gk-review-mark" aria-hidden="true">&rdquo;</span>
                     <blockquote className="gk-review-text">{text}</blockquote>
                     <figcaption className="gk-review-by">
-                      {/* A monogram, not a stock portrait. The previous page
-                          used royalty-free faces of people who have never
-                          been customers, which is a fabricated record. */}
-                      <span className="gk-review-avatar" aria-hidden="true">{initial}</span>
+                      {img
+                        ? <img className="gk-review-avatar" src={img} alt=""
+                            width={38} height={38} loading="lazy" decoding="async" />
+                        : <span className="gk-review-avatar" aria-hidden="true">{initial}</span>}
                       <span className="gk-review-who">
                         <b>{name}</b>
                         <span>{car}</span>
@@ -1046,6 +1034,7 @@ export default function Home() {
           poster="/workshop/bay-dark.webp"
         />
         <div className="gk-bloom gk-bloom--b" />
+        <ScrollWheel className="gk-wheel gk-wheel--visit" factor={0.12} idle={2.5} stiffness={26} />
 
         <div className="gk-wrap">
           <div className="gk-visit">
@@ -1248,11 +1237,51 @@ const HOME_STYLES = `
     right: 4%; top: -8%;
     opacity: .1;
   }
+  /* ── Wheels beyond the hero ────────────────────────────────────────────
+     Wheels now run the length of the page rather than sitting only in the
+     hero, alternating side to side so scrolling feels like passing them.
+
+     Every host section needs position:relative and overflow:hidden — the
+     wheels are deliberately larger than their sections and offset off-edge,
+     and without the clip they would widen the document and summon a
+     horizontal scrollbar nothing appears to cause.
+
+     On light sections the wheel is navy at a very low opacity. Anything
+     stronger competes with the cards it sits behind; anything weaker is
+     invisible on a phone screen in daylight. */
+  .gk-wheel--light { color: var(--gk-navy); }
+
+  .gk-wheel--svc {
+    width: min(520px, 52vw); aspect-ratio: 1;
+    right: -14%; top: 6%;
+    opacity: .045;
+  }
+  .gk-wheel--rev {
+    width: min(600px, 58vw); aspect-ratio: 1;
+    left: -16%; bottom: -12%;
+    opacity: .04;
+  }
+  .gk-wheel--ins {
+    width: min(340px, 34vw); aspect-ratio: 1;
+    left: 4%; bottom: -12%;
+    opacity: .13;
+  }
+  .gk-wheel--visit {
+    width: min(560px, 55vw); aspect-ratio: 1;
+    right: -14%; top: -18%;
+    opacity: .1;
+  }
+
   /* On a phone the large wheel sits directly behind the headline and costs
-     contrast for something nobody is looking at. */
+     contrast for something nobody is looking at. The light-section wheels go
+     entirely: at 4% opacity on a small bright screen they are invisible
+     anyway, and each one is a compositor layer being blurred every frame. */
   @media (max-width: 700px) {
     .gk-wheel--sm { display: none; }
     .gk-wheel--lg { opacity: .07; left: -34%; bottom: -18%; }
+    .gk-wheel--light { display: none; }
+    .gk-wheel--ins { width: 46vw; opacity: .1; left: -12%; }
+    .gk-wheel--visit { width: 60vw; opacity: .08; right: -24%; }
   }
 
   /* ── Hero car ────────────────────────────────────────────────────────────
@@ -1912,6 +1941,7 @@ const HOME_STYLES = `
   }
   .gk-review-avatar {
     width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+    object-fit: cover;
     display: inline-flex; align-items: center; justify-content: center;
     background: var(--gk-g-brand); color: #FFF;
     font-family: var(--gk-font-display); font-size: 0.95rem; font-weight: 700;
@@ -2080,6 +2110,76 @@ const HOME_STYLES = `
     .gk-sec { padding-block: 2.5rem; }
     .gk-sec-sm { padding-block: 2rem; }
     .gk-head { margin-bottom: 1.6rem; }
+  }
+
+  /* ── Phone: the promo banners ──────────────────────────────────────────
+     Three full-height feature panels stacked came to roughly a screen and a
+     half of scrolling before the services grid even started. They become
+     compact rows instead: icon on the left, text on the right, artwork
+     reduced to a bleed behind the right edge. Same three offers, about a
+     third of the height, and still tappable at full width. */
+  @media (max-width: 640px) {
+    .gk-promos { gap: 0.55rem; }
+    .gk-promo {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: "ico text go";
+      align-items: center;
+      column-gap: 0.85rem;
+      padding: 0.9rem 1rem;
+      border-radius: 16px;
+    }
+    .gk-promo-ico {
+      grid-area: ico;
+      width: 42px; height: 42px; border-radius: 12px; margin-bottom: 0;
+    }
+    .gk-promo-ico svg { width: 20px; height: 20px; }
+    .gk-promo-kicker { display: none; }
+    .gk-promo-title { grid-area: text; font-size: 0.95rem; }
+    .gk-promo-desc {
+      grid-area: text;
+      font-size: 0.72rem; line-height: 1.45; margin-top: 1.6rem;
+      /* Two lines, then ellipsis — the full offer is on the page it links to
+         and a five-line paragraph is what made these tall in the first
+         place. */
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+    /* The title and the clamped description share one grid cell, stacked by
+       the margin above, so the row height is set by the taller of icon and
+       text rather than by three separate blocks. */
+    .gk-promo-title { align-self: start; }
+    .gk-promo-go { grid-area: go; margin-top: 0; width: 30px; height: 30px; }
+    .gk-promo-go svg { width: 14px; height: 14px; }
+    .gk-promo-img { width: 58%; right: -18%; bottom: -20%; opacity: .32; }
+  }
+
+  /* ── Phone: "Why GK Motors" two up ─────────────────────────────────────
+     The bento's two wide cells carry a paragraph each and stay full width;
+     the four short ones pair off. */
+  @media (max-width: 560px) {
+    .gk-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+    .gk-bento-cell { grid-column: span 1; }
+    .gk-bento-cell[style*="--span: 2"] { grid-column: span 2; }
+    .gk-bento-card { padding: 1.05rem 0.9rem; }
+    .gk-bento-card .gk-h3 { margin-top: 0.8rem; font-size: 0.9rem; }
+    .gk-bento-desc { font-size: 0.75rem; line-height: 1.5; }
+  }
+
+  /* ── Phone: the estimate card ──────────────────────────────────────────
+     It is supporting evidence, not the hero's subject, and at full height it
+     pushed the whole fold down. The line items collapse and what is left is
+     the part that actually makes the point: the total, and that pickup is
+     free. */
+  @media (max-width: 640px) {
+    .gk-quote { padding: 0.9rem 1rem 0.85rem; border-radius: 18px; }
+    .gk-quote-rows li:not(:last-child) { display: none; }
+    .gk-quote-rows li { padding: 0.35rem 0; }
+    .gk-quote-head { padding-bottom: 0.75rem; }
+    .gk-quote-title b { font-size: 0.85rem; }
+    .gk-quote-title span { font-size: 0.66rem; }
+    .gk-quote-total { font-size: 1.2rem; }
+    .gk-quote-pickup { margin-top: 0.7rem; padding: 0.55rem 0.7rem; font-size: 0.7rem; }
   }
 
   /* Very narrow phones cannot carry two columns of a review, so that one
