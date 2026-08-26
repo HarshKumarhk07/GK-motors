@@ -107,6 +107,17 @@ export const BIZ = {
   addressShort: 'Sheela Bypass, Sector-5, Rohtak',
   city: 'Rohtak',
   mapsUrl: 'https://share.google/HFpvRFVP9rCKgdaNv',
+
+  /* The embedded map. A plain address query rather than a place-ID embed:
+     place-ID URLs have to be copied out of the Google Business listing and the
+     one that was here pointed at central MUMBAI, which is where the Contact
+     page's map had been showing since the template was forked.
+
+     ► To make this pin exact: open the listing, Share → Embed a map, and paste
+       the src from that iframe here. The query form below lands on the right
+       street but Google chooses the pin. */
+  mapEmbed:
+    'https://maps.google.com/maps?q=GK+Motors,+Sheela+Bypass,+Jasbir+Colony,+Sector-5,+Rohtak,+Haryana+124001&z=15&output=embed',
   /* ⚠ CONFIRM THESE. Taken from what the Contact page already claimed rather
      than invented — but nobody has checked them against the actual shutters,
      and they should match the Google listing exactly, because that is where
@@ -114,4 +125,15 @@ export const BIZ = {
   hours: 'Mon – Sat · 9:00 AM – 8:00 PM',
   hoursSunday: 'Sunday · 10:00 AM – 4:00 PM',
   hoursShort: 'Mon–Sat, 9 AM – 8 PM',
+
+  /* ⚠ CONFIRM. The home page claimed "12+ years" while the About page said the
+     workshop started in 2018 — two different stories on the same site, which
+     is exactly the kind of detail a careful customer notices. One value now,
+     and `yearsOpen` below derives from it so the figure can never go stale or
+     drift out of step between pages again. */
+  since: 2013,
 };
+
+/* Years in business, computed rather than typed. A hardcoded "12+" is correct
+   for one year and quietly wrong every year after. */
+export const yearsOpen = () => new Date().getFullYear() - BIZ.since;
