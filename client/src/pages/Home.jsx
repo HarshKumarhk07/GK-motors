@@ -1159,13 +1159,26 @@ const HOME_STYLES = `
     display: grid;
     grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
     gap: clamp(2rem, 5vw, 4.5rem);
-    align-items: center;
+    /* start, not center.
+       The right column — car stacked over the estimate card — runs about
+       850px on a 1080p screen while the copy runs about 560px. Centring the
+       two put roughly 150px of empty navy above the headline and pushed the
+       whole textual half down the screen. Aligning to the top puts the
+       eyebrow just under the bar where it belongs; the car fills the space
+       that opens up beneath the copy, so nothing looks unbalanced. */
+    align-items: start;
+  }
+  /* A small optical offset so the copy does not sit hard against the section
+     padding — the car's own transparent margin makes it read as lower than it
+     measures. */
+  @media (min-width: 961px) {
+    .gk-hero-copy { padding-top: clamp(0.5rem, 2vw, 1.75rem); }
   }
   /* Single column well before the point at which the estimate card would be
      squeezed — the card has a lot of small type in it and is the first thing
      to become unreadable. */
   @media (max-width: 960px) {
-    .gk-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 3rem; }
+    .gk-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 2.25rem; align-items: stretch; }
   }
 
   /* Location chip. A link, not a label — it opens the Google listing. */
@@ -1328,7 +1341,7 @@ const HOME_STYLES = `
     width: 100%; max-width: 540px; height: auto;
     /* The cap that stops the right column running past the fold and taking
        the estimate card off the bottom of the screen with it. */
-    max-height: 46vh; object-fit: contain;
+    max-height: 42vh; object-fit: contain;
     display: block;
     /* See the note at the markup: this is what removes the render's black
        backdrop without an alpha channel. */

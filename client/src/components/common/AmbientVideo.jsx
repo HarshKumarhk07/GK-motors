@@ -102,16 +102,27 @@ export default function AmbientVideo({
      design on its own. */
   useEffect(() => {
     const v = videoRef.current;
-    if (!v || !show) return;
+    if (!v || !show) return undefined;
 
     v.muted = true;
     v.defaultMuted = true;
     v.setAttribute('muted', '');
 
+    /* If the element already has a frame by the time this runs, no further
+       `canplay` is coming — the event fired before React attached its
+       handler. Checking readyState directly is the only way to catch that,
+       and missing it is what left the layer permanently at opacity 0 with a
+       perfectly healthy video playing invisibly underneath. */
+    if (v.readyState >= 2) setReady(true);
+
+    let cancelled = false;
     const attempt = v.play();
-    if (attempt && typeof attempt.catch === 'function') {
-      attempt.catch(() => { /* Blocked by policy. The poster stands. */ });
+    if (attempt && typeof attempt.then === 'function') {
+      attempt
+        .then(() => { if (!cancelled) setReady(true); })
+        .catch(() => { /* Blocked by policy. The poster stands. */ });
     }
+    return () => { cancelled = true; };
   }, [show]);
 
   return (
@@ -136,7 +147,16 @@ export default function AmbientVideo({
           preload="auto"
           // Belt and braces: a background layer must never be a control.
           tabIndex={-1}
+          /* Three triggers, not one. `canplay` alone was the single point of
+             failure: if it fired before React attached the handler, nothing
+             ever set `ready`, the layer stayed at opacity 0, and the video
+             played invisibly behind the poster — which looks exactly like a
+             video that will not play. `loadeddata` fires as soon as the first
+             frame exists and `playing` when playback actually starts, so
+             between them one always lands. */
+          onLoadedData={() => setReady(true)}
           onCanPlay={() => setReady(true)}
+          onPlaying={() => setReady(true)}
         />
       )}
     </div>
